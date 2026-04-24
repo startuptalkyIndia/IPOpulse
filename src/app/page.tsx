@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   TrendingUp,
   Calendar,
-  BarChart3,
   Users,
   Calculator,
   Activity,
@@ -11,6 +10,11 @@ import {
   PieChart,
   FileText,
 } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { formatCurrency } from "@/lib/format";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
+
+export const dynamic = "force-dynamic";
 
 const moduleCards = [
   {
@@ -72,7 +76,15 @@ const calcShortcuts = [
   { href: "/calculators/brokerage", label: "Brokerage" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [liveCount, upcomingCount, todayFiiDii] = await Promise.all([
+    prisma.ipo.count({ where: { status: "live" } }).catch(() => 0),
+    prisma.ipo.count({ where: { status: "upcoming" } }).catch(() => 0),
+    prisma.fiiDiiDaily.findFirst({ where: { segment: "cash" }, orderBy: { date: "desc" } }).catch(() => null),
+  ]);
+  const fiiNet = todayFiiDii?.fiiNet ? Number(todayFiiDii.fiiNet) : null;
+  const diiNet = todayFiiDii?.diiNet ? Number(todayFiiDii.diiNet) : null;
+
   return (
     <div>
       {/* Hero */}
@@ -95,6 +107,29 @@ export default function HomePage() {
               <Link href="/calculators" className="btn-secondary">
                 Try Calculators
               </Link>
+            </div>
+            {/* Live stats strip */}
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+              <div className="bg-white rounded-lg border border-gray-200 px-3 py-2">
+                <div className="text-[11px] text-gray-500">Open IPOs</div>
+                <div className="text-lg font-bold text-indigo-700 tabular-nums">{liveCount}</div>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 px-3 py-2">
+                <div className="text-[11px] text-gray-500">Upcoming IPOs</div>
+                <div className="text-lg font-bold text-indigo-700 tabular-nums">{upcomingCount}</div>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 px-3 py-2">
+                <div className="text-[11px] text-gray-500">FII net (today)</div>
+                <div className={`text-lg font-bold tabular-nums ${fiiNet == null ? "text-gray-400" : fiiNet >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {fiiNet == null ? "—" : formatCurrency(fiiNet)}
+                </div>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 px-3 py-2">
+                <div className="text-[11px] text-gray-500">DII net (today)</div>
+                <div className={`text-lg font-bold tabular-nums ${diiNet == null ? "text-gray-400" : diiNet >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {diiNet == null ? "—" : formatCurrency(diiNet)}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -154,6 +189,11 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <NewsletterSignup variant="card" />
       </section>
 
       {/* Coming soon data teasers */}

@@ -16,7 +16,10 @@ import {
 } from "@/lib/ipo";
 import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
+import { WatchlistButton } from "@/components/WatchlistButton";
+import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { formatCurrency } from "@/lib/format";
+import { auth } from "@/lib/auth";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -50,6 +53,18 @@ export default async function IpoDetailPage({ params }: Props) {
   if (!ipo) notFound();
   const status = computeIpoStatus(ipo);
   const latestSub = ipo.subscriptions[0];
+  const session = await auth();
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  let inWatchlist = false;
+  let trackedApp = false;
+  if (userId) {
+    const [w, a] = await Promise.all([
+      prisma.watchlistItem.findFirst({ where: { userId, type: "ipo", targetSlug: ipo.slug } }),
+      prisma.ipoApplication.findFirst({ where: { userId, ipoId: ipo.id } }),
+    ]);
+    inWatchlist = !!w;
+    trackedApp = !!a;
+  }
 
   const gmpPoints: GmpPoint[] = ipo.gmpEntries.map((g) => ({
     date: g.date.toISOString(),
@@ -88,16 +103,20 @@ export default async function IpoDetailPage({ params }: Props) {
               {ipo.listingDate ? ` · Listing ${formatDate(ipo.listingDate)}` : ""}
             </div>
           </div>
-          {ipo.registrarUrl ? (
-            <a
-              href={ipo.registrarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary text-xs inline-flex items-center gap-1"
-            >
-              Check Allotment <ExternalLink className="w-3 h-3" />
-            </a>
-          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <WatchlistButton type="ipo" targetSlug={ipo.slug} initial={inWatchlist} authed={!!userId} />
+            <TrackApplicationButton ipoId={ipo.id} ipoName={ipo.name} initial={trackedApp} authed={!!userId} />
+            {ipo.registrarUrl ? (
+              <a
+                href={ipo.registrarUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary text-xs inline-flex items-center gap-1"
+              >
+                Check Allotment <ExternalLink className="w-3 h-3" />
+              </a>
+            ) : null}
+          </div>
         </div>
 
         {/* Quick stats grid */}
