@@ -9,6 +9,11 @@ import {
   retirementCalc,
   taxCalc,
   brokerageCalc,
+  npsCalc,
+  rdCalc,
+  hraCalc,
+  inflationCalc,
+  mfReturnsCalc,
 } from "./math";
 import type { CalcResult } from "./types";
 
@@ -23,4 +28,9 @@ export const mathBySlug: Record<string, (i: Record<string, number>) => CalcResul
   retirement: retirementCalc,
   tax: taxCalc,
   brokerage: brokerageCalc,
+  nps: npsCalc,
+  rd: rdCalc,
+  hra: hraCalc,
+  inflation: inflationCalc,
+  "mf-returns": mfReturnsCalc,
 };

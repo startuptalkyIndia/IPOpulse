@@ -9,9 +9,12 @@ import {
   Home,
   Landmark,
   Shield,
+  ShieldCheck,
   Sunset,
   Receipt,
   Scale,
+  Repeat,
+  Building,
 } from "lucide-react";
 
 const iconMap = {
@@ -22,9 +25,12 @@ const iconMap = {
   Home,
   Landmark,
   Shield,
+  ShieldCheck,
   Sunset,
   Receipt,
   Scale,
+  Repeat,
+  Building,
 };
 
 export const metadata: Metadata = {

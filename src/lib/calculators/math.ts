@@ -354,6 +354,152 @@ export const brokerSchedules: BrokerSchedule[] = [
   { name: "HDFC Securities", deliveryPct: 0.005, deliveryFlat: 25, deliveryCap: Infinity, intradayPct: 0.0005, intradayFlat: 25, intradayCap: Infinity },
 ];
 
+/* NPS — National Pension System, monthly contribution with equity/debt split */
+export function npsCalc(i: Record<string, number>): CalcResult {
+  const m = i.monthly;
+  const rate = i.rate / 100 / 12;
+  const n = i.years * 12;
+  const fv = m * (((Math.pow(1 + rate, n) - 1) / rate) * (1 + rate));
+  const invested = m * n;
+  const annuityPct = i.annuityPct / 100;
+  const annuityCorpus = fv * annuityPct;
+  const lumpsum = fv - annuityCorpus;
+  const annuityRate = i.annuityRate / 100 / 12;
+  const monthlyPension = annuityCorpus * annuityRate;
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= i.years; y++) {
+    const months = y * 12;
+    const v = m * (((Math.pow(1 + rate, months) - 1) / rate) * (1 + rate));
+    const inv = m * months;
+    breakdown.push({ year: y, invested: round(inv), value: round(v), interest: round(v - inv) });
+  }
+  return {
+    primary: [
+      { label: "Corpus at retirement", value: round(fv), format: "currency" },
+      { label: "Monthly pension", value: round(monthlyPension), format: "currency" },
+      { label: "Tax-free lumpsum (60%)", value: round(lumpsum), format: "currency" },
+    ],
+    secondary: [
+      { label: "Total invested", value: round(invested), format: "currency" },
+      { label: "Annuity purchase", value: round(annuityCorpus), format: "currency" },
+    ],
+    donut: { invested: round(invested), returns: round(fv - invested) },
+    breakdown,
+  };
+}
+
+/* RD — Recurring Deposit with quarterly compounding */
+export function rdCalc(i: Record<string, number>): CalcResult {
+  const m = i.monthly;
+  const r = i.rate / 100;
+  const n = i.months;
+  // RD formula: M × [((1+r/4)^(4n/12) - 1) / (1 - (1+r/4)^(-1/3))]
+  // Simplified: month-by-month compounding
+  let fv = 0;
+  for (let k = 1; k <= n; k++) {
+    const monthsLeft = n - k + 1;
+    fv += m * Math.pow(1 + r / 4, (monthsLeft / 12) * 4);
+  }
+  const invested = m * n;
+  const interest = fv - invested;
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= Math.ceil(n / 12); y++) {
+    const months = Math.min(y * 12, n);
+    let v = 0;
+    for (let k = 1; k <= months; k++) {
+      const monthsLeft = months - k + 1;
+      v += m * Math.pow(1 + r / 4, (monthsLeft / 12) * 4);
+    }
+    breakdown.push({ year: y, invested: round(m * months), value: round(v), interest: round(v - m * months) });
+  }
+  return {
+    primary: [
+      { label: "Maturity value", value: round(fv), format: "currency" },
+      { label: "Total deposited", value: round(invested), format: "currency" },
+      { label: "Interest earned", value: round(interest), format: "currency" },
+    ],
+    donut: { invested: round(invested), returns: round(interest) },
+    breakdown,
+  };
+}
+
+/* HRA exemption — Section 10(13A) */
+export function hraCalc(i: Record<string, number>): CalcResult {
+  const basic = i.basic * 12;
+  const daAnnual = (i.da || 0) * 12;
+  const hraReceived = i.hraReceived * 12;
+  const rentPaid = i.rent * 12;
+  const isMetro = i.metro === 1;
+
+  const salary = basic + daAnnual;
+  const a = hraReceived;
+  const b = isMetro ? salary * 0.5 : salary * 0.4;
+  const c = Math.max(rentPaid - salary * 0.1, 0);
+  const exempt = Math.min(a, b, c);
+  const taxable = hraReceived - exempt;
+
+  return {
+    primary: [
+      { label: "HRA exemption (yearly)", value: round(exempt), format: "currency" },
+      { label: "Taxable HRA", value: round(taxable), format: "currency" },
+      { label: "Monthly exemption", value: round(exempt / 12), format: "currency" },
+    ],
+    secondary: [
+      { label: "HRA received (annual)", value: round(a), format: "currency" },
+      { label: "50/40% of salary", value: round(b), format: "currency" },
+      { label: "Rent − 10% salary", value: round(c), format: "currency" },
+    ],
+  };
+}
+
+/* Inflation — what today's expense costs in future */
+export function inflationCalc(i: Record<string, number>): CalcResult {
+  const today = i.amount;
+  const rate = i.rate / 100;
+  const years = i.years;
+  const future = today * Math.pow(1 + rate, years);
+  const erosion = future - today;
+  const todayValueOfFuture = today / Math.pow(1 + rate, years);
+
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= years; y++) {
+    const v = today * Math.pow(1 + rate, y);
+    breakdown.push({ year: y, invested: round(today), value: round(v), interest: round(v - today) });
+  }
+
+  return {
+    primary: [
+      { label: `In ${years} years, you'll need`, value: round(future), format: "currency" },
+      { label: "Inflation cost", value: round(erosion), format: "currency" },
+      { label: "Today's worth of future ₹", value: round(todayValueOfFuture), format: "currency" },
+    ],
+    donut: { invested: round(today), returns: round(erosion) },
+    breakdown,
+  };
+}
+
+/* MF Returns — simple CAGR calculator */
+export function mfReturnsCalc(i: Record<string, number>): CalcResult {
+  const initial = i.initial;
+  const final = i.final;
+  const years = i.years;
+  const cagr = years > 0 ? Math.pow(final / initial, 1 / years) - 1 : 0;
+  const absoluteReturn = ((final - initial) / initial) * 100;
+  const gain = final - initial;
+
+  return {
+    primary: [
+      { label: "CAGR (annualized)", value: cagr * 100, format: "percent" },
+      { label: "Absolute return", value: absoluteReturn, format: "percent" },
+      { label: "Total gain", value: round(gain), format: "currency" },
+    ],
+    secondary: [
+      { label: "Initial", value: round(initial), format: "currency" },
+      { label: "Final", value: round(final), format: "currency" },
+    ],
+  };
+}
+
 export function brokerageCalc(i: Record<string, number>): CalcResult {
   const buyPrice = i.buyPrice;
   const sellPrice = i.sellPrice;

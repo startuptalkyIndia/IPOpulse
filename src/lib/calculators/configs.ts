@@ -402,6 +402,188 @@ export const calculators: CalcMeta[] = [
   },
 ];
 
+calculators.push(
+  {
+    slug: "nps",
+    title: "NPS Calculator",
+    shortTitle: "NPS",
+    heading: "NPS Calculator — National Pension System retirement corpus",
+    description:
+      "Calculate your NPS retirement corpus and monthly pension. Government-backed, tax-efficient (80CCD) retirement scheme.",
+    category: "retirement",
+    iconName: "ShieldCheck",
+    inputs: [
+      { key: "monthly", label: "Monthly contribution", min: 500, max: 100000, step: 500, default: 5000, prefix: "₹", format: "currency" },
+      { key: "rate", label: "Expected return (p.a.)", min: 5, max: 15, step: 0.5, default: 10, suffix: "%", format: "percent" },
+      { key: "years", label: "Years until retirement", min: 1, max: 45, step: 1, default: 25, suffix: "yrs", format: "years" },
+      { key: "annuityPct", label: "Annuity purchase % at retirement", min: 40, max: 100, step: 5, default: 40, suffix: "%", format: "percent" },
+      { key: "annuityRate", label: "Annuity interest rate (p.a.)", min: 4, max: 10, step: 0.5, default: 6, suffix: "%", format: "percent" },
+    ],
+    faq: [
+      {
+        q: "What is NPS?",
+        a: "National Pension System — a government-backed voluntary retirement scheme managed by PFRDA. Two accounts: Tier-I (mandatory, locked till 60) and Tier-II (flexible). Returns come from equity (up to 75%), corporate bonds, and G-Secs.",
+      },
+      {
+        q: "What tax benefits does NPS offer?",
+        a: "Section 80CCD(1): up to ₹1.5L (within 80C limit). Section 80CCD(1B): extra ₹50,000 exclusive to NPS — unique advantage over other instruments. Section 80CCD(2): employer contribution up to 10% of salary also deductible.",
+      },
+      {
+        q: "Can I withdraw everything at 60?",
+        a: "No. At retirement, 60% can be withdrawn tax-free as lumpsum. The remaining 40% must be used to purchase an annuity from an IRDAI-approved insurer, which pays you a monthly pension for life. Annuity income is taxable.",
+      },
+    ],
+    related: ["retirement", "ppf", "sip", "tax"],
+    overview: [
+      "NPS (National Pension System) is one of India's most tax-efficient retirement vehicles — the only scheme that offers an extra ₹50,000 deduction beyond the ₹1.5L 80C limit.",
+      "Contributions grow through a mix of equity, corporate bonds, and government securities. You can choose your asset allocation (Active) or let age-based auto-allocation happen (Auto).",
+      "At age 60, 60% of corpus comes out tax-free. The remaining 40% must buy an annuity — this calculator estimates your monthly pension assuming a typical 6% annuity rate.",
+    ],
+  },
+  {
+    slug: "rd",
+    title: "RD Calculator",
+    shortTitle: "RD",
+    heading: "RD Calculator — Recurring Deposit maturity value",
+    description:
+      "Calculate your bank recurring deposit maturity amount. Monthly deposit with quarterly compounding interest.",
+    category: "investment",
+    iconName: "Repeat",
+    inputs: [
+      { key: "monthly", label: "Monthly deposit", min: 100, max: 200000, step: 100, default: 5000, prefix: "₹", format: "currency" },
+      { key: "rate", label: "Interest rate (p.a.)", min: 1, max: 12, step: 0.05, default: 7.1, suffix: "%", format: "percent" },
+      { key: "months", label: "Tenure (months)", min: 6, max: 120, step: 1, default: 60, suffix: "mo", format: "months" },
+    ],
+    faq: [
+      {
+        q: "What is a Recurring Deposit?",
+        a: "An RD lets you deposit a fixed amount every month for a chosen tenure (usually 6 months to 10 years). Interest compounds quarterly. Good for disciplined savings without market risk.",
+      },
+      {
+        q: "RD vs SIP — which is better?",
+        a: "RDs are safer (guaranteed return, DICGC-insured to ₹5L) but give 6–8% vs SIPs in equity funds which have historically done 11–13% over long periods. For short-term goals (1–3 years) RDs are better; for 5+ years, SIPs usually win.",
+      },
+      {
+        q: "Is RD interest taxable?",
+        a: "Yes — fully taxable at your slab rate. Banks deduct TDS at 10% if total RD + FD interest exceeds ₹40,000/year (₹50,000 for seniors). No Section 80C benefit.",
+      },
+    ],
+    related: ["fd", "sip", "ppf"],
+    overview: [
+      "Recurring Deposits are a disciplined savings tool — you commit to a fixed monthly deposit for a fixed tenure at a fixed rate.",
+      "Interest compounds quarterly in most Indian banks. Miss a monthly deposit and most banks charge a small penalty (~₹1.50–₹2 per ₹100 missed).",
+      "Rates vary: 6.5–7.5% at PSU banks, up to 8.5% at small finance banks. Senior citizens get an extra 0.25–0.50%.",
+    ],
+  },
+  {
+    slug: "hra",
+    title: "HRA Exemption Calculator",
+    shortTitle: "HRA",
+    heading: "HRA Calculator — House Rent Allowance tax exemption",
+    description:
+      "Calculate your HRA tax exemption under Section 10(13A). Inputs: basic salary, HRA received, rent paid, and city type.",
+    category: "tax",
+    iconName: "Building",
+    inputs: [
+      { key: "basic", label: "Basic salary (monthly)", min: 5000, max: 1000000, step: 1000, default: 50000, prefix: "₹", format: "currency" },
+      { key: "da", label: "DA forming part of retirement (monthly)", min: 0, max: 1000000, step: 500, default: 0, prefix: "₹", format: "currency" },
+      { key: "hraReceived", label: "HRA received (monthly)", min: 0, max: 500000, step: 500, default: 20000, prefix: "₹", format: "currency" },
+      { key: "rent", label: "Rent paid (monthly)", min: 0, max: 500000, step: 500, default: 25000, prefix: "₹", format: "currency" },
+      { key: "metro", label: "Metro city? (0=No, 1=Yes)", min: 0, max: 1, step: 1, default: 1, format: "plain" },
+    ],
+    faq: [
+      {
+        q: "What is HRA exemption?",
+        a: "Under Section 10(13A), salaried employees living in rented housing can claim tax exemption on part of their HRA. The exempt portion equals the LOWEST of: (a) actual HRA received, (b) 50% of basic+DA for metros / 40% for non-metros, (c) rent paid minus 10% of basic+DA.",
+      },
+      {
+        q: "Which cities are considered metros?",
+        a: "For HRA: Delhi, Mumbai, Kolkata, Chennai. Bengaluru, Hyderabad, Pune, Ahmedabad are NOT metros for HRA purposes despite being large cities. Surprising but that's the IT rule.",
+      },
+      {
+        q: "Can I claim HRA in the new tax regime?",
+        a: "No. New regime (default from FY 2024-25) strips away HRA and most other deductions. You can only claim HRA under the old regime. This is one of the main reasons some taxpayers still prefer the old regime.",
+      },
+    ],
+    related: ["tax", "ppf"],
+    overview: [
+      "HRA (House Rent Allowance) is the single biggest tax-saving component for renting salaried employees in India.",
+      "The exemption formula is a 'minimum of three' rule — actual HRA, 50/40% of basic+DA, or rent minus 10% of salary. Whichever is lowest becomes your tax-free amount.",
+      "Requirements: rent receipts for claims above ₹3,000/month, PAN of landlord if annual rent exceeds ₹1 lakh, and you cannot own residential property in the same city.",
+    ],
+  },
+  {
+    slug: "inflation",
+    title: "Inflation Calculator",
+    shortTitle: "Inflation",
+    heading: "Inflation Calculator — future cost of today's expenses",
+    description:
+      "See how much your expenses will cost in the future due to inflation. Essential for retirement and goal planning.",
+    category: "other",
+    iconName: "TrendingUp",
+    inputs: [
+      { key: "amount", label: "Today's amount", min: 1000, max: 100000000, step: 1000, default: 100000, prefix: "₹", format: "currency" },
+      { key: "rate", label: "Inflation rate (p.a.)", min: 1, max: 15, step: 0.5, default: 6, suffix: "%", format: "percent" },
+      { key: "years", label: "Years in future", min: 1, max: 50, step: 1, default: 20, suffix: "yrs", format: "years" },
+    ],
+    faq: [
+      {
+        q: "What inflation rate should I assume for India?",
+        a: "India's long-term average CPI inflation is ~6–7%. RBI targets 4% ±2%. For personal finance planning, use 6% as the baseline. Education and healthcare inflation run higher (8–10%) — factor this in for goal-based planning.",
+      },
+      {
+        q: "How does inflation affect my investments?",
+        a: "Your 'real return' is nominal return minus inflation. An FD giving 7% with 6% inflation gives just 1% real return. Equity's 12% at 6% inflation gives 6% real — which is why stocks beat FDs long term.",
+      },
+      {
+        q: "Why does inflation matter for retirement?",
+        a: "If you need ₹50k/month today, in 30 years at 6% inflation you'll need ₹2.87 lakh/month. This is why retirement calculators that ignore inflation dangerously underestimate the corpus needed.",
+      },
+    ],
+    related: ["retirement", "sip", "fd"],
+    overview: [
+      "Inflation is the silent tax that erodes your money's purchasing power every year. A product that costs ₹100 today costs ₹321 in 20 years at 6% inflation.",
+      "This calculator projects how much an expense will grow in nominal rupees. The reverse — today's purchasing power of a future amount — is also shown.",
+      "Rule of thumb: at 6% inflation, your money's purchasing power halves every ~12 years. That's the reason idle cash in a savings account is slowly bleeding value.",
+    ],
+  },
+  {
+    slug: "mf-returns",
+    title: "Mutual Fund Returns Calculator",
+    shortTitle: "MF Returns",
+    heading: "Mutual Fund Returns Calculator — CAGR & absolute return",
+    description:
+      "Compute CAGR (annualized) and absolute returns on your mutual fund investment. Simple lump-sum return analysis.",
+    category: "investment",
+    iconName: "LineChart",
+    inputs: [
+      { key: "initial", label: "Amount invested", min: 1000, max: 100000000, step: 1000, default: 100000, prefix: "₹", format: "currency" },
+      { key: "final", label: "Current value", min: 1000, max: 500000000, step: 1000, default: 200000, prefix: "₹", format: "currency" },
+      { key: "years", label: "Holding period", min: 0.5, max: 40, step: 0.5, default: 5, suffix: "yrs", format: "years" },
+    ],
+    faq: [
+      {
+        q: "What's the difference between CAGR and absolute return?",
+        a: "Absolute return is total gain %: ((Final−Initial)/Initial)×100. CAGR smooths this over time: (Final/Initial)^(1/years)−1. For multi-year investments, CAGR is the fair comparison since it's annualized.",
+      },
+      {
+        q: "What's a good CAGR for Indian equity funds?",
+        a: "Long-term (10+ yr) large-cap funds: 11–13%. Flexi/multi-cap: 12–15%. Mid/small-cap: 14–18% (higher volatility). Debt funds: 6–8%. Anything consistently above 18% is either very lucky, very recent, or hiding risk.",
+      },
+      {
+        q: "Should I use CAGR for SIP returns?",
+        a: "No — use XIRR for SIPs. CAGR assumes a single lumpsum. XIRR handles multiple dated cashflows correctly. We'll add an XIRR calculator in a future update.",
+      },
+    ],
+    related: ["sip", "lumpsum", "inflation"],
+    overview: [
+      "CAGR (Compound Annual Growth Rate) is the industry standard for reporting mutual fund returns. It's the annualized rate that would have produced your gain if growth were steady.",
+      "Formula: CAGR = (Final Value / Initial Value)^(1/years) − 1. Works for any investment held for a continuous period, not just mutual funds.",
+      "Quick check: if your CAGR beats inflation by 3–6%, you're doing well. Beating Nifty 50's long-term CAGR (~12%) consistently is the real benchmark for active funds.",
+    ],
+  },
+);
+
 export function getCalcBySlug(slug: string): CalcMeta | undefined {
   return calculators.find((c) => c.slug === slug);
 }
