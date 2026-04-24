@@ -29,9 +29,19 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder /app/node_modules/esbuild ./node_modules/esbuild
+COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
+# tsconfig for tsx path resolution of @/* aliases (even though seed scripts don't use it, tsx inspects)
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+# bcryptjs is needed by the seed script (admin upsert)
+COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
+
+ENV PATH="/app/node_modules/.bin:${PATH}"
 
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
