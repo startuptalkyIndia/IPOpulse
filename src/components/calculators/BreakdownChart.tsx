@@ -38,7 +38,7 @@ export function BreakdownChart({ data }: Props) {
             tickFormatter={(v) => (v >= 10000000 ? `${(v / 10000000).toFixed(1)}Cr` : v >= 100000 ? `${(v / 100000).toFixed(1)}L` : `${v / 1000}k`)}
           />
           <Tooltip
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value) => formatCurrency(Number(value))}
             labelFormatter={(year) => `Year ${year}`}
             contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
           />

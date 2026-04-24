@@ -41,7 +41,7 @@ export function ResultDonut({
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value) => formatCurrency(Number(value))}
             contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
           />
         </PieChart>

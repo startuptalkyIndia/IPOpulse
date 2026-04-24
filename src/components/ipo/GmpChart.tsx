@@ -47,7 +47,7 @@ export function GmpChart({ data }: Props) {
           <XAxis dataKey="label" fontSize={10} tickLine={false} />
           <YAxis fontSize={10} tickLine={false} tickFormatter={(v) => `₹${v}`} />
           <Tooltip
-            formatter={(value: number) => [`₹${value}`, "GMP"]}
+            formatter={(value) => [`₹${Number(value)}`, "GMP"]}
             contentStyle={{ borderRadius: 8, fontSize: 12, border: "1px solid #e5e7eb" }}
           />
           <ReferenceLine y={avg} stroke="#9ca3af" strokeDasharray="3 3" label={{ value: `Avg ₹${Math.round(avg)}`, fontSize: 10, fill: "#9ca3af", position: "right" }} />
