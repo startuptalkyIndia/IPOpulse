@@ -25,7 +25,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Prevents dark-mode flash: apply theme before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(()=>{try{const t=localStorage.getItem('ipopulse-theme');const d=window.matchMedia('(prefers-color-scheme: dark)').matches;const x=t==='dark'?'dark':t==='light'?'light':d?'dark':'light';document.documentElement.dataset.theme=x}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         <Nav />
         <main className="flex-1">{children}</main>

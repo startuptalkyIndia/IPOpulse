@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, User as UserIcon } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
   { href: "/ipo", label: "IPO" },
@@ -11,7 +13,10 @@ const links = [
   { href: "/compare", label: "Compare" },
 ];
 
-export function Nav() {
+export async function Nav() {
+  const session = await auth();
+  const authed = !!session?.user;
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -37,13 +42,24 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/ipo/live"
-            className="hidden sm:inline-flex items-center gap-1 text-xs font-medium bg-red-50 text-red-600 px-2.5 py-1 rounded-full"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            Live IPOs
-          </Link>
+          <ThemeToggle />
+          {authed ? (
+            <Link
+              href="/my/watchlist"
+              className="inline-flex items-center gap-1 text-xs font-medium bg-indigo-50 text-indigo-700 px-2.5 py-1.5 rounded-full hover:bg-indigo-100"
+            >
+              <UserIcon className="w-3.5 h-3.5" /> My
+            </Link>
+          ) : (
+            <>
+              <Link href="/signin" className="hidden sm:inline-block text-sm text-gray-500 hover:text-gray-900">
+                Sign in
+              </Link>
+              <Link href="/signup" className="text-xs font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

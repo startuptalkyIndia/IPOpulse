@@ -23,6 +23,55 @@ model AdminUser {
   @@map("admin_users")
 }
 
+model User {
+  id           String            @id @default(cuid())
+  email        String            @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  watchlist    WatchlistItem[]
+  applications IpoApplication[]
+
+  @@map("users")
+}
+
+model WatchlistItem {
+  id         Int      @id @default(autoincrement())
+  userId     String   @map("user_id")
+  type       String   // ipo | stock
+  targetSlug String   @map("target_slug")
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, targetSlug])
+  @@index([userId, type])
+  @@map("watchlist_items")
+}
+
+model IpoApplication {
+  id                Int      @id @default(autoincrement())
+  userId            String   @map("user_id")
+  ipoId             Int      @map("ipo_id")
+  applicationNumber String?  @map("application_number")
+  lotsApplied       Int?     @map("lots_applied")
+  category          String?  // retail | hni | employee
+  applyDate         DateTime? @map("apply_date")
+  status            String   @default("applied") // applied | allotted | not_allotted | sold | held
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipo  Ipo  @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ipoId])
+  @@index([userId])
+  @@map("ipo_applications")
+}
+
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -96,6 +145,7 @@ model Ipo {
   gmpEntries    IpoGmp[]
   anchors       IpoAnchor[]
   listing       IpoListing?
+  applications  IpoApplication[]
 
   @@index([status])
   @@index([type])
