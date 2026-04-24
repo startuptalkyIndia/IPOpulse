@@ -29,6 +29,8 @@ const columns = [
       { href: "/calculators/emi", label: "EMI Calculator" },
       { href: "/calculators/tax", label: "Income Tax Calculator" },
       { href: "/calculators/lumpsum", label: "Lumpsum Calculator" },
+      { href: "/compare/brokers", label: "Compare Brokers" },
+      { href: "/compare/credit-cards", label: "Compare Cards" },
       { href: "/calculators", label: "All Calculators" },
     ],
   },
