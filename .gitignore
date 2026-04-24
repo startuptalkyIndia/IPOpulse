@@ -1,0 +1,19 @@
+node_modules
+.next
+.env
+.env.local
+.env.production
+*.log
+.DS_Store
+coverage
+dist
+build
+.vercel
+.turbo
+next-env.d.ts
+
+# Build / OS artifacts not already covered
+.claude/
+COMMS.md
+COMMS-ARCHIVE.md
+CREDENTIALS.md

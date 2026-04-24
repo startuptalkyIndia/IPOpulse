@@ -1,0 +1,398 @@
+import type { CalcBreakdownRow, CalcResult } from "./types";
+
+/* Generic helpers ----------------------------------------------------- */
+
+const round = (n: number) => Math.round(n);
+
+/* SIP — monthly investment with annual return ------------------------- */
+export function sipCalc(i: Record<string, number>): CalcResult {
+  const m = i.monthly;          // monthly investment
+  const r = i.rate / 100 / 12;  // monthly rate
+  const n = i.years * 12;       // months
+  const fv = m * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+  const invested = m * n;
+  const returns = fv - invested;
+
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= i.years; y++) {
+    const months = y * 12;
+    const v = m * (((Math.pow(1 + r, months) - 1) / r) * (1 + r));
+    const inv = m * months;
+    breakdown.push({ year: y, invested: round(inv), value: round(v), interest: round(v - inv) });
+  }
+
+  return {
+    primary: [
+      { label: "Future value", value: round(fv), format: "currency" },
+      { label: "Total invested", value: round(invested), format: "currency" },
+      { label: "Wealth gained", value: round(returns), format: "currency" },
+    ],
+    donut: { invested: round(invested), returns: round(returns) },
+    breakdown,
+  };
+}
+
+/* Step-up SIP — annual increment ------------------------------------- */
+export function stepUpSipCalc(i: Record<string, number>): CalcResult {
+  const baseMonthly = i.monthly;
+  const annualStepPct = i.stepUp / 100;
+  const r = i.rate / 100 / 12;
+  let fv = 0;
+  let invested = 0;
+  const breakdown: CalcBreakdownRow[] = [];
+
+  for (let y = 1; y <= i.years; y++) {
+    const monthly = baseMonthly * Math.pow(1 + annualStepPct, y - 1);
+    for (let m = 0; m < 12; m++) {
+      const monthsLeft = (i.years - y) * 12 + (12 - m);
+      fv += monthly * Math.pow(1 + r, monthsLeft);
+      invested += monthly;
+    }
+    breakdown.push({ year: y, invested: round(invested), value: round(fv), interest: round(fv - invested) });
+  }
+
+  return {
+    primary: [
+      { label: "Future value", value: round(fv), format: "currency" },
+      { label: "Total invested", value: round(invested), format: "currency" },
+      { label: "Wealth gained", value: round(fv - invested), format: "currency" },
+    ],
+    donut: { invested: round(invested), returns: round(fv - invested) },
+    breakdown,
+  };
+}
+
+/* Lumpsum — one-time investment at compound rate --------------------- */
+export function lumpsumCalc(i: Record<string, number>): CalcResult {
+  const p = i.principal;
+  const r = i.rate / 100;
+  const n = i.years;
+  const fv = p * Math.pow(1 + r, n);
+  const returns = fv - p;
+
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= n; y++) {
+    const v = p * Math.pow(1 + r, y);
+    breakdown.push({ year: y, invested: round(p), value: round(v), interest: round(v - p) });
+  }
+
+  return {
+    primary: [
+      { label: "Future value", value: round(fv), format: "currency" },
+      { label: "Invested", value: round(p), format: "currency" },
+      { label: "Wealth gained", value: round(returns), format: "currency" },
+    ],
+    donut: { invested: round(p), returns: round(returns) },
+    breakdown,
+  };
+}
+
+/* SWP — Systematic Withdrawal Plan ----------------------------------- */
+export function swpCalc(i: Record<string, number>): CalcResult {
+  let balance = i.principal;
+  const w = i.monthlyWithdraw;
+  const r = i.rate / 100 / 12;
+  const n = i.years * 12;
+  let totalWithdrawn = 0;
+  const breakdown: CalcBreakdownRow[] = [];
+
+  for (let m = 1; m <= n; m++) {
+    balance = balance * (1 + r) - w;
+    totalWithdrawn += w;
+    if (balance < 0) balance = 0;
+    if (m % 12 === 0) {
+      const year = m / 12;
+      breakdown.push({
+        year,
+        invested: round(totalWithdrawn),
+        value: round(balance),
+        interest: round(balance - (i.principal - totalWithdrawn)),
+      });
+    }
+  }
+
+  return {
+    primary: [
+      { label: "Final balance", value: round(balance), format: "currency" },
+      { label: "Total withdrawn", value: round(totalWithdrawn), format: "currency" },
+      { label: "Starting corpus", value: round(i.principal), format: "currency" },
+    ],
+    donut: { invested: round(totalWithdrawn), returns: round(Math.max(balance, 0)) },
+    breakdown,
+  };
+}
+
+/* EMI — loan amortisation ------------------------------------------- */
+export function emiCalc(i: Record<string, number>): CalcResult {
+  const p = i.principal;
+  const r = i.rate / 100 / 12;
+  const n = i.years * 12;
+  const emi = r === 0 ? p / n : (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  const totalPayment = emi * n;
+  const totalInterest = totalPayment - p;
+
+  const breakdown: CalcBreakdownRow[] = [];
+  let balance = p;
+  let paidInterest = 0;
+  for (let y = 1; y <= i.years; y++) {
+    for (let m = 0; m < 12; m++) {
+      const interest = balance * r;
+      const principalPart = emi - interest;
+      balance -= principalPart;
+      paidInterest += interest;
+    }
+    breakdown.push({
+      year: y,
+      invested: round(paidInterest + (p - balance)),
+      value: round(Math.max(balance, 0)),
+      interest: round(paidInterest),
+    });
+  }
+
+  return {
+    primary: [
+      { label: "Monthly EMI", value: round(emi), format: "currency" },
+      { label: "Total interest", value: round(totalInterest), format: "currency" },
+      { label: "Total payment", value: round(totalPayment), format: "currency" },
+    ],
+    donut: { invested: round(p), returns: round(totalInterest) },
+    breakdown,
+  };
+}
+
+/* FD — fixed deposit at compounding freq ----------------------------- */
+export function fdCalc(i: Record<string, number>): CalcResult {
+  const p = i.principal;
+  const r = i.rate / 100;
+  const n = i.compoundingsPerYear || 4; // default quarterly
+  const t = i.years;
+  const fv = p * Math.pow(1 + r / n, n * t);
+  const interest = fv - p;
+
+  const breakdown: CalcBreakdownRow[] = [];
+  for (let y = 1; y <= t; y++) {
+    const v = p * Math.pow(1 + r / n, n * y);
+    breakdown.push({ year: y, invested: round(p), value: round(v), interest: round(v - p) });
+  }
+
+  return {
+    primary: [
+      { label: "Maturity value", value: round(fv), format: "currency" },
+      { label: "Interest earned", value: round(interest), format: "currency" },
+      { label: "Principal", value: round(p), format: "currency" },
+    ],
+    donut: { invested: round(p), returns: round(interest) },
+    breakdown,
+  };
+}
+
+/* PPF — 15-year government scheme, annual compounding ---------------- */
+export function ppfCalc(i: Record<string, number>): CalcResult {
+  const annual = i.yearly;
+  const r = i.rate / 100;
+  const years = i.years || 15;
+  let balance = 0;
+  let invested = 0;
+  const breakdown: CalcBreakdownRow[] = [];
+
+  for (let y = 1; y <= years; y++) {
+    balance += annual;
+    balance = balance * (1 + r);
+    invested += annual;
+    breakdown.push({ year: y, invested: round(invested), value: round(balance), interest: round(balance - invested) });
+  }
+
+  return {
+    primary: [
+      { label: "Maturity value", value: round(balance), format: "currency" },
+      { label: "Total deposited", value: round(invested), format: "currency" },
+      { label: "Interest earned", value: round(balance - invested), format: "currency" },
+    ],
+    donut: { invested: round(invested), returns: round(balance - invested) },
+    breakdown,
+  };
+}
+
+/* Retirement — corpus needed + monthly SIP to reach it --------------- */
+export function retirementCalc(i: Record<string, number>): CalcResult {
+  const currentAge = i.currentAge;
+  const retireAge = i.retireAge;
+  const lifeExpectancy = i.lifeExpectancy;
+  const currentMonthlyExp = i.currentMonthlyExp;
+  const inflation = i.inflation / 100;
+  const preReturn = i.preReturn / 100;
+  const postReturn = i.postReturn / 100;
+
+  const yearsToRetire = retireAge - currentAge;
+  const yearsInRetirement = lifeExpectancy - retireAge;
+
+  // Monthly expense at retirement
+  const futureMonthlyExp = currentMonthlyExp * Math.pow(1 + inflation, yearsToRetire);
+  const futureAnnualExp = futureMonthlyExp * 12;
+
+  // Corpus required (annuity present value with real return)
+  const realReturn = (1 + postReturn) / (1 + inflation) - 1;
+  const corpusRequired =
+    realReturn === 0
+      ? futureAnnualExp * yearsInRetirement
+      : futureAnnualExp * ((1 - Math.pow(1 + realReturn, -yearsInRetirement)) / realReturn);
+
+  // Monthly SIP to reach corpus
+  const rM = preReturn / 12;
+  const nM = yearsToRetire * 12;
+  const sipNeeded = (corpusRequired * rM) / ((Math.pow(1 + rM, nM) - 1) * (1 + rM));
+
+  return {
+    primary: [
+      { label: "Corpus needed at retirement", value: round(corpusRequired), format: "currency" },
+      { label: "Monthly SIP needed", value: round(sipNeeded), format: "currency" },
+      { label: "Expense at retirement (monthly)", value: round(futureMonthlyExp), format: "currency" },
+    ],
+    secondary: [
+      { label: "Years to retire", value: yearsToRetire, format: "plain" },
+      { label: "Retirement duration (yrs)", value: yearsInRetirement, format: "plain" },
+    ],
+  };
+}
+
+/* Income Tax — India (old vs new regime FY 2025-26) ------------------ */
+// Simplified: no complex deductions; standard deduction applied
+export function taxCalc(i: Record<string, number>): CalcResult {
+  const gross = i.grossIncome;
+  const deductions80c = Math.min(i.deductions80c, 150000);
+  const nps = Math.min(i.npsExtra, 50000);
+  const hra = i.hraExempt;
+  const other = i.otherDeductions;
+
+  // New regime FY 2025-26 slabs (Budget 2024 update)
+  const newStdDed = 75000;
+  const newRegimeSlabs = [
+    { upto: 300000, rate: 0 },
+    { upto: 700000, rate: 0.05 },
+    { upto: 1000000, rate: 0.1 },
+    { upto: 1200000, rate: 0.15 },
+    { upto: 1500000, rate: 0.2 },
+    { upto: Infinity, rate: 0.3 },
+  ];
+
+  // Old regime slabs (unchanged)
+  const oldStdDed = 50000;
+  const oldRegimeSlabs = [
+    { upto: 250000, rate: 0 },
+    { upto: 500000, rate: 0.05 },
+    { upto: 1000000, rate: 0.2 },
+    { upto: Infinity, rate: 0.3 },
+  ];
+
+  function computeTax(taxable: number, slabs: typeof newRegimeSlabs) {
+    if (taxable <= 0) return 0;
+    let tax = 0;
+    let prev = 0;
+    for (const s of slabs) {
+      if (taxable > s.upto) {
+        tax += (s.upto - prev) * s.rate;
+        prev = s.upto;
+      } else {
+        tax += (taxable - prev) * s.rate;
+        break;
+      }
+    }
+    return tax;
+  }
+
+  // New regime — only standard deduction
+  const newTaxable = Math.max(gross - newStdDed, 0);
+  let newTax = computeTax(newTaxable, newRegimeSlabs);
+  // Section 87A rebate: if taxable ≤ 7L, tax up to ₹25k waived
+  if (newTaxable <= 700000) newTax = 0;
+  const newCess = newTax * 0.04;
+  const newTotal = newTax + newCess;
+
+  // Old regime — std ded + 80C + NPS + HRA + other
+  const oldTaxable = Math.max(gross - oldStdDed - deductions80c - nps - hra - other, 0);
+  let oldTax = computeTax(oldTaxable, oldRegimeSlabs);
+  if (oldTaxable <= 500000) oldTax = 0; // 87A rebate old regime
+  const oldCess = oldTax * 0.04;
+  const oldTotal = oldTax + oldCess;
+
+  const savings = oldTotal - newTotal;
+
+  return {
+    primary: [
+      { label: "Tax — New regime", value: round(newTotal), format: "currency" },
+      { label: "Tax — Old regime", value: round(oldTotal), format: "currency" },
+      {
+        label: savings >= 0 ? "New regime saves" : "Old regime saves",
+        value: round(Math.abs(savings)),
+        format: "currency",
+      },
+    ],
+    secondary: [
+      { label: "Taxable (New)", value: round(newTaxable), format: "currency" },
+      { label: "Taxable (Old)", value: round(oldTaxable), format: "currency" },
+    ],
+  };
+}
+
+/* Brokerage — simplified per-broker delivery + intraday -------------- */
+export interface BrokerSchedule {
+  name: string;
+  deliveryPct: number; // % of turnover
+  deliveryFlat: number; // min flat per order
+  deliveryCap: number; // per-order cap
+  intradayPct: number;
+  intradayFlat: number;
+  intradayCap: number;
+}
+
+export const brokerSchedules: BrokerSchedule[] = [
+  { name: "Zerodha", deliveryPct: 0, deliveryFlat: 0, deliveryCap: 0, intradayPct: 0.0003, intradayFlat: 20, intradayCap: 20 },
+  { name: "Groww", deliveryPct: 0.001, deliveryFlat: 20, deliveryCap: 20, intradayPct: 0.0005, intradayFlat: 20, intradayCap: 20 },
+  { name: "Upstox", deliveryPct: 0.00025, deliveryFlat: 20, deliveryCap: 20, intradayPct: 0.0005, intradayFlat: 20, intradayCap: 20 },
+  { name: "Angel One", deliveryPct: 0, deliveryFlat: 0, deliveryCap: 0, intradayPct: 0.0003, intradayFlat: 20, intradayCap: 20 },
+  { name: "ICICI Direct", deliveryPct: 0.0055, deliveryFlat: 35, deliveryCap: Infinity, intradayPct: 0.00275, intradayFlat: 35, intradayCap: Infinity },
+  { name: "HDFC Securities", deliveryPct: 0.005, deliveryFlat: 25, deliveryCap: Infinity, intradayPct: 0.0005, intradayFlat: 25, intradayCap: Infinity },
+];
+
+export function brokerageCalc(i: Record<string, number>): CalcResult {
+  const buyPrice = i.buyPrice;
+  const sellPrice = i.sellPrice;
+  const qty = i.quantity;
+  const isIntraday = !!i.intraday;
+
+  const buyTurnover = buyPrice * qty;
+  const sellTurnover = sellPrice * qty;
+  const totalTurnover = buyTurnover + sellTurnover;
+
+  const sttRate = isIntraday ? 0.00025 : 0.001; // intraday on sell only; delivery on both
+  const stt = isIntraday ? sellTurnover * sttRate : totalTurnover * sttRate;
+
+  const exchangeTxn = totalTurnover * 0.0000297; // NSE
+  const sebi = totalTurnover * 0.000001;
+  const stampDuty = buyTurnover * (isIntraday ? 0.00003 : 0.00015);
+
+  const perBroker = brokerSchedules.map((b) => {
+    const bPct = isIntraday ? b.intradayPct : b.deliveryPct;
+    const bFlat = isIntraday ? b.intradayFlat : b.deliveryFlat;
+    const bCap = isIntraday ? b.intradayCap : b.deliveryCap;
+    const buyBrokerage = Math.min(Math.max(buyTurnover * bPct, bFlat > 0 ? bFlat : 0), bCap);
+    const sellBrokerage = Math.min(Math.max(sellTurnover * bPct, bFlat > 0 ? bFlat : 0), bCap);
+    const brokerage = (bFlat === 0 && bPct === 0 ? 0 : buyBrokerage + sellBrokerage);
+    const gst = (brokerage + exchangeTxn + sebi) * 0.18;
+    const totalCost = brokerage + stt + exchangeTxn + sebi + stampDuty + gst;
+    const gross = (sellPrice - buyPrice) * qty;
+    const net = gross - totalCost;
+    return { broker: b.name, brokerage: round(brokerage), totalCost: round(totalCost), netPnl: round(net) };
+  });
+
+  const best = perBroker.reduce((a, b) => (b.netPnl > a.netPnl ? b : a));
+
+  return {
+    primary: [
+      { label: `Best: ${best.broker} net P&L`, value: best.netPnl, format: "currency" },
+      { label: `Total charges (${best.broker})`, value: best.totalCost, format: "currency" },
+      { label: "Gross P&L", value: round((sellPrice - buyPrice) * qty), format: "currency" },
+    ],
+    secondary: perBroker.map((p) => ({ label: p.broker, value: p.totalCost, format: "currency" as const })),
+  };
+}

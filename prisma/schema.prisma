@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Admin / Auth
+// ============================================================
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("admin") // admin | superadmin
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  @@map("sessions")
+}
+
+// ============================================================
+// Company Master
+// ============================================================
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  bseCode     String?  @unique @map("bse_code")
+  nseSymbol   String?  @unique @map("nse_symbol")
+  isin        String?  @unique
+  name        String
+  slug        String   @unique
+  sector      String?
+  industry    String?
+  marketCap   Decimal? @map("market_cap") @db.Decimal(20, 2)
+  listedOn    DateTime? @map("listed_on")
+  isSme       Boolean  @default(false) @map("is_sme")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bhavcopy         BhavcopyDaily[]
+  announcements    Announcement[]
+  corporateActions CorporateAction[]
+
+  @@index([sector])
+  @@index([marketCap])
+  @@map("companies")
+}
+
+// ============================================================
+// IPO Module
+// ============================================================
+
+model Ipo {
+  id              Int       @id @default(autoincrement())
+  name            String
+  slug            String    @unique
+  type            String    // mainboard | sme
+  priceBandLow    Decimal?  @map("price_band_low") @db.Decimal(12, 2)
+  priceBandHigh   Decimal?  @map("price_band_high") @db.Decimal(12, 2)
+  lotSize         Int?      @map("lot_size")
+  issueSize       Decimal?  @map("issue_size") @db.Decimal(20, 2) // in crores
+  issueSizeShares BigInt?   @map("issue_size_shares")
+  openDate        DateTime? @map("open_date")
+  closeDate       DateTime? @map("close_date")
+  allotmentDate   DateTime? @map("allotment_date")
+  listingDate     DateTime? @map("listing_date")
+  registrar       String?
+  registrarUrl    String?   @map("registrar_url")
+  leadManagers    String?   @map("lead_managers")
+  bseCode         String?   @map("bse_code")
+  nseSymbol       String?   @map("nse_symbol")
+  status          String    @default("upcoming") // upcoming | live | closed | listed | withdrawn
+  faceValue       Decimal?  @map("face_value") @db.Decimal(8, 2)
+  drhpUrl         String?   @map("drhp_url")
+  rhpUrl          String?   @map("rhp_url")
+  objectsOfIssue  String?   @map("objects_of_issue") @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  subscriptions IpoSubscription[]
+  gmpEntries    IpoGmp[]
+  anchors       IpoAnchor[]
+  listing       IpoListing?
+
+  @@index([status])
+  @@index([type])
+  @@index([openDate])
+  @@map("ipos")
+}
+
+model IpoSubscription {
+  id         Int      @id @default(autoincrement())
+  ipoId      Int      @map("ipo_id")
+  capturedAt DateTime @map("captured_at")
+  retailX    Decimal? @map("retail_x") @db.Decimal(10, 2)
+  hniX       Decimal? @map("hni_x") @db.Decimal(10, 2)
+  nii1X      Decimal? @map("nii_1_x") @db.Decimal(10, 2)   // NII > 10L
+  nii2X      Decimal? @map("nii_2_x") @db.Decimal(10, 2)   // NII 2L-10L
+  qibX       Decimal? @map("qib_x") @db.Decimal(10, 2)
+  employeeX  Decimal? @map("employee_x") @db.Decimal(10, 2)
+  totalX     Decimal? @map("total_x") @db.Decimal(10, 2)
+
+  ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@index([ipoId, capturedAt])
+  @@map("ipo_subscription")
+}
+
+model IpoGmp {
+  id              Int      @id @default(autoincrement())
+  ipoId           Int      @map("ipo_id")
+  date            DateTime @db.Date
+  gmp             Decimal  @db.Decimal(10, 2)
+  kostak          Decimal? @db.Decimal(10, 2)
+  subjectToSauda  Decimal? @map("subject_to_sauda") @db.Decimal(10, 2)
+  source          String?  // dealer name / "aggregated"
+  notes           String?
+  enteredBy       String?  @map("entered_by")
+  createdAt       DateTime @default(now())
+
+  ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@unique([ipoId, date])
+  @@index([date])
+  @@map("ipo_gmp")
+}
+
+model IpoAnchor {
+  id           Int      @id @default(autoincrement())
+  ipoId        Int      @map("ipo_id")
+  investorName String   @map("investor_name")
+  allocation   BigInt?  // number of shares
+  pricePerShare Decimal? @map("price_per_share") @db.Decimal(12, 2)
+  value        Decimal? @db.Decimal(20, 2) // in crores
+  lockIn30d    DateTime? @map("lock_in_30d")
+  lockIn90d    DateTime? @map("lock_in_90d")
+
+  ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@index([ipoId])
+  @@index([investorName])
+  @@map("ipo_anchors")
+}
+
+model IpoListing {
+  id               Int      @id @default(autoincrement())
+  ipoId            Int      @unique @map("ipo_id")
+  listingPrice     Decimal  @map("listing_price") @db.Decimal(12, 2)
+  listingGainsPct  Decimal  @map("listing_gains_pct") @db.Decimal(8, 2)
+  dayClose         Decimal? @map("day_close") @db.Decimal(12, 2)
+  dayHigh          Decimal? @map("day_high") @db.Decimal(12, 2)
+  dayLow           Decimal? @map("day_low") @db.Decimal(12, 2)
+  gmpAtListing     Decimal? @map("gmp_at_listing") @db.Decimal(10, 2)
+  gmpError         Decimal? @map("gmp_error") @db.Decimal(10, 2) // predicted - actual
+
+  ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@map("ipo_listings")
+}
+
+// ============================================================
+// Corporate Actions + Announcements
+// ============================================================
+
+model CorporateAction {
+  id          Int       @id @default(autoincrement())
+  companyId   Int       @map("company_id")
+  actionType  String    @map("action_type") // dividend | split | bonus | rights | buyback | agm | board_meeting
+  exDate      DateTime? @map("ex_date") @db.Date
+  recordDate  DateTime? @map("record_date") @db.Date
+  bcStartDate DateTime? @map("bc_start_date") @db.Date
+  bcEndDate   DateTime? @map("bc_end_date") @db.Date
+  ratio       String?   // "1:2" for splits/bonus
+  value       Decimal?  @db.Decimal(12, 2) // dividend amount etc.
+  purpose     String?   @db.Text
+  source      String    @default("bse") // bse | nse
+  sourceId    String?   @map("source_id") // exchange's own ID for dedupe
+  createdAt   DateTime  @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([source, sourceId])
+  @@index([companyId, exDate])
+  @@index([actionType, exDate])
+  @@map("corporate_actions")
+}
+
+model Announcement {
+  id           Int      @id @default(autoincrement())
+  companyId    Int?     @map("company_id")
+  bseCode      String?  @map("bse_code")
+  nseSymbol    String?  @map("nse_symbol")
+  headline     String   @db.Text
+  category     String?
+  subcategory  String?
+  pdfUrl       String?  @map("pdf_url") @db.Text
+  broadcastAt  DateTime @map("broadcast_at")
+  source       String   @default("bse")
+  sourceId     String?  @map("source_id")
+  createdAt    DateTime @default(now())
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@unique([source, sourceId])
+  @@index([broadcastAt])
+  @@index([companyId, broadcastAt])
+  @@map("announcements")
+}
+
+// ============================================================
+// FII / DII / FPI
+// ============================================================
+
+model FiiDiiDaily {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @db.Date
+  segment   String   // cash | fo_index_fut | fo_index_opt | fo_stock_fut | fo_stock_opt
+  fiiBuy    Decimal? @map("fii_buy") @db.Decimal(20, 2)
+  fiiSell   Decimal? @map("fii_sell") @db.Decimal(20, 2)
+  fiiNet    Decimal? @map("fii_net") @db.Decimal(20, 2)
+  diiBuy    Decimal? @map("dii_buy") @db.Decimal(20, 2)
+  diiSell   Decimal? @map("dii_sell") @db.Decimal(20, 2)
+  diiNet    Decimal? @map("dii_net") @db.Decimal(20, 2)
+  createdAt DateTime @default(now())
+
+  @@unique([date, segment])
+  @@index([date])
+  @@map("fii_dii_daily")
+}
+
+model FpiMonthly {
+  id                   Int      @id @default(autoincrement())
+  month                DateTime @db.Date // first of the month
+  equityAuc            Decimal? @map("equity_auc") @db.Decimal(20, 2) // crores
+  debtAuc              Decimal? @map("debt_auc") @db.Decimal(20, 2)
+  hybridAuc            Decimal? @map("hybrid_auc") @db.Decimal(20, 2)
+  sectorBreakdownJson  Json?    @map("sector_breakdown_json")
+  createdAt            DateTime @default(now())
+
+  @@unique([month])
+  @@map("fpi_monthly")
+}
+
+// ============================================================
+// Bhavcopy (EOD OHLC)
+// ============================================================
+
+model BhavcopyDaily {
+  id          Int      @id @default(autoincrement())
+  companyId   Int      @map("company_id")
+  date        DateTime @db.Date
+  open        Decimal  @db.Decimal(12, 2)
+  high        Decimal  @db.Decimal(12, 2)
+  low         Decimal  @db.Decimal(12, 2)
+  close       Decimal  @db.Decimal(12, 2)
+  volume      BigInt
+  deliveryQty BigInt?  @map("delivery_qty")
+  deliveryPct Decimal? @map("delivery_pct") @db.Decimal(6, 2)
+  source      String   @default("bse") // bse | nse
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, date, source])
+  @@index([date])
+  @@map("bhavcopy_daily")
+}
+
+// ============================================================
+// Ingestion Logs
+// ============================================================
+
+model IngestionRun {
+  id         Int      @id @default(autoincrement())
+  jobName    String   @map("job_name")
+  startedAt  DateTime @default(now()) @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  status     String   @default("running") // running | success | failed
+  rowsIn     Int?     @map("rows_in")
+  rowsError  Int?     @map("rows_error")
+  errorMsg   String?  @map("error_msg") @db.Text
+  notes      String?  @db.Text
+
+  @@index([jobName, startedAt])
+  @@map("ingestion_runs")
+}
+
+// ============================================================
+// Newsletter / User Alerts
+// ============================================================
+
+model NewsletterSub {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  verified    Boolean  @default(false)
+  preferences Json?
+  createdAt   DateTime @default(now())
+
+  @@map("newsletter_subs")
+}
