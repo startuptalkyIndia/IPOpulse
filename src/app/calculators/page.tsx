@@ -15,6 +15,11 @@ import {
   Scale,
   Repeat,
   Building,
+  Coins,
+  Gauge,
+  Target,
+  Car,
+  Wallet,
 } from "lucide-react";
 
 const iconMap = {
@@ -31,6 +36,11 @@ const iconMap = {
   Scale,
   Repeat,
   Building,
+  Coins,
+  Gauge,
+  Target,
+  Car,
+  Wallet,
 };
 
 export const metadata: Metadata = {

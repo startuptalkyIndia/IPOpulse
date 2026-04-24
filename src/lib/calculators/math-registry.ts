@@ -14,6 +14,9 @@ import {
   hraCalc,
   inflationCalc,
   mfReturnsCalc,
+  ltcgStcgCalc,
+  fnoMarginCalc,
+  goalCalc,
 } from "./math";
 import type { CalcResult } from "./types";
 
@@ -23,6 +26,8 @@ export const mathBySlug: Record<string, (i: Record<string, number>) => CalcResul
   lumpsum: lumpsumCalc,
   swp: swpCalc,
   emi: emiCalc,
+  "car-loan-emi": emiCalc,      // same math, different config defaults & copy
+  "personal-loan-emi": emiCalc, // same math, different config defaults & copy
   fd: fdCalc,
   ppf: ppfCalc,
   retirement: retirementCalc,
@@ -33,4 +38,7 @@ export const mathBySlug: Record<string, (i: Record<string, number>) => CalcResul
   hra: hraCalc,
   inflation: inflationCalc,
   "mf-returns": mfReturnsCalc,
+  "ltcg-stcg": ltcgStcgCalc,
+  "fno-margin": fnoMarginCalc,
+  goal: goalCalc,
 };

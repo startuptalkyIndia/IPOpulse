@@ -354,6 +354,117 @@ export const brokerSchedules: BrokerSchedule[] = [
   { name: "HDFC Securities", deliveryPct: 0.005, deliveryFlat: 25, deliveryCap: Infinity, intradayPct: 0.0005, intradayFlat: 25, intradayCap: Infinity },
 ];
 
+/* LTCG / STCG — capital gains tax on equity and debt */
+export function ltcgStcgCalc(i: Record<string, number>): CalcResult {
+  const buy = i.buyValue;
+  const sell = i.sellValue;
+  const isEquity = i.assetType === 0; // 0 equity, 1 debt
+  const holdingMonths = i.holdingMonths;
+  const gain = sell - buy;
+
+  // Equity: STCG if held <12 months (20% from Jul 2024), LTCG if >=12 months (12.5% above 1.25L exempt)
+  // Debt (post-Apr 2023): always at slab (we assume 30% top slab for simplicity)
+  let tax = 0;
+  let nature = "";
+  let exempt = 0;
+  let taxable = 0;
+  if (isEquity) {
+    if (holdingMonths < 12) {
+      nature = "STCG on equity";
+      taxable = Math.max(gain, 0);
+      tax = taxable * 0.20;
+    } else {
+      nature = "LTCG on equity";
+      exempt = Math.min(gain, 125000);
+      taxable = Math.max(gain - 125000, 0);
+      tax = taxable * 0.125;
+    }
+  } else {
+    if (holdingMonths < 24) {
+      nature = "STCG on debt (at slab)";
+      taxable = Math.max(gain, 0);
+      tax = taxable * 0.30;
+    } else {
+      nature = "LTCG on debt (post-Apr 2023: at slab, no indexation)";
+      taxable = Math.max(gain, 0);
+      tax = taxable * 0.30;
+    }
+  }
+  const cess = tax * 0.04;
+  const total = tax + cess;
+  const netGain = gain - total;
+
+  return {
+    primary: [
+      { label: "Tax payable", value: round(total), format: "currency" },
+      { label: "Net gain after tax", value: round(netGain), format: "currency" },
+      { label: "Gross gain", value: round(gain), format: "currency" },
+    ],
+    secondary: [
+      { label: "Nature", value: 0, format: "plain" }, // placeholder; we show in label
+      { label: "Taxable amount", value: round(taxable), format: "currency" },
+      { label: "Exempt (₹1.25L)", value: round(exempt), format: "currency" },
+      { label: "Cess @ 4%", value: round(cess), format: "currency" },
+      { label: nature, value: round(tax), format: "currency" },
+    ],
+  };
+}
+
+/* F&O Margin — simplified SPAN+Exposure estimate */
+export function fnoMarginCalc(i: Record<string, number>): CalcResult {
+  const contractValue = i.lotSize * i.price;
+  // Typical SPAN margin is 10–15% of contract value for index futures, 20% for stock futures
+  const spanPct = i.instrumentType === 0 ? 0.12 : 0.20; // 0=index, 1=stock
+  const exposurePct = i.instrumentType === 0 ? 0.03 : 0.05;
+  const spanMargin = contractValue * spanPct;
+  const exposureMargin = contractValue * exposurePct;
+  const total = spanMargin + exposureMargin;
+  const leverage = contractValue / total;
+
+  return {
+    primary: [
+      { label: "Total margin required", value: round(total), format: "currency" },
+      { label: "Contract value", value: round(contractValue), format: "currency" },
+      { label: "Leverage", value: Number(leverage.toFixed(1)), format: "plain" },
+    ],
+    secondary: [
+      { label: "SPAN margin", value: round(spanMargin), format: "currency" },
+      { label: "Exposure margin", value: round(exposureMargin), format: "currency" },
+    ],
+  };
+}
+
+/* Goal-based SIP — what monthly SIP to hit a target amount */
+export function goalCalc(i: Record<string, number>): CalcResult {
+  const target = i.target;
+  const currentSavings = i.currentSavings;
+  const years = i.years;
+  const rate = i.rate / 100;
+  const inflation = i.inflation / 100;
+
+  // Inflation-adjusted target
+  const inflatedTarget = target * Math.pow(1 + inflation, years);
+  // Future value of current savings
+  const futureCurrent = currentSavings * Math.pow(1 + rate, years);
+  const needed = Math.max(inflatedTarget - futureCurrent, 0);
+  // Monthly SIP needed
+  const r = rate / 12;
+  const n = years * 12;
+  const sipNeeded = needed * r / ((Math.pow(1 + r, n) - 1) * (1 + r));
+
+  return {
+    primary: [
+      { label: "Monthly SIP needed", value: round(sipNeeded), format: "currency" },
+      { label: `Inflation-adjusted target`, value: round(inflatedTarget), format: "currency" },
+      { label: "Your current savings will grow to", value: round(futureCurrent), format: "currency" },
+    ],
+    secondary: [
+      { label: "Target (today's ₹)", value: round(target), format: "currency" },
+      { label: "Gap to cover", value: round(needed), format: "currency" },
+    ],
+  };
+}
+
 /* NPS — National Pension System, monthly contribution with equity/debt split */
 export function npsCalc(i: Record<string, number>): CalcResult {
   const m = i.monthly;
