@@ -36,6 +36,9 @@ export const FLAG_DEFINITIONS: Array<{
   // UX
   { key: "ux.dark_mode", label: "Dark mode toggle in nav", description: "Show the moon/sun icon in the top nav.", category: "ux", defaultEnabled: true },
   { key: "ux.search_palette", label: "⌘K global search", description: "Cmd/Ctrl-K opens a global search palette across IPOs, stocks, calculators.", category: "ux", defaultEnabled: true },
+
+  // Advisor / Referral program (BankTalky-style)
+  { key: "advisor.enabled", label: "Advisor / Referral Program", description: "Show /become-an-advisor public landing, /advisor/* dashboard, and /sup-min/advisors admin queue. When OFF, all advisor routes 404.", category: "revenue", defaultEnabled: false },
 ];
 
 let cache: { fetchedAt: number; flags: Map<string, boolean> } | null = null;
@@ -63,7 +66,7 @@ export async function isFeatureEnabled(key: string): Promise<boolean> {
   const flags = await loadFlags();
   if (flags.has(key)) return flags.get(key) === true;
   const def = FLAG_DEFINITIONS.find((d) => d.key === key);
-  return def?.defaultEnabled ?? true;
+  return def?.defaultEnabled ?? false;
 }
 
 /**
