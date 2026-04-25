@@ -4,12 +4,15 @@ const columns = [
   {
     title: "IPO",
     links: [
-      { href: "/ipo/upcoming", label: "Upcoming" },
-      { href: "/ipo/live", label: "Live" },
-      { href: "/ipo/closed", label: "Closed" },
-      { href: "/ipo/listed", label: "Listed" },
+      { href: "/ipo/live", label: "Live IPOs" },
+      { href: "/ipo/upcoming", label: "Upcoming IPOs" },
+      { href: "/ipo/closed", label: "Closed IPOs" },
+      { href: "/ipo/listed", label: "Listed IPOs" },
       { href: "/ipo/sme", label: "SME IPOs" },
       { href: "/ipo/calendar", label: "IPO Calendar" },
+      { href: "/ipo/allotment", label: "Allotment Status" },
+      { href: "/ipo/gmp-accuracy", label: "GMP Accuracy" },
+      { href: "/ipo/drhp", label: "DRHP AI Search" },
     ],
   },
   {
@@ -20,6 +23,10 @@ const columns = [
       { href: "/fii-dii", label: "FII/DII Activity" },
       { href: "/super-investor", label: "Super Investor" },
       { href: "/corporate-actions", label: "Corporate Actions" },
+      { href: "/earnings-calendar", label: "Earnings Calendar" },
+      { href: "/dividend-yield", label: "Dividend Yield" },
+      { href: "/unlisted-shares", label: "Unlisted Shares" },
+      { href: "/mutual-funds", label: "Mutual Funds" },
     ],
   },
   {
@@ -27,8 +34,10 @@ const columns = [
     links: [
       { href: "/calculators/sip", label: "SIP Calculator" },
       { href: "/calculators/emi", label: "EMI Calculator" },
-      { href: "/calculators/tax", label: "Income Tax Calculator" },
-      { href: "/calculators/lumpsum", label: "Lumpsum Calculator" },
+      { href: "/calculators/tax", label: "Income Tax" },
+      { href: "/calculators/ltcg-stcg", label: "LTCG / STCG" },
+      { href: "/calculators/retirement", label: "Retirement" },
+      { href: "/calculators/brokerage", label: "Brokerage" },
       { href: "/compare/brokers", label: "Compare Brokers" },
       { href: "/compare/credit-cards", label: "Compare Cards" },
       { href: "/calculators", label: "All Calculators" },
@@ -37,10 +46,14 @@ const columns = [
   {
     title: "About",
     links: [
-      { href: "/about", label: "About" },
+      { href: "/about", label: "About IPOpulse" },
       { href: "/contact", label: "Contact" },
-      { href: "/privacy", label: "Privacy" },
-      { href: "/terms", label: "Terms" },
+      { href: "/signup", label: "Create account" },
+      { href: "/signin", label: "Sign in" },
+      { href: "/my/watchlist", label: "My Watchlist" },
+      { href: "/my/applications", label: "My Applications" },
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
     ],
   },
 ];
@@ -73,7 +86,7 @@ export function Footer() {
         <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-2 text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} IPOpulse. All rights reserved.</p>
           <p>
-            Data sourced from BSE, NSE, SEBI, NSDL. Not investment advice.
+            Data sourced from BSE, NSE, SEBI, NSDL, AMFI. Not investment advice.
           </p>
         </div>
       </div>

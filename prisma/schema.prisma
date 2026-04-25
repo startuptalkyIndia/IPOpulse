@@ -353,6 +353,29 @@ model IngestionRun {
 // Newsletter / User Alerts
 // ============================================================
 
+// ============================================================
+// AMFI Mutual Funds
+// ============================================================
+
+model MutualFund {
+  id              Int      @id @default(autoincrement())
+  schemeCode      String   @unique @map("scheme_code")
+  isinGrowth      String?  @map("isin_growth")
+  isinDivReinvest String?  @map("isin_div_reinvest")
+  schemeName      String   @map("scheme_name")
+  amc             String?
+  category        String?
+  nav             Decimal  @db.Decimal(14, 4)
+  navAsOf         DateTime @map("nav_as_of") @db.Date
+  slug            String   @unique
+  active          Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([amc])
+  @@map("mutual_funds")
+}
+
 model NewsletterSub {
   id          Int      @id @default(autoincrement())
   email       String   @unique

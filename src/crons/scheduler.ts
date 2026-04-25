@@ -1,6 +1,8 @@
 import cron from "node-cron";
 import { runIngestion } from "./runIngestion";
 import { ingestNseFiiDii } from "./jobs/nse-fii-dii";
+import { ingestBseIposFromHtml } from "./jobs/bse-ipo-html";
+import { ingestAmfiNavs } from "./jobs/amfi-navs";
 
 let started = false;
 
@@ -12,7 +14,7 @@ export function startScheduler() {
   if (started) return;
   started = true;
 
-  // Only run in production to avoid spamming NSE during local dev.
+  // Only run in production to avoid spamming sources during local dev.
   if (process.env.NODE_ENV !== "production") {
     console.log("[scheduler] Skipped — not production.");
     return;
@@ -24,9 +26,23 @@ export function startScheduler() {
     console.log(`[cron nse_fii_dii] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered jobs: nse_fii_dii (daily 19:15 IST Mon-Fri)");
+  // BSE IPOs — every 4 hours
+  cron.schedule("0 */4 * * *", async () => {
+    const result = await runIngestion("bse_ipos", ingestBseIposFromHtml);
+    console.log(`[cron bse_ipos] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // AMFI Mutual Fund NAVs — daily at 11:00 PM IST (after AMFI publishes ~10 PM)
+  cron.schedule("0 23 * * *", async () => {
+    const result = await runIngestion("amfi_navs", ingestAmfiNavs);
+    console.log(`[cron amfi_navs] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
   nse_fii_dii: ingestNseFiiDii,
+  bse_ipos: ingestBseIposFromHtml,
+  amfi_navs: ingestAmfiNavs,
 };

@@ -14,6 +14,16 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Mon–Fri at 19:15 IST",
     desc: "Scrapes NSE's provisional FII/DII cash figures from /api/fiidiiTradeReact and upserts into fii_dii_daily.",
   },
+  bse_ipos: {
+    label: "BSE IPO pipeline (every 4h)",
+    schedule: "Every 4 hours",
+    desc: "HTML scraper of bseindia.com/markets/publicissues (mainboard + SME) that parses IPO dates, price band, issue size and upserts into the ipos table.",
+  },
+  amfi_navs: {
+    label: "AMFI Mutual Fund NAVs (daily)",
+    schedule: "Daily at 23:00 IST",
+    desc: "Full refresh of every Indian mutual fund scheme's NAV from AMFI's public NAVAll.txt feed. Populates /mutual-funds.",
+  },
 };
 
 export default async function AdminIngestionPage() {

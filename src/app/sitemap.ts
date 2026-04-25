@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { calculators } from "@/lib/calculators/configs";
 import { superInvestors } from "@/lib/super-investors";
 import { sectors } from "@/lib/sectors";
+import { unlistedShares } from "@/lib/unlisted-shares";
 import { prisma } from "@/lib/db";
 
 const BASE = "https://ipopulse.talkytools.com";
@@ -28,7 +29,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/compare/brokers`, lastModified: now, priority: 0.8, changeFrequency: "monthly" },
     { url: `${BASE}/compare/credit-cards`, lastModified: now, priority: 0.8, changeFrequency: "monthly" },
     { url: `${BASE}/ipo/allotment`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
+    { url: `${BASE}/ipo/gmp-accuracy`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/ipo/drhp`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
+    { url: `${BASE}/earnings-calendar`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
+    { url: `${BASE}/dividend-yield`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
+    { url: `${BASE}/unlisted-shares`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
+    { url: `${BASE}/mutual-funds`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
+    { url: `${BASE}/about`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
+    { url: `${BASE}/contact`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
+    { url: `${BASE}/privacy`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
+    { url: `${BASE}/terms`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
+    { url: `${BASE}/signin`, lastModified: now, priority: 0.4, changeFrequency: "yearly" },
+    { url: `${BASE}/signup`, lastModified: now, priority: 0.5, changeFrequency: "yearly" },
   ];
+
+  const unlistedPages: MetadataRoute.Sitemap = unlistedShares.map((u) => ({
+    url: `${BASE}/unlisted-shares/${u.slug}`,
+    lastModified: now,
+    priority: 0.5,
+    changeFrequency: "weekly",
+  }));
 
   const sectorPages: MetadataRoute.Sitemap = sectors.map((s) => ({
     url: `${BASE}/sectors/${s.slug}`,
@@ -72,5 +92,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // fine at build time when DB may be unreachable
   }
 
-  return [...staticPages, ...calcPages, ...investorPages, ...sectorPages, ...ipoPages, ...tickerPages];
+  return [...staticPages, ...calcPages, ...investorPages, ...sectorPages, ...ipoPages, ...tickerPages, ...unlistedPages];
 }
