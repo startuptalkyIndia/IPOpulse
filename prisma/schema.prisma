@@ -462,3 +462,16 @@ model NewsletterSub {
 
   @@map("newsletter_subs")
 }
+
+model FeatureFlag {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  enabled     Boolean  @default(true)
+  label       String
+  description String?  @db.Text
+  category    String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  @map("updated_by")
+
+  @@map("feature_flags")
+}
