@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Building2, Layers } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
+import { auth } from "@/lib/auth";
+import { WatchlistButton } from "@/components/WatchlistButton";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -35,6 +37,14 @@ export default async function CompanyPage({ params }: Props) {
       })
     : [];
 
+  const session = await auth();
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  let inWatchlist = false;
+  if (userId) {
+    const w = await prisma.watchlistItem.findFirst({ where: { userId, type: "stock", targetSlug: company.slug } });
+    inWatchlist = !!w;
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       <Link href="/ticker" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
@@ -42,7 +52,7 @@ export default async function CompanyPage({ params }: Props) {
       </Link>
 
       <div className="card">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{company.name}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
@@ -60,6 +70,7 @@ export default async function CompanyPage({ params }: Props) {
               ) : null}
             </div>
           </div>
+          <WatchlistButton type="stock" targetSlug={company.slug} initial={inWatchlist} authed={!!userId} />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">

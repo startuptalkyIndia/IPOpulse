@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TrendingUp, User as UserIcon } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
+import { SearchPalette } from "./SearchPalette";
 
 const links = [
   { href: "/ipo", label: "IPO" },
@@ -42,6 +43,7 @@ export async function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <SearchPalette />
           <ThemeToggle />
           {authed ? (
             <Link
