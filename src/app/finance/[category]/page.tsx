@@ -8,6 +8,9 @@ import {
   productsForCategory,
   type FinanceCategory,
 } from "@/lib/finance-products";
+import { FaqJsonLd } from "@/components/seo/FaqJsonLd";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { RelatedPages } from "@/components/seo/RelatedPages";
 
 interface Props {
   params: Promise<{ category: string }>;
@@ -38,11 +41,16 @@ export default async function FinanceCategoryPage({ params }: Props) {
   const products = productsForCategory(c.slug as FinanceCategory);
   const Icon = (iconMap as Record<string, typeof Wallet>)[c.iconName] ?? Wallet;
 
+  // Related categories
+  const related = financeCategories
+    .filter((other) => other.slug !== c.slug)
+    .map((o) => ({ href: `/finance/${o.slug}`, title: o.title, desc: o.description }))
+    .slice(0, 6);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <Link href="/finance" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
-        <ArrowLeft className="w-4 h-4" /> All finance products
-      </Link>
+      <FaqJsonLd items={c.faq} />
+      <Breadcrumbs trail={[{ label: "Home", href: "/" }, { label: "Finance", href: "/finance" }, { label: c.title }]} />
 
       <div>
         <div className="flex items-center gap-2 mb-1">
@@ -158,24 +166,7 @@ export default async function FinanceCategoryPage({ params }: Props) {
         </div>
       </section>
 
-      {/* Related */}
-      <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Related comparisons</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {financeCategories
-            .filter((other) => other.slug !== c.slug)
-            .slice(0, 4)
-            .map((other) => (
-              <Link
-                key={other.slug}
-                href={`/finance/${other.slug}`}
-                className="card text-center hover:border-indigo-300 transition text-sm font-medium text-gray-900"
-              >
-                {other.shortTitle}
-              </Link>
-            ))}
-        </div>
-      </section>
+      <RelatedPages title="Related comparisons & calculators" items={related} />
     </div>
   );
 }
