@@ -24,6 +24,9 @@ import { IpoReviewsCard } from "@/components/ipo/IpoReviewsCard";
 import { ListingCountdown } from "@/components/ipo/ListingCountdown";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { IpoPollWrapper } from "@/components/community/IpoPollWrapper";
+import { ApplyIpoCtaRow } from "@/components/AffiliateCta";
+import { MobileStickyCta } from "@/components/MobileStickyCta";
+import { affiliateUrl } from "@/lib/affiliates";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { scoreSmeIpo } from "@/lib/sme-risk";
@@ -187,6 +190,9 @@ export default async function IpoDetailPage({ params }: Props) {
       {(status === "closed" || status === "live") && ipo.listingDate && ipo.listingDate.getTime() > Date.now() ? (
         <ListingCountdown listingDate={ipo.listingDate.toISOString()} />
       ) : null}
+
+      {/* Apply via broker CTA — only for live/upcoming */}
+      {status === "live" || status === "upcoming" ? <ApplyIpoCtaRow ipoName={ipo.name} /> : null}
 
       {/* SME Risk + Listing Predictor row */}
       {(smeRisk || prediction) ? (
@@ -370,6 +376,14 @@ export default async function IpoDetailPage({ params }: Props) {
       {/* Community */}
       <IpoPollWrapper ipoId={ipo.id} />
       <DiscussionThread targetType="ipo" targetSlug={ipo.slug} />
+
+      {status === "live" ? (
+        <MobileStickyCta
+          partner="angel-one"
+          label={`Apply ${ipo.name} via Angel One →`}
+          url={affiliateUrl("angel-one") ?? "/ipo/allotment"}
+        />
+      ) : null}
     </div>
   );
 }

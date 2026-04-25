@@ -35,6 +35,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `(()=>{try{const t=localStorage.getItem('ipopulse-theme');const d=window.matchMedia('(prefers-color-scheme: dark)').matches;const x=t==='dark'?'dark':t==='light'?'light':d?'dark':'light';document.documentElement.dataset.theme=x}catch(e){}})();`,
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://ipopulse.talkytools.com/#organization",
+                  name: "IPOpulse",
+                  url: "https://ipopulse.talkytools.com",
+                  logo: "https://ipopulse.talkytools.com/icon",
+                  description: "India's structured IPO, stock and market data hub.",
+                  areaServed: { "@type": "Country", name: "India" },
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://ipopulse.talkytools.com/#website",
+                  url: "https://ipopulse.talkytools.com",
+                  name: "IPOpulse",
+                  publisher: { "@id": "https://ipopulse.talkytools.com/#organization" },
+                  inLanguage: "en-IN",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: { "@type": "EntryPoint", urlTemplate: "https://ipopulse.talkytools.com/api/search?q={search_term_string}" },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col">
         <Suspense fallback={null}>

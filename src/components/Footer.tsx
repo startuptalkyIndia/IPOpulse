@@ -11,6 +11,8 @@ const columns = [
       { href: "/ipo/sme", label: "SME IPOs" },
       { href: "/ipo/calendar", label: "IPO Calendar" },
       { href: "/ipo/allotment", label: "Allotment Status" },
+      { href: "/ipo/this-week", label: "IPO This Week" },
+      { href: "/ipo/year/2026", label: "IPOs of 2026" },
       { href: "/ipo/gmp-accuracy", label: "GMP Accuracy" },
       { href: "/ipo/drhp", label: "DRHP AI Search" },
     ],
