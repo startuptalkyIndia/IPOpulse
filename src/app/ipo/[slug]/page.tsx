@@ -18,8 +18,12 @@ import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
+import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
+import { ListingPredictorCard } from "@/components/ipo/ListingPredictorCard";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
+import { scoreSmeIpo } from "@/lib/sme-risk";
+import { predictListingGain } from "@/lib/listing-predictor";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -81,6 +85,40 @@ export default async function IpoDetailPage({ params }: Props) {
       ? (Number(latestGmp.gmp) / Number(ipo.priceBandHigh)) * 100
       : null;
 
+  // SME risk scoring (only for SME IPOs)
+  const smeRisk = ipo.type === "sme"
+    ? scoreSmeIpo({
+        type: ipo.type,
+        issueSizeCr: ipo.issueSize ? Number(ipo.issueSize) : null,
+        priceBandHigh: ipo.priceBandHigh ? Number(ipo.priceBandHigh) : null,
+        lotSize: ipo.lotSize ?? null,
+        latestSub: latestSub
+          ? {
+              retailX: latestSub.retailX ? Number(latestSub.retailX) : null,
+              hniX: latestSub.hniX ? Number(latestSub.hniX) : null,
+              qibX: latestSub.qibX ? Number(latestSub.qibX) : null,
+              totalX: latestSub.totalX ? Number(latestSub.totalX) : null,
+            }
+          : null,
+        anchorNames: ipo.anchors.map((a) => a.investorName),
+        anchorTotalCr: ipo.anchors.reduce((s, a) => s + (a.value ? Number(a.value) : 0), 0),
+      })
+    : null;
+
+  // Listing predictor (for live/closed pre-listing IPOs)
+  const showPredictor = status === "live" || status === "closed";
+  const prediction = showPredictor
+    ? predictListingGain({
+        type: ipo.type,
+        issueSizeCr: ipo.issueSize ? Number(ipo.issueSize) : null,
+        priceBandHigh: ipo.priceBandHigh ? Number(ipo.priceBandHigh) : null,
+        totalSubX: latestSub?.totalX ? Number(latestSub.totalX) : null,
+        qibX: latestSub?.qibX ? Number(latestSub.qibX) : null,
+        retailX: latestSub?.retailX ? Number(latestSub.retailX) : null,
+        latestGmp: latestGmp ? Number(latestGmp.gmp) : null,
+      })
+    : null;
+
   return (
     <div className="space-y-6">
       <Link href="/ipo" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
@@ -139,6 +177,14 @@ export default async function IpoDetailPage({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* SME Risk + Listing Predictor row */}
+      {(smeRisk || prediction) ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {smeRisk ? <SmeRiskCard risk={smeRisk} /> : <div />}
+          {prediction ? <ListingPredictorCard prediction={prediction} /> : null}
+        </div>
+      ) : null}
 
       {/* GMP + Subscription row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
