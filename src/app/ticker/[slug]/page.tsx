@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { WatchlistButton } from "@/components/WatchlistButton";
+import { DiscussionThread } from "@/components/community/DiscussionThread";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -127,6 +128,8 @@ export default async function CompanyPage({ params }: Props) {
           </div>
         </section>
       ) : null}
+
+      <DiscussionThread targetType="stock" targetSlug={company.slug} />
     </div>
   );
 }

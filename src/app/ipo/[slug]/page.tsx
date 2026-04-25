@@ -22,6 +22,8 @@ import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
 import { ListingPredictorCard } from "@/components/ipo/ListingPredictorCard";
 import { IpoReviewsCard } from "@/components/ipo/IpoReviewsCard";
 import { ListingCountdown } from "@/components/ipo/ListingCountdown";
+import { DiscussionThread } from "@/components/community/DiscussionThread";
+import { IpoPollWrapper } from "@/components/community/IpoPollWrapper";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { scoreSmeIpo } from "@/lib/sme-risk";
@@ -364,6 +366,10 @@ export default async function IpoDetailPage({ params }: Props) {
           </dl>
         </div>
       </div>
+
+      {/* Community */}
+      <IpoPollWrapper ipoId={ipo.id} />
+      <DiscussionThread targetType="ipo" targetSlug={ipo.slug} />
     </div>
   );
 }

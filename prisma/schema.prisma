@@ -28,13 +28,70 @@ model User {
   email        String            @unique
   passwordHash String
   name         String?
+  banned       Boolean           @default(false)
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
   watchlist    WatchlistItem[]
   applications IpoApplication[]
+  comments     Comment[]
+  commentVotes CommentVote[]
+  ipoPolls     IpoPoll[]
 
   @@map("users")
+}
+
+model Comment {
+  id          Int       @id @default(autoincrement())
+  userId      String    @map("user_id")
+  targetType  String    @map("target_type") // ipo | stock
+  targetSlug  String    @map("target_slug")
+  body        String    @db.Text
+  parentId    Int?      @map("parent_id")
+  score       Int       @default(0)
+  hidden      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("CommentReplies")
+  votes   CommentVote[]
+
+  @@index([targetType, targetSlug, createdAt])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model CommentVote {
+  id        Int     @id @default(autoincrement())
+  userId    String  @map("user_id")
+  commentId Int     @map("comment_id")
+  value     Int     // -1 or +1
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_votes")
+}
+
+model IpoPoll {
+  id        Int      @id @default(autoincrement())
+  ipoId     Int      @map("ipo_id")
+  userId    String   @map("user_id")
+  vote      String   // subscribe | avoid | watching
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipo  Ipo  @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ipoId])
+  @@index([ipoId])
+  @@map("ipo_polls")
 }
 
 model WatchlistItem {
@@ -147,6 +204,7 @@ model Ipo {
   listing       IpoListing?
   applications  IpoApplication[]
   reviews       IpoReview[]
+  polls         IpoPoll[]
 
   @@index([status])
   @@index([type])
