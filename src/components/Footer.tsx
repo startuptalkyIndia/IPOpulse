@@ -23,6 +23,7 @@ const columns = [
       { href: "/fii-dii", label: "FII/DII Activity" },
       { href: "/super-investor", label: "Super Investor" },
       { href: "/corporate-actions", label: "Corporate Actions" },
+      { href: "/movers", label: "Top Gainers / Losers" },
       { href: "/earnings-calendar", label: "Earnings Calendar" },
       { href: "/dividend-yield", label: "Dividend Yield" },
       { href: "/unlisted-shares", label: "Unlisted Shares" },

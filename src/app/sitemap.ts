@@ -35,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/dividend-yield`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/unlisted-shares`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/mutual-funds`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
+    { url: `${BASE}/movers`, lastModified: now, priority: 0.8, changeFrequency: "hourly" },
     { url: `${BASE}/about`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
     { url: `${BASE}/contact`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
     { url: `${BASE}/privacy`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
