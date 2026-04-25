@@ -24,6 +24,16 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Daily at 23:00 IST",
     desc: "Full refresh of every Indian mutual fund scheme's NAV from AMFI's public NAVAll.txt feed. Populates /mutual-funds.",
   },
+  nse_bhavcopy: {
+    label: "NSE EOD Bhavcopy (daily)",
+    schedule: "Mon–Fri at 19:00 IST",
+    desc: "Pulls full NSE end-of-day bhavcopy CSV (sec_bhavdata_full_DDMMYYYY.csv) from nsearchives.nseindia.com. Real OHLCV + delivery % for every NSE-listed company in our master. Replaces seed prices with live exchange data.",
+  },
+  bse_announcements: {
+    label: "BSE Corporate Announcements (every 2h)",
+    schedule: "Every 2h between 09:00–21:00 IST",
+    desc: "Scrapes api.bseindia.com/BseIndiaAPI/api/AnnSubCategoryGetData. Captures every announcement, auto-detects corporate actions (dividend/split/bonus/rights/buyback/AGM/board meeting) and inserts into corporate_actions.",
+  },
 };
 
 export default async function AdminIngestionPage() {

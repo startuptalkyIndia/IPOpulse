@@ -5,6 +5,8 @@ import Link from "next/link";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
+import { DataDisclaimer } from "@/components/DataDisclaimer";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Top Gainers & Losers — today's biggest stock movers (BSE/NSE)",
@@ -158,6 +160,22 @@ export default async function MoversPage() {
           companies.
         </p>
       </div>
+
+      <Breadcrumbs trail={[{ label: "Home", href: "/" }, { label: "Movers" }]} />
+
+      {/* Data source flag */}
+      {(() => {
+        const sources = new Set(all.map((r) => (r as unknown as { source?: string }).source ?? "seed"));
+        const hasSeed = sources.size === 0 || all.length === 0;
+        return hasSeed ? (
+          <DataDisclaimer
+            variant="seed"
+            message="Sample movers shown until the NSE EOD bhavcopy crawler runs (Mon-Fri at 19:00 IST). Once it ingests, this page shows real-end-of-day data from nsearchives.nseindia.com."
+          />
+        ) : (
+          <DataDisclaimer variant="live" source="NSE EOD bhavcopy" message="Live data from NSE end-of-day bhavcopy. Refreshed daily after market close." />
+        );
+      })()}
 
       <div className="grid grid-cols-3 gap-3">
         <div className="card flex items-center gap-3">

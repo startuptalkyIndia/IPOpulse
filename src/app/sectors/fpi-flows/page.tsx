@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, PieChart } from "lucide-react";
+import { DataDisclaimer } from "@/components/DataDisclaimer";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Sector-wise FPI Flows India — monthly NSDL data with charts",
@@ -29,9 +31,7 @@ const SECTORS = [
 export default function FpiFlowsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-      <Link href="/sectors" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
-        <ArrowLeft className="w-4 h-4" /> All sectors
-      </Link>
+      <Breadcrumbs trail={[{ label: "Home", href: "/" }, { label: "Sectors", href: "/sectors" }, { label: "FPI Flows" }]} />
 
       <div>
         <div className="flex items-center gap-2 mb-1">
@@ -44,6 +44,11 @@ export default function FpiFlowsPage() {
           read on which sectors foreign money is moving into — and out of.
         </p>
       </div>
+
+      <DataDisclaimer
+        variant="illustrative"
+        message="Sample sector-wise FPI flows shown below. Live ingestion from NSDL fortnightly reports is wiring up — until then, treat numbers as representative shape, not real fortnight values. Real data lands once the NSDL crawler ships."
+      />
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full">

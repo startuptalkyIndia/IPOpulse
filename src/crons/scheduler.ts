@@ -3,6 +3,8 @@ import { runIngestion } from "./runIngestion";
 import { ingestNseFiiDii } from "./jobs/nse-fii-dii";
 import { ingestBseIposFromHtml } from "./jobs/bse-ipo-html";
 import { ingestAmfiNavs } from "./jobs/amfi-navs";
+import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
+import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 
 let started = false;
 
@@ -38,11 +40,25 @@ export function startScheduler() {
     console.log(`[cron amfi_navs] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST)");
+  // NSE EOD Bhavcopy — daily at 7:00 PM IST after market close
+  cron.schedule("0 19 * * 1-5", async () => {
+    const result = await runIngestion("nse_bhavcopy", ingestNseBhavcopy);
+    console.log(`[cron nse_bhavcopy] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // BSE corporate announcements — every 2 hours during business hours (9-21 IST)
+  cron.schedule("0 9-21/2 * * *", async () => {
+    const result = await runIngestion("bse_announcements", ingestBseAnnouncements);
+    console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
   nse_fii_dii: ingestNseFiiDii,
   bse_ipos: ingestBseIposFromHtml,
   amfi_navs: ingestAmfiNavs,
+  nse_bhavcopy: ingestNseBhavcopy,
+  bse_announcements: ingestBseAnnouncements,
 };
