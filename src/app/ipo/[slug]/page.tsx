@@ -20,6 +20,8 @@ import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
 import { ListingPredictorCard } from "@/components/ipo/ListingPredictorCard";
+import { IpoReviewsCard } from "@/components/ipo/IpoReviewsCard";
+import { ListingCountdown } from "@/components/ipo/ListingCountdown";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { scoreSmeIpo } from "@/lib/sme-risk";
@@ -51,6 +53,7 @@ export default async function IpoDetailPage({ params }: Props) {
       gmpEntries: { orderBy: { date: "asc" } },
       anchors: { orderBy: { value: "desc" } },
       listing: true,
+      reviews: { orderBy: { publishedAt: "desc" } },
     },
   });
 
@@ -178,6 +181,11 @@ export default async function IpoDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Listing countdown — only when closed/live and listing date in the future */}
+      {(status === "closed" || status === "live") && ipo.listingDate && ipo.listingDate.getTime() > Date.now() ? (
+        <ListingCountdown listingDate={ipo.listingDate.toISOString()} />
+      ) : null}
+
       {/* SME Risk + Listing Predictor row */}
       {(smeRisk || prediction) ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -185,6 +193,9 @@ export default async function IpoDetailPage({ params }: Props) {
           {prediction ? <ListingPredictorCard prediction={prediction} /> : null}
         </div>
       ) : null}
+
+      {/* Broker reviews */}
+      {ipo.reviews.length > 0 ? <IpoReviewsCard reviews={ipo.reviews} /> : null}
 
       {/* GMP + Subscription row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

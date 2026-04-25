@@ -146,11 +146,30 @@ model Ipo {
   anchors       IpoAnchor[]
   listing       IpoListing?
   applications  IpoApplication[]
+  reviews       IpoReview[]
 
   @@index([status])
   @@index([type])
   @@index([openDate])
   @@map("ipos")
+}
+
+model IpoReview {
+  id             Int      @id @default(autoincrement())
+  ipoId          Int      @map("ipo_id")
+  brokerHouse    String   @map("broker_house")
+  recommendation String   // subscribe | avoid | neutral | subscribe_long | subscribe_listing
+  rationale      String?  @db.Text
+  targetPrice    Decimal? @map("target_price") @db.Decimal(12, 2)
+  publishedAt    DateTime @map("published_at")
+  source         String   @default("manual")
+  sourceUrl      String?  @map("source_url") @db.Text
+  createdAt      DateTime @default(now())
+
+  ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+
+  @@index([ipoId])
+  @@map("ipo_reviews")
 }
 
 model IpoSubscription {

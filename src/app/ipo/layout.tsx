@@ -12,6 +12,8 @@ const tabs = [
   { href: "/ipo/allotment", label: "Allotment" },
   { href: "/ipo/sme-risk", label: "SME Risk" },
   { href: "/ipo/anchor-lock-in", label: "Anchor Lock-in" },
+  { href: "/ipo/allotment-probability", label: "Allotment Odds" },
+  { href: "/ipo/compare", label: "Compare 2 IPOs" },
 ];
 
 export default function IpoLayout({ children }: { children: ReactNode }) {
