@@ -37,6 +37,7 @@ model User {
   comments     Comment[]
   commentVotes CommentVote[]
   ipoPolls     IpoPoll[]
+  advisor      Advisor?
 
   @@map("users")
 }
@@ -461,6 +462,87 @@ model NewsletterSub {
   createdAt   DateTime @default(now())
 
   @@map("newsletter_subs")
+}
+
+// ============================================================
+// Advisor / Referral program (gated by advisor.enabled flag)
+// ============================================================
+
+model Advisor {
+  id                Int      @id @default(autoincrement())
+  userId            String   @unique @map("user_id")
+  refCode           String   @unique @map("ref_code")
+  status            String   @default("pending")
+  fullName          String?  @map("full_name")
+  phone             String?
+  city              String?
+  experience        String?  @db.Text
+  commissionPercent Decimal  @default(50) @map("commission_percent") @db.Decimal(5, 2)
+  upiId             String?  @map("upi_id")
+  bankAccount       String?  @map("bank_account")
+  ifsc              String?
+  totalEarnedInr    Decimal  @default(0) @map("total_earned_inr") @db.Decimal(14, 2)
+  totalPaidInr      Decimal  @default(0) @map("total_paid_inr") @db.Decimal(14, 2)
+  approvedAt        DateTime? @map("approved_at")
+  notes             String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clicks      AdvisorClick[]
+  commissions AdvisorCommission[]
+  payouts     AdvisorPayout[]
+
+  @@index([status])
+  @@map("advisors")
+}
+
+model AdvisorClick {
+  id              Int      @id @default(autoincrement())
+  advisorId       Int      @map("advisor_id")
+  productSlug     String   @map("product_slug")
+  productCategory String?  @map("product_category")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent") @db.Text
+  createdAt       DateTime @default(now())
+
+  advisor Advisor @relation(fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([advisorId, createdAt])
+  @@index([productSlug])
+  @@map("advisor_clicks")
+}
+
+model AdvisorCommission {
+  id                   Int      @id @default(autoincrement())
+  advisorId            Int      @map("advisor_id")
+  productSlug          String   @map("product_slug")
+  productCategory      String?  @map("product_category")
+  partnerCommissionInr Decimal  @map("partner_commission_inr") @db.Decimal(12, 2)
+  advisorShareInr      Decimal  @map("advisor_share_inr") @db.Decimal(12, 2)
+  status               String   @default("pending")
+  notes                String?  @db.Text
+  createdAt            DateTime @default(now())
+
+  advisor Advisor @relation(fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([advisorId, status])
+  @@map("advisor_commissions")
+}
+
+model AdvisorPayout {
+  id        Int      @id @default(autoincrement())
+  advisorId Int      @map("advisor_id")
+  amountInr Decimal  @map("amount_inr") @db.Decimal(12, 2)
+  mode      String?
+  txnRef    String?  @map("txn_ref")
+  paidAt    DateTime @default(now()) @map("paid_at")
+  notes     String?
+
+  advisor Advisor @relation(fields: [advisorId], references: [id], onDelete: Cascade)
+
+  @@index([advisorId, paidAt])
+  @@map("advisor_payouts")
 }
 
 model FeatureFlag {
