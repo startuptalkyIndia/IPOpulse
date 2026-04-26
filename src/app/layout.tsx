@@ -3,6 +3,7 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { MarketTicker } from "@/components/MarketTicker";
+import { CookieConsent } from "@/components/CookieConsent";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
@@ -21,6 +22,14 @@ export const metadata: Metadata = {
     siteName: "IPOpulse",
     locale: "en_IN",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "IPOpulse — India's IPO, Stock & Market Data Hub",
+    description:
+      "Live IPO GMP, subscription, allotment, stock research, FII/DII flows, 20+ calculators.",
+    site: "@ipopulse",
+    creator: "@ipopulse",
   },
   robots: { index: true, follow: true },
   verification: {
@@ -93,6 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
+        <CookieConsent />
       </body>
     </html>
   );

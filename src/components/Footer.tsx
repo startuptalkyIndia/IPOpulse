@@ -57,8 +57,16 @@ const columns = [
       { href: "/my/applications", label: "My Applications" },
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/terms", label: "Terms of Service" },
+      { href: "/refund", label: "Refund Policy" },
     ],
   },
+];
+
+const talkyToolsFamily = [
+  { href: "https://talkytools.com", label: "TalkyTools Suite" },
+  { href: "https://optimo.talkytools.com", label: "Optimo (SEO)" },
+  { href: "https://billforge.in", label: "BillForge (Invoicing)" },
+  { href: "https://seizelead.talkytools.com", label: "SeizeLead (Lead capture)" },
 ];
 
 export function Footer() {
@@ -86,8 +94,29 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-2 text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} IPOpulse. All rights reserved.</p>
+
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            TalkyTools Family
+          </h3>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            {talkyToolsFamily.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener"
+                  className="text-sm text-gray-600 hover:text-indigo-600"
+                >
+                  {l.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-2 text-xs text-gray-500">
+          <p>&copy; {new Date().getFullYear()} TalkyTools (IPOpulse). All rights reserved.</p>
           <p>
             Data sourced from BSE, NSE, SEBI, NSDL, AMFI. Not investment advice.
           </p>
