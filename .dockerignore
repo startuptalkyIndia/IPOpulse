@@ -1,10 +1,10 @@
-# Build artifacts (will be regenerated)
+# Build artifacts
 .next/
 out/
 build/
 dist/
 
-# Dependencies (will be installed inside container)
+# Dependencies
 node_modules/
 npm-debug.log
 yarn-error.log
@@ -20,7 +20,7 @@ yarn-error.log
 .DS_Store
 *.swp
 
-# Env files (should be set via docker-compose env_file or environment)
+# Env files
 .env
 .env.local
 .env.development
@@ -41,9 +41,8 @@ TASKS.md
 SECURITY.md
 .firecrawl/
 
-# Test coverage
+# Test / coverage
 coverage/
 .nyc_output/
 
-# Misc
 *.log
