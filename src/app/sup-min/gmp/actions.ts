@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { maybePingSitemap } from "@/lib/seo-ping";
 
 export async function saveGmpEntry(formData: FormData) {
   const session = await auth();
@@ -50,6 +51,9 @@ export async function saveGmpEntry(formData: FormData) {
   revalidatePath("/ipo");
   const ipo = await prisma.ipo.findUnique({ where: { id: ipoId }, select: { slug: true } });
   if (ipo) revalidatePath(`/ipo/${ipo.slug}`);
+
+  // Best-effort ping search engines after a publish event (throttled to 1/hr internally)
+  maybePingSitemap().catch(() => {});
 
   return { ok: true };
 }

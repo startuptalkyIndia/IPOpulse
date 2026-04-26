@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { clearFeatureFlagCache, seedFlagDefinitions } from "@/lib/feature-flags";
+import { maybePingSitemap } from "@/lib/seo-ping";
 
 async function adminGuard() {
   const session = await auth();
@@ -28,5 +29,8 @@ export async function POST(request: Request) {
     data: { enabled, updatedBy: (session?.user as { email?: string } | undefined)?.email ?? null },
   });
   clearFeatureFlagCache();
+  // A flag flip can expose or hide whole sections of the site, which materially
+  // changes what's crawlable. Best-effort ping (internally throttled to 1/hr).
+  maybePingSitemap().catch(() => {});
   return NextResponse.json({ ok: true, flag: updated });
 }

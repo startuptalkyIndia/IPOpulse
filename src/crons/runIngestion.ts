@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { maybePingSitemap } from "@/lib/seo-ping";
 
 export interface IngestionResult {
   rowsIn: number;
@@ -30,6 +31,11 @@ export async function runIngestion(
         notes: result.notes,
       },
     });
+    // Best-effort: ping search engines after a successful content-bearing ingestion.
+    // Internal throttle keeps this to at most 1 ping per hour.
+    if (result.rowsIn >= 1) {
+      maybePingSitemap().catch(() => {});
+    }
     return { ok: true, runId: run.id, ...result };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
