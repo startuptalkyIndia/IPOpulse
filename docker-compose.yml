@@ -1,21 +1,26 @@
 services:
   postgres:
     image: postgres:16-alpine
+    restart: always
     environment:
       POSTGRES_DB: ipopulse
       POSTGRES_USER: ipopulse
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ipopulse"]
       interval: 5s
       timeout: 5s
       retries: 5
+    # Postgres tier per _shared/templates/docker-compose.template.yml
+    mem_limit: 1g
+    memswap_limit: 1500m
+    cpus: 1.0
 
   ipopulse:
     build: .
+    restart: always
     ports:
       - "3065:3065"
     env_file: .env
@@ -26,7 +31,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: unless-stopped
+    # Heavy app tier per _shared/templates/docker-compose.template.yml — IPOpulse runs
+    # BSE/NSE/AMFI/NSDL/SEBI cron crawlers, dynamic OG image generation via @vercel/og,
+    # Anthropic SDK calls (DRHP search), and Recharts SSR. Justifies the 2g / 2.0 cpus tier.
+    mem_limit: 2g
+    memswap_limit: 3g
+    cpus: 2.0
 
 volumes:
   pgdata:
