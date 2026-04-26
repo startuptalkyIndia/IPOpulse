@@ -8,11 +8,15 @@
     "start": "next start --port 3065",
     "lint": "eslint",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:migrate-dev": "prisma migrate dev",
+    "db:reset": "npx prisma migrate reset --force",
     "db:studio": "prisma studio",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:seed": "npx prisma db seed",
     "db:seed-ipos": "tsx scripts/seed-ipos.ts"
+  },
+  "prisma": {
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

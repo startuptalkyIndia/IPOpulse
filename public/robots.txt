@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://ipopulse.talkytools.com/sitemap.xml

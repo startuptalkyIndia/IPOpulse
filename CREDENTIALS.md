@@ -1,11 +1,17 @@
 # IPOpulse — Admin Credentials
 
-Per `project_admin_access.md` rule, every project ships with two standard accounts:
+Per Master Hub broadcast v3 + `_shared/templates/seed.template.ts`, every
+TalkyTools project ships with three standard accounts:
 
-| Role         | Email                       | Where used               | Password location            |
-|--------------|-----------------------------|--------------------------|------------------------------|
-| Super Admin  | `superadmin@ipopulse.com`   | `/sup-min` (full power)  | `CREDENTIALS.local.md` (gitignored) + 1Password |
-| Admin        | `admin@ipopulse.com`        | `/sup-min` (regular admin) | `CREDENTIALS.local.md` (gitignored) + 1Password |
+| Role         | Email                       | Where used                | Password location |
+|--------------|-----------------------------|---------------------------|-------------------|
+| Super Admin  | `superadmin@ipopulse.com`   | `/sup-min` (full power)   | `CREDENTIALS.local.md` (gitignored) + 1Password |
+| Admin        | `admin@ipopulse.com`        | `/sup-min` (regular admin)| `CREDENTIALS.local.md` (gitignored) + 1Password |
+| Demo User    | `user@ipopulse.com`         | `/signin` (public app)    | `CREDENTIALS.local.md` (gitignored) + 1Password |
+
+Passwords are FIXED at the standard TalkyTools values so the master dashboard
+login works uniformly across all 49 projects. Override only via env vars if
+absolutely necessary.
 
 **Login URL:** https://ipopulse.talkytools.com/sup-min  
 **Local dev login URL:** http://localhost:3065/sup-min
@@ -19,17 +25,21 @@ Actual passwords are **never** committed. They live in:
 
 ## How accounts are created
 
-Run the seed script with passwords supplied via env vars:
+The seed (`scripts/seed.ts`) upserts:
+- two rows into `admin_users` (superadmin + admin)
+- one row into `users` (demo user)
+
+Safe to re-run — it updates `passwordHash`/`role`/`name` without duplicating rows.
+
+Default fixed passwords are baked into the seed. To rotate or use custom
+values, supply env vars:
 
 ```bash
-SUPERADMIN_EMAIL=superadmin@ipopulse.com \
-SUPERADMIN_PASSWORD='<from 1Password>' \
-ADMIN_EMAIL=admin@ipopulse.com \
-ADMIN_PASSWORD='<from 1Password>' \
+SUPERADMIN_PASSWORD='<new>' \
+ADMIN_PASSWORD='<new>' \
+DEMO_USER_PASSWORD='<new>' \
 npm run db:seed
 ```
-
-The seed (`scripts/seed.ts`) upserts both rows into the `admin_users` table — safe to re-run; it updates the password hash without duplicating rows.
 
 ## Production seed (one-shot Docker pattern)
 
