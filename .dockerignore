@@ -1,0 +1,49 @@
+# Build artifacts (will be regenerated)
+.next/
+out/
+build/
+dist/
+
+# Dependencies (will be installed inside container)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Source control
+.git/
+.gitignore
+.github/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Env files (should be set via docker-compose env_file or environment)
+.env
+.env.local
+.env.development
+.env.test
+
+# Local-only files
+*.local
+*.bak
+docker-compose.yml.bak
+docker-compose.override.yml
+README.md
+CLAUDE.md
+COMMS.md
+COMMS-ARCHIVE.md
+CONTEXT.md
+CREDENTIALS.md
+TASKS.md
+SECURITY.md
+.firecrawl/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.log
