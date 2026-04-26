@@ -1,5 +1,5 @@
 # Stage 1: Install dependencies
-FROM node:20-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
@@ -7,7 +7,7 @@ COPY prisma ./prisma
 RUN npm install --legacy-peer-deps
 
 # Stage 2: Build
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
@@ -19,7 +19,7 @@ RUN npx prisma generate
 RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
 
 # Stage 3: Production runner
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
 
