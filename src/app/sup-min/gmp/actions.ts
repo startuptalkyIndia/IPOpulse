@@ -7,7 +7,10 @@ import { maybePingSitemap } from "@/lib/seo-ping";
 
 export async function saveGmpEntry(formData: FormData) {
   const session = await auth();
-  if (!session?.user?.email) return { ok: false, error: "Not authenticated" };
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user?.email || (role !== "admin" && role !== "superadmin")) {
+    return { ok: false, error: "Forbidden" };
+  }
 
   const ipoId = Number(formData.get("ipoId"));
   const dateStr = String(formData.get("date") ?? "");
@@ -60,7 +63,10 @@ export async function saveGmpEntry(formData: FormData) {
 
 export async function deleteGmpEntry(id: number) {
   const session = await auth();
-  if (!session?.user?.email) return { ok: false, error: "Not authenticated" };
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user?.email || (role !== "admin" && role !== "superadmin")) {
+    return { ok: false, error: "Forbidden" };
+  }
   await prisma.ipoGmp.delete({ where: { id } });
   revalidatePath("/sup-min/gmp");
   return { ok: true };

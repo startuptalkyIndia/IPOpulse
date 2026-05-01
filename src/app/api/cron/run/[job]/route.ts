@@ -4,13 +4,18 @@ import { availableJobs } from "@/crons/scheduler";
 import { runIngestion } from "@/crons/runIngestion";
 
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ job: string }> },
 ) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  // Cron triggers are admin-only — any logged-in user must NOT be allowed
+  if (role !== "admin" && role !== "superadmin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { job } = await params;
+  // Whitelist-only: reject any job name not registered in availableJobs
   const fn = availableJobs[job];
   if (!fn) return NextResponse.json({ error: `Unknown job: ${job}` }, { status: 404 });
 

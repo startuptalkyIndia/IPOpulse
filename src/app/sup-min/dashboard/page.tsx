@@ -14,7 +14,8 @@ const tiles = [
 
 export default async function AdminDashboardPage() {
   const session = await auth();
-  if (!session?.user) redirect("/sup-min");
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "admin" && role !== "superadmin") redirect("/sup-min");
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -22,7 +23,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-sm text-gray-500">
-            Signed in as <span className="font-medium text-gray-700">{session.user.email}</span>
+            Signed in as <span className="font-medium text-gray-700">{session?.user?.email}</span>
           </p>
         </div>
         <form

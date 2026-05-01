@@ -9,7 +9,32 @@ const schema = z.object({
   password: z.string().min(8).max(200),
 });
 
+// In-memory rate limiter for signup: max 5 attempts per IP per 15 minutes
+const signupRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const SIGNUP_RATE_LIMIT_MAX = 5;
+const SIGNUP_RATE_LIMIT_WINDOW_MS = 15 * 60_000;
+
 export async function POST(request: Request) {
+  // Rate-limit by IP to prevent account creation spam
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+  const now = Date.now();
+  const bucket = signupRateLimitMap.get(ip);
+  if (bucket && now < bucket.resetAt) {
+    if (bucket.count >= SIGNUP_RATE_LIMIT_MAX) {
+      const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+      return NextResponse.json(
+        { error: "Too many signup attempts — try again later" },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } },
+      );
+    }
+    bucket.count++;
+  } else {
+    signupRateLimitMap.set(ip, { count: 1, resetAt: now + SIGNUP_RATE_LIMIT_WINDOW_MS });
+  }
+
   const body = await request.json().catch(() => ({}));
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

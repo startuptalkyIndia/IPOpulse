@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminGmpPage() {
   const session = await auth();
-  if (!session?.user) redirect("/sup-min");
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (role !== "admin" && role !== "superadmin") redirect("/sup-min");
 
   const activeIpos = await prisma.ipo.findMany({
     where: { status: { in: ["upcoming", "live", "closed"] } },

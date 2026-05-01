@@ -1,12 +1,45 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 /**
  * DRHP Q&A endpoint — gated by ANTHROPIC_API_KEY. We give Claude a list of
  * currently-indexed IPOs + metadata as context; for deep PDF analysis we
  * layer in prompt caching and file uploads in a later iteration.
+ *
+ * Auth: any signed-in user. Rate-limited to 5 requests per minute per user
+ * to prevent runaway Anthropic API costs.
  */
+
+// In-memory per-user rate limit map (resets on server restart — acceptable for this use case)
+const drhpRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const DRHP_RATE_LIMIT_MAX = 5;
+const DRHP_RATE_LIMIT_WINDOW_MS = 60_000;
+
 export async function POST(request: Request) {
+  // Auth guard — must be signed in
+  const session = await auth();
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) {
+    return NextResponse.json({ error: "Sign in to use DRHP AI search" }, { status: 401 });
+  }
+
+  // Per-user rate limit
+  const now = Date.now();
+  const bucket = drhpRateLimitMap.get(userId);
+  if (bucket && now < bucket.resetAt) {
+    if (bucket.count >= DRHP_RATE_LIMIT_MAX) {
+      const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+      return NextResponse.json(
+        { error: `Too many requests — try again in ${retryAfter}s` },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } },
+      );
+    }
+    bucket.count++;
+  } else {
+    drhpRateLimitMap.set(userId, { count: 1, resetAt: now + DRHP_RATE_LIMIT_WINDOW_MS });
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

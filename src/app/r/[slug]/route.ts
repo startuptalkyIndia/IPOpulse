@@ -30,6 +30,17 @@ export async function GET(
     return NextResponse.redirect(new URL("/", url.origin), 302);
   }
 
+  // Safety guard: only redirect to HTTPS URLs (prevents http downgrade or
+  // javascript: URI injection if the affiliate registry is ever edited carelessly)
+  try {
+    const parsed = new URL(targetUrl);
+    if (parsed.protocol !== "https:") {
+      return NextResponse.redirect(new URL("/", url.origin), 302);
+    }
+  } catch {
+    return NextResponse.redirect(new URL("/", url.origin), 302);
+  }
+
   // Track click against advisor (best-effort, never blocks redirect)
   if (advCode) {
     try {
