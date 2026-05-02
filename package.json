@@ -14,7 +14,7 @@
     "db:studio": "prisma studio",
     "db:seed": "npx prisma db seed",
     "db:seed-ipos": "tsx scripts/seed-ipos.ts",
-    "prepare": "husky"
+    "prepare": "husky 2>/dev/null || true"
   },
   "prisma": {
     "seed": "tsx scripts/seed.ts"
