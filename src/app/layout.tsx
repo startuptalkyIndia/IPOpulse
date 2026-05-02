@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     site: "@ipopulse",
     creator: "@ipopulse",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "IPOpulse" },
   robots: { index: true, follow: true },
   verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined,

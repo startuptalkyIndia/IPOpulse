@@ -5,6 +5,7 @@ import { ingestBseIposFromHtml } from "./jobs/bse-ipo-html";
 import { ingestAmfiNavs } from "./jobs/amfi-navs";
 import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
+import { sendDailyDigest } from "./jobs/daily-digest";
 
 let started = false;
 
@@ -52,7 +53,13 @@ export function startScheduler() {
     console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST)");
+  // Daily IPO digest email — 7:00 AM IST, weekdays only (no email on weekends)
+  cron.schedule("0 7 * * 1-5", async () => {
+    const result = await runIngestion("daily_digest", sendDailyDigest);
+    console.log(`[cron daily_digest] ${result.ok ? "ok" : "failed"} sent=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -61,4 +68,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   amfi_navs: ingestAmfiNavs,
   nse_bhavcopy: ingestNseBhavcopy,
   bse_announcements: ingestBseAnnouncements,
+  daily_digest: sendDailyDigest,
 };

@@ -15,6 +15,7 @@ export default async function ScreenerPage() {
   const companies = await prisma.company.findMany({
     where: { active: true },
     select: {
+      id: true,
       slug: true,
       name: true,
       sector: true,
@@ -23,6 +24,12 @@ export default async function ScreenerPage() {
       bseCode: true,
       marketCap: true,
       isSme: true,
+      peRatio: true,
+      pbRatio: true,
+      roePercent: true,
+      debtToEquity: true,
+      dividendYield: true,
+      eps: true,
     },
     orderBy: { marketCap: "desc" },
     take: 1000,
@@ -39,7 +46,7 @@ export default async function ScreenerPage() {
   const priceMap = new Map(prices.map((p) => [p.companyId, { close: Number(p.close), volume: Number(p.volume) }]));
 
   const seed: ScreenerCompany[] = companies.map((c) => {
-    const p = priceMap.get((c as { id?: number }).id ?? -1);
+    const p = priceMap.get(c.id);
     return {
       slug: c.slug,
       name: c.name,
@@ -50,6 +57,12 @@ export default async function ScreenerPage() {
       isSme: c.isSme,
       ltp: p?.close ?? null,
       volume: p?.volume ?? null,
+      peRatio: c.peRatio ? Number(c.peRatio) : null,
+      pbRatio: c.pbRatio ? Number(c.pbRatio) : null,
+      roePercent: c.roePercent ? Number(c.roePercent) : null,
+      debtToEquity: c.debtToEquity ? Number(c.debtToEquity) : null,
+      dividendYield: c.dividendYield ? Number(c.dividendYield) : null,
+      eps: c.eps ? Number(c.eps) : null,
     };
   });
 

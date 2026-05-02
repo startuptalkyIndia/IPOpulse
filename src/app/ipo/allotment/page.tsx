@@ -6,6 +6,7 @@ import { ExternalLink, CheckCircle2, Clock, TrendingUp, ArrowRight } from "lucid
 import { prisma } from "@/lib/db";
 import { formatDate, formatPriceBand, computeIpoStatus, statusBadgeClass, statusLabel } from "@/lib/ipo";
 import { registrars, matchRegistrar } from "@/lib/registrars";
+import { AllotmentMultiCheck } from "@/components/AllotmentMultiCheck";
 
 export const metadata: Metadata = {
   title: "IPO Allotment Status — Check for all 4 registrars in one click",
@@ -63,6 +64,18 @@ export default async function IpoAllotmentHub() {
           </span>
         </div>
       </section>
+
+      <AllotmentMultiCheck
+        ipos={pending.map((ipo) => {
+          const reg = matchRegistrar(ipo.registrar);
+          return {
+            slug: ipo.slug,
+            name: ipo.name,
+            registrarSlug: reg?.slug ?? null,
+            registrarUrl: ipo.registrarUrl ?? reg?.allotmentUrl ?? null,
+          };
+        })}
+      />
 
       {/* IPOs awaiting / recently allotted */}
       <section>

@@ -156,6 +156,18 @@ model Company {
   listedOn    DateTime? @map("listed_on")
   isSme       Boolean  @default(false) @map("is_sme")
   active      Boolean  @default(true)
+
+  // Fundamental ratios (optional — populated from BSE/NSE filings as available)
+  peRatio          Decimal? @map("pe_ratio") @db.Decimal(10, 2)
+  pbRatio          Decimal? @map("pb_ratio") @db.Decimal(10, 2)
+  roePercent       Decimal? @map("roe_pct") @db.Decimal(8, 2)
+  debtToEquity     Decimal? @map("debt_to_equity") @db.Decimal(8, 2)
+  dividendYield    Decimal? @map("dividend_yield") @db.Decimal(6, 2)
+  eps              Decimal? @db.Decimal(12, 2)
+  bookValue        Decimal? @map("book_value") @db.Decimal(12, 2)
+  faceValue        Decimal? @map("face_value") @db.Decimal(8, 2)
+  fundamentalsAt   DateTime? @map("fundamentals_at")
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -165,6 +177,8 @@ model Company {
 
   @@index([sector])
   @@index([marketCap])
+  @@index([peRatio])
+  @@index([roePercent])
   @@map("companies")
 }
 
@@ -452,6 +466,20 @@ model MutualFund {
   @@index([category])
   @@index([amc])
   @@map("mutual_funds")
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    String?  @map("user_id")
+  endpoint  String   @unique @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  ua        String?  @db.Text
+  createdAt DateTime @default(now())
+  lastSeen  DateTime @default(now()) @map("last_seen")
+
+  @@index([userId])
+  @@map("push_subs")
 }
 
 model NewsletterSub {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Sliders } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 
 export interface ScreenerCompany {
@@ -15,6 +15,12 @@ export interface ScreenerCompany {
   isSme: boolean;
   ltp: number | null;
   volume: number | null;
+  peRatio?: number | null;
+  pbRatio?: number | null;
+  roePercent?: number | null;
+  debtToEquity?: number | null;
+  dividendYield?: number | null;
+  eps?: number | null;
 }
 
 const MCAP_BANDS: Array<{ key: string; label: string; min: number | null; max: number | null }> = [
@@ -31,16 +37,33 @@ const TYPE_OPTIONS = [
   { key: "sme", label: "SME only" },
 ];
 
+type SortKey = "marketCap" | "pe" | "roe" | "divYield";
+
 export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sectors: string[] }) {
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState<string>("any");
   const [mcapBand, setMcapBand] = useState<string>("any");
   const [type, setType] = useState<string>("any");
 
+  // Fundamental filters
+  const [showFundamentals, setShowFundamentals] = useState(false);
+  const [peMax, setPeMax] = useState<string>("");
+  const [roeMin, setRoeMin] = useState<string>("");
+  const [debtMax, setDebtMax] = useState<string>("");
+  const [divMin, setDivMin] = useState<string>("");
+  const [requireFundamentals, setRequireFundamentals] = useState(false);
+
+  const [sortBy, setSortBy] = useState<SortKey>("marketCap");
+
   const filtered = useMemo(() => {
     const band = MCAP_BANDS.find((b) => b.key === mcapBand) ?? MCAP_BANDS[0];
     const q = search.trim().toLowerCase();
-    return seed
+    const peMaxN = peMax === "" ? null : Number(peMax);
+    const roeMinN = roeMin === "" ? null : Number(roeMin);
+    const debtMaxN = debtMax === "" ? null : Number(debtMax);
+    const divMinN = divMin === "" ? null : Number(divMin);
+
+    const result = seed
       .filter((c) => {
         if (sector !== "any" && c.sector !== sector) return false;
         if (type === "mainboard" && c.isSme) return false;
@@ -54,25 +77,83 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         }
         if (band.min != null && (c.marketCapCr ?? 0) < band.min) return false;
         if (band.max != null && (c.marketCapCr ?? 0) > band.max) return false;
+
+        // Fundamentals
+        if (requireFundamentals && c.peRatio == null && c.roePercent == null) return false;
+        if (peMaxN != null) {
+          if (c.peRatio == null || c.peRatio > peMaxN || c.peRatio <= 0) return false;
+        }
+        if (roeMinN != null) {
+          if (c.roePercent == null || c.roePercent < roeMinN) return false;
+        }
+        if (debtMaxN != null) {
+          if (c.debtToEquity == null || c.debtToEquity > debtMaxN) return false;
+        }
+        if (divMinN != null) {
+          if (c.dividendYield == null || c.dividendYield < divMinN) return false;
+        }
         return true;
-      })
-      .slice(0, 200);
-  }, [seed, search, sector, mcapBand, type]);
+      });
+
+    // Sort
+    const compare = (a: ScreenerCompany, b: ScreenerCompany) => {
+      const get = (c: ScreenerCompany) => {
+        if (sortBy === "marketCap") return c.marketCapCr ?? -Infinity;
+        if (sortBy === "pe") return c.peRatio ?? Infinity;
+        if (sortBy === "roe") return c.roePercent ?? -Infinity;
+        if (sortBy === "divYield") return c.dividendYield ?? -Infinity;
+        return 0;
+      };
+      const av = get(a);
+      const bv = get(b);
+      // P/E ascending (cheaper is better); others descending
+      return sortBy === "pe" ? av - bv : bv - av;
+    };
+    return result.sort(compare).slice(0, 200);
+  }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, sortBy]);
 
   function reset() {
     setSearch("");
     setSector("any");
     setMcapBand("any");
     setType("any");
+    setPeMax("");
+    setRoeMin("");
+    setDebtMax("");
+    setDivMin("");
+    setRequireFundamentals(false);
+    setSortBy("marketCap");
   }
+
+  function applyPreset(name: string) {
+    reset();
+    if (name === "value") {
+      setPeMax("20"); setRoeMin("15"); setDebtMax("1");
+    } else if (name === "growth") {
+      setRoeMin("18"); setDebtMax("0.5");
+    } else if (name === "dividend") {
+      setDivMin("3"); setDebtMax("1");
+    } else if (name === "lowdebt") {
+      setDebtMax("0.3");
+    }
+    setShowFundamentals(true);
+  }
+
+  const fundamentalsCount = seed.filter((c) => c.peRatio != null || c.roePercent != null).length;
 
   return (
     <div className="space-y-4">
       <div className="card">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Filter className="w-4 h-4 text-indigo-600" />
           <h2 className="text-base font-semibold text-gray-900">Filters</h2>
-          <button onClick={reset} className="ml-auto text-xs text-gray-500 hover:text-indigo-600 inline-flex items-center gap-1">
+          <button
+            onClick={() => setShowFundamentals((s) => !s)}
+            className={`ml-auto md:ml-0 text-xs px-2 py-1 rounded-md inline-flex items-center gap-1 ${showFundamentals ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700"}`}
+          >
+            <Sliders className="w-3 h-3" /> Fundamentals
+          </button>
+          <button onClick={reset} className="text-xs text-gray-500 hover:text-indigo-600 inline-flex items-center gap-1">
             <X className="w-3 h-3" /> Reset
           </button>
         </div>
@@ -114,11 +195,60 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             </select>
           </div>
         </div>
+
+        {showFundamentals ? (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Fundamental ratios</span>
+              <span className="text-[11px] text-gray-500">— ({fundamentalsCount} of {seed.length} companies have ratios populated)</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+              <div>
+                <label className="label">P/E max</label>
+                <input type="number" className="input w-full" placeholder="e.g. 25" value={peMax} onChange={(e) => setPeMax(e.target.value)} step="0.1" />
+              </div>
+              <div>
+                <label className="label">ROE % min</label>
+                <input type="number" className="input w-full" placeholder="e.g. 15" value={roeMin} onChange={(e) => setRoeMin(e.target.value)} step="0.1" />
+              </div>
+              <div>
+                <label className="label">Debt/Equity max</label>
+                <input type="number" className="input w-full" placeholder="e.g. 0.5" value={debtMax} onChange={(e) => setDebtMax(e.target.value)} step="0.1" />
+              </div>
+              <div>
+                <label className="label">Dividend yield % min</label>
+                <input type="number" className="input w-full" placeholder="e.g. 2" value={divMin} onChange={(e) => setDivMin(e.target.value)} step="0.1" />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-gray-500">Quick presets:</span>
+              <button onClick={() => applyPreset("value")} className="text-[11px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 px-2.5 py-1 rounded-full">Value (P/E&lt;20, ROE&gt;15, D/E&lt;1)</button>
+              <button onClick={() => applyPreset("growth")} className="text-[11px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 px-2.5 py-1 rounded-full">Growth (ROE&gt;18, D/E&lt;0.5)</button>
+              <button onClick={() => applyPreset("dividend")} className="text-[11px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 px-2.5 py-1 rounded-full">Dividend (yield&gt;3%, D/E&lt;1)</button>
+              <button onClick={() => applyPreset("lowdebt")} className="text-[11px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 px-2.5 py-1 rounded-full">Low debt (D/E&lt;0.3)</button>
+            </div>
+
+            <label className="flex items-center gap-2 text-xs text-gray-600 mt-3 cursor-pointer">
+              <input type="checkbox" checked={requireFundamentals} onChange={(e) => setRequireFundamentals(e.target.checked)} className="rounded border-gray-300" />
+              Hide companies without any ratios populated
+            </label>
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div className="text-sm text-gray-600">
           Showing <span className="font-semibold text-gray-900">{filtered.length}</span> of {seed.length} companies
+        </div>
+        <div className="text-xs text-gray-500 inline-flex items-center gap-2">
+          Sort by:
+          <select className="input text-xs py-1" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
+            <option value="marketCap">Market cap (high→low)</option>
+            <option value="pe">P/E (low→high)</option>
+            <option value="roe">ROE % (high→low)</option>
+            <option value="divYield">Dividend yield (high→low)</option>
+          </select>
         </div>
       </div>
 
@@ -128,10 +258,13 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">
                 <th className="px-3 py-3">Company</th>
-                <th className="px-3 py-3">Sector / Industry</th>
+                <th className="px-3 py-3">Sector</th>
                 <th className="px-3 py-3 text-right">Market cap</th>
                 <th className="px-3 py-3 text-right">LTP</th>
-                <th className="px-3 py-3 text-right">Volume</th>
+                <th className="px-3 py-3 text-right">P/E</th>
+                <th className="px-3 py-3 text-right">ROE %</th>
+                <th className="px-3 py-3 text-right">D/E</th>
+                <th className="px-3 py-3 text-right">Div %</th>
               </tr>
             </thead>
             <tbody>
@@ -143,23 +276,22 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                     </Link>
                     <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{c.symbol ?? "—"}</div>
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-gray-600">
-                    {c.sector ?? "—"} {c.industry ? `· ${c.industry}` : ""}
-                  </td>
+                  <td className="px-3 py-2.5 text-xs text-gray-600">{c.sector ?? "—"}</td>
                   <td className="px-3 py-2.5 text-sm text-right tabular-nums text-gray-900">
                     {c.marketCapCr ? formatCurrency(c.marketCapCr * 10000000) : "—"}
                   </td>
                   <td className="px-3 py-2.5 text-sm text-right tabular-nums text-gray-700">
                     {c.ltp != null ? `₹${c.ltp.toLocaleString("en-IN")}` : "—"}
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
-                    {c.volume != null ? `${(c.volume / 1e5).toFixed(1)}L` : "—"}
-                  </td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.peRatio != null ? c.peRatio.toFixed(1) : "—"}</td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.roePercent != null ? c.roePercent.toFixed(1) : "—"}</td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.debtToEquity != null ? c.debtToEquity.toFixed(2) : "—"}</td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.dividendYield != null ? c.dividendYield.toFixed(2) : "—"}</td>
                 </tr>
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={8} className="px-3 py-12 text-center text-sm text-gray-500">
                     No companies match these filters. Reset to see all.
                   </td>
                 </tr>
@@ -168,6 +300,12 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
           </table>
         </div>
       </div>
+
+      <p className="text-[11px] text-gray-500">
+        Fundamental ratios are populated from BSE/NSE filings; coverage is currently sparse and grows with each
+        ingestion run. P/E uses TTM earnings; ROE is annual. Sort and preset combinations help find specific
+        styles (value, growth, dividend, low-debt).
+      </p>
     </div>
   );
 }

@@ -32,7 +32,10 @@ export default async function DrhpPage() {
         </p>
       </div>
 
-      <DrhpQa enabled={aiEnabled} />
+      <DrhpQa
+        enabled={aiEnabled}
+        ipos={upcoming.map((ipo) => ({ slug: ipo.slug, name: ipo.name }))}
+      />
 
       {!aiEnabled ? (
         <div className="card bg-yellow-50 border-yellow-200">

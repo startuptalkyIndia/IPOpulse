@@ -1,0 +1,16 @@
+{
+  "name": "IPOpulse — India's IPO + Stock Hub",
+  "short_name": "IPOpulse",
+  "description": "Live IPO GMP, subscription, allotment, stock research, and 20+ calculators for Indian retail investors.",
+  "start_url": "/?utm_source=pwa",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "categories": ["finance", "business", "productivity"],
+  "lang": "en-IN",
+  "scope": "/"
+}
