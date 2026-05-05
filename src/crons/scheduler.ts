@@ -6,6 +6,7 @@ import { ingestAmfiNavs } from "./jobs/amfi-navs";
 import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 import { sendDailyDigest } from "./jobs/daily-digest";
+import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
 
 let started = false;
 
@@ -59,7 +60,15 @@ export function startScheduler() {
     console.log(`[cron daily_digest] ${result.ok ? "ok" : "failed"} sent=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri)");
+  // Daily market summary — 16:30 IST after close, weekdays only.
+  // Bhavcopy job (19:00) hasn't run yet, but this works off the latest bhavcopy
+  // we have, so summary always covers the most recent trading day.
+  cron.schedule("30 16 * * 1-5", async () => {
+    const result = await runIngestion("daily_market_summary", generateDailyMarketSummary);
+    console.log(`[cron daily_market_summary] ${result.ok ? "ok" : "failed"}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri), daily_market_summary (16:30 IST Mon-Fri)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -69,4 +78,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   nse_bhavcopy: ingestNseBhavcopy,
   bse_announcements: ingestBseAnnouncements,
   daily_digest: sendDailyDigest,
+  daily_market_summary: generateDailyMarketSummary,
 };

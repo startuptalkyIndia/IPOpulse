@@ -16,6 +16,7 @@ import {
 } from "@/lib/ipo";
 import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
+import { SubscriptionVelocity } from "@/components/ipo/SubscriptionVelocity";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
@@ -278,6 +279,19 @@ export default async function IpoDetailPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* Subscription velocity over time — only renders if 2+ snapshots */}
+      {ipo.subscriptions.length >= 2 ? (
+        <SubscriptionVelocity
+          points={ipo.subscriptions.map((s) => ({
+            capturedAt: s.capturedAt.toISOString(),
+            retailX: s.retailX != null ? Number(s.retailX) : null,
+            hniX: s.hniX != null ? Number(s.hniX) : null,
+            qibX: s.qibX != null ? Number(s.qibX) : null,
+            totalX: s.totalX != null ? Number(s.totalX) : null,
+          }))}
+        />
+      ) : null}
 
       {/* Listing performance if listed */}
       {ipo.listing ? (

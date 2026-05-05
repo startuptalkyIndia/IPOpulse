@@ -482,6 +482,23 @@ model PushSubscription {
   @@map("push_subs")
 }
 
+model MarketSummary {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique  // one row per trading day
+  headline    String   @db.Text
+  body        String   @db.Text
+  sentiment   String?  // "bullish" | "neutral" | "bearish"
+  fiiNet      Decimal? @map("fii_net") @db.Decimal(14, 2)
+  diiNet      Decimal? @map("dii_net") @db.Decimal(14, 2)
+  topGainers  Json?    @map("top_gainers")
+  topLosers   Json?    @map("top_losers")
+  generatedBy String?  @map("generated_by") // "claude-sonnet-4-5"
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+  @@map("market_summaries")
+}
+
 model NewsletterSub {
   id          Int      @id @default(autoincrement())
   email       String   @unique
