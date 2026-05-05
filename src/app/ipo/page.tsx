@@ -16,13 +16,13 @@ export const revalidate = 60;
 
 export default async function IpoHub() {
   const [live, upcoming, closed, recentlyListed] = await Promise.all([
-    prisma.ipo.findMany({ where: { status: "live" }, orderBy: { closeDate: "asc" }, include: { listing: true } }),
-    prisma.ipo.findMany({ where: { status: "upcoming" }, orderBy: { openDate: "asc" }, include: { listing: true }, take: 5 }),
-    prisma.ipo.findMany({ where: { status: "closed" }, orderBy: { closeDate: "desc" }, include: { listing: true }, take: 5 }),
+    prisma.ipo.findMany({ where: { status: "live" }, orderBy: { closeDate: "asc" }, include: { listing: true, drhpAnalysis: true } }),
+    prisma.ipo.findMany({ where: { status: "upcoming" }, orderBy: { openDate: "asc" }, include: { listing: true, drhpAnalysis: true }, take: 5 }),
+    prisma.ipo.findMany({ where: { status: "closed" }, orderBy: { closeDate: "desc" }, include: { listing: true, drhpAnalysis: true }, take: 5 }),
     prisma.ipo.findMany({
       where: { status: "listed" },
       orderBy: { listingDate: "desc" },
-      include: { listing: true },
+      include: { listing: true, drhpAnalysis: true },
       take: 5,
     }),
   ]);

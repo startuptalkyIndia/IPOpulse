@@ -509,12 +509,21 @@ model IpoDrhpAnalysis {
   relatedPartyTransactions Json?  @map("related_party_transactions")
   contingentLiabilities  Json?    @map("contingent_liabilities")
   peerComparables        Json?    @map("peer_comparables")
+  enrichedPeers          Json?    @map("enriched_peers")
   financialHighlights    Json?    @map("financial_highlights")
+
+  // Synthesized 0-100 risk score + breakdown (Round 29 vertical depth)
+  riskScore              Int?     @map("risk_score")
+  riskBand               String?  @map("risk_band") // "clean" | "watch" | "caution" | "high-risk"
+  riskRationale          Json?    @map("risk_rationale")
+  riskComponents         Json?    @map("risk_components")
 
   ipo Ipo @relation(fields: [ipoId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([generatedAt])
+  @@index([riskScore])
+  @@index([riskBand])
   @@map("ipo_drhp_analyses")
 }
 

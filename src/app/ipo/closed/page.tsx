@@ -16,7 +16,7 @@ export default async function ClosedIpoPage() {
   const ipos = await prisma.ipo.findMany({
     where: { status: "closed" },
     orderBy: { closeDate: "desc" },
-    include: { listing: true },
+    include: { listing: true, drhpAnalysis: true },
   });
   return (
     <div>

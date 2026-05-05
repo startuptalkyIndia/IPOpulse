@@ -13,7 +13,8 @@
  */
 
 import { PrismaClient } from "@prisma/client";
-import { analyzeDrhpViaSdk, analyzeDrhpViaClaudeCli, urlChanged, type DrhpAnalysis } from "../src/lib/drhp-analyzer";
+import { analyzeDrhpViaSdk, analyzeDrhpViaClaudeCli, urlChanged, computeRiskScore, type DrhpAnalysis } from "../src/lib/drhp-analyzer";
+import { enrichPeers } from "../src/lib/drhp-peer-enrichment";
 
 const prisma = new PrismaClient();
 
@@ -26,42 +27,37 @@ interface Persistable {
 }
 
 async function persist(p: Persistable) {
+  const enrichedPeers = await enrichPeers(p.analysis.peerComparables ?? []);
+  const risk = computeRiskScore(p.analysis);
+  const j = <T>(v: T) => v as unknown as import("@prisma/client").Prisma.InputJsonValue;
+  const fields = {
+    sourceUrl: p.sourceUrl,
+    sourceType: p.sourceType,
+    status: "ready" as const,
+    generatedBy: p.modelUsed,
+    generatedAt: new Date(),
+    errorMsg: null as null,
+    tldr: p.analysis.tldr ?? null,
+    issueDetails: j(p.analysis.issueDetails ?? null),
+    useOfProceeds: j(p.analysis.useOfProceeds ?? []),
+    riskFactors: j(p.analysis.riskFactors ?? []),
+    governance: j(p.analysis.governance ?? []),
+    relatedPartyTransactions: j(p.analysis.relatedPartyTransactions ?? []),
+    contingentLiabilities: j(p.analysis.contingentLiabilities ?? []),
+    peerComparables: j(p.analysis.peerComparables ?? []),
+    enrichedPeers: j(enrichedPeers),
+    financialHighlights: j(p.analysis.financialHighlights ?? null),
+    riskScore: risk.score,
+    riskBand: risk.band,
+    riskRationale: j(risk.rationale),
+    riskComponents: j(risk.components),
+  };
+  type U = import("@prisma/client").Prisma.IpoDrhpAnalysisUncheckedUpdateInput;
+  type C = import("@prisma/client").Prisma.IpoDrhpAnalysisUncheckedCreateInput;
   await prisma.ipoDrhpAnalysis.upsert({
     where: { ipoId: p.ipoId },
-    update: {
-      sourceUrl: p.sourceUrl,
-      sourceType: p.sourceType,
-      status: "ready",
-      generatedBy: p.modelUsed,
-      generatedAt: new Date(),
-      errorMsg: null,
-      tldr: p.analysis.tldr ?? null,
-      issueDetails: p.analysis.issueDetails ?? null,
-      useOfProceeds: p.analysis.useOfProceeds ?? [],
-      riskFactors: p.analysis.riskFactors ?? [],
-      governance: p.analysis.governance ?? [],
-      relatedPartyTransactions: p.analysis.relatedPartyTransactions ?? [],
-      contingentLiabilities: p.analysis.contingentLiabilities ?? [],
-      peerComparables: p.analysis.peerComparables ?? [],
-      financialHighlights: p.analysis.financialHighlights ?? null,
-    },
-    create: {
-      ipoId: p.ipoId,
-      sourceUrl: p.sourceUrl,
-      sourceType: p.sourceType,
-      status: "ready",
-      generatedBy: p.modelUsed,
-      generatedAt: new Date(),
-      tldr: p.analysis.tldr ?? null,
-      issueDetails: p.analysis.issueDetails ?? null,
-      useOfProceeds: p.analysis.useOfProceeds ?? [],
-      riskFactors: p.analysis.riskFactors ?? [],
-      governance: p.analysis.governance ?? [],
-      relatedPartyTransactions: p.analysis.relatedPartyTransactions ?? [],
-      contingentLiabilities: p.analysis.contingentLiabilities ?? [],
-      peerComparables: p.analysis.peerComparables ?? [],
-      financialHighlights: p.analysis.financialHighlights ?? null,
-    },
+    update: fields as U,
+    create: { ipoId: p.ipoId, ...fields } as C,
   });
 }
 

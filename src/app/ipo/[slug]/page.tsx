@@ -298,7 +298,11 @@ export default async function IpoDetailPage({ params }: Props) {
           relatedPartyTransactions={ipo.drhpAnalysis.relatedPartyTransactions as never}
           contingentLiabilities={ipo.drhpAnalysis.contingentLiabilities as never}
           peerComparables={ipo.drhpAnalysis.peerComparables as never}
+          enrichedPeers={ipo.drhpAnalysis.enrichedPeers as never}
           financialHighlights={ipo.drhpAnalysis.financialHighlights as never}
+          riskScore={ipo.drhpAnalysis.riskScore}
+          riskBand={ipo.drhpAnalysis.riskBand}
+          riskRationale={ipo.drhpAnalysis.riskRationale as never}
         />
       ) : null}
 

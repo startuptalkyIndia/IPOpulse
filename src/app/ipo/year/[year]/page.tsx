@@ -38,7 +38,7 @@ export default async function YearArchive({ params }: Props) {
   const [listed, allInYear] = await Promise.all([
     prisma.ipo.findMany({
       where: { listingDate: { gte: start, lt: end } },
-      include: { listing: true },
+      include: { listing: true, drhpAnalysis: true },
       orderBy: { listingDate: "desc" },
     }),
     prisma.ipo.findMany({
@@ -48,7 +48,7 @@ export default async function YearArchive({ params }: Props) {
           { listingDate: { gte: start, lt: end } },
         ],
       },
-      include: { listing: true },
+      include: { listing: true, drhpAnalysis: true },
       orderBy: { openDate: "desc" },
     }),
   ]);

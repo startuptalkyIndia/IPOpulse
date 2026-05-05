@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { analyzeDrhpViaSdk, urlChanged, type DrhpAnalysis } from "@/lib/drhp-analyzer";
+import { analyzeDrhpViaSdk, urlChanged, computeRiskScore, type DrhpAnalysis } from "@/lib/drhp-analyzer";
+import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 
 /**
  * Background DRHP analyzer.
@@ -111,41 +112,44 @@ export async function persistAnalysis(
   analysis: DrhpAnalysis,
   modelUsed: string,
 ) {
+  // Vertical depth pass 2: enrich peer names with our company DB
+  const enrichedPeers = await enrichPeers(analysis.peerComparables ?? []);
+
+  // Vertical depth pass 3: synthesize 0-100 risk score
+  const risk = computeRiskScore(analysis);
+
+  // Cast JSON fields to satisfy Prisma's InputJsonValue constraint.
+  // The runtime values are correct; TS just can't infer it from the interface types.
+  const j = <T>(v: T) => v as unknown as import("@prisma/client/runtime/library").JsonValue;
+
+  const fields = {
+    sourceUrl,
+    sourceType,
+    status: "ready" as const,
+    generatedBy: modelUsed,
+    generatedAt: new Date(),
+    errorMsg: null as null,
+    tldr: analysis.tldr ?? null,
+    issueDetails: j(analysis.issueDetails ?? null),
+    useOfProceeds: j(analysis.useOfProceeds ?? []),
+    riskFactors: j(analysis.riskFactors ?? []),
+    governance: j(analysis.governance ?? []),
+    relatedPartyTransactions: j(analysis.relatedPartyTransactions ?? []),
+    contingentLiabilities: j(analysis.contingentLiabilities ?? []),
+    peerComparables: j(analysis.peerComparables ?? []),
+    enrichedPeers: j(enrichedPeers),
+    financialHighlights: j(analysis.financialHighlights ?? null),
+    riskScore: risk.score,
+    riskBand: risk.band,
+    riskRationale: j(risk.rationale),
+    riskComponents: j(risk.components),
+  };
+
+  type U = import("@prisma/client").Prisma.IpoDrhpAnalysisUncheckedUpdateInput;
+  type C = import("@prisma/client").Prisma.IpoDrhpAnalysisUncheckedCreateInput;
   await prisma.ipoDrhpAnalysis.upsert({
     where: { ipoId },
-    update: {
-      sourceUrl,
-      sourceType,
-      status: "ready",
-      generatedBy: modelUsed,
-      generatedAt: new Date(),
-      errorMsg: null,
-      tldr: analysis.tldr ?? null,
-      issueDetails: analysis.issueDetails ?? null,
-      useOfProceeds: analysis.useOfProceeds ?? [],
-      riskFactors: analysis.riskFactors ?? [],
-      governance: analysis.governance ?? [],
-      relatedPartyTransactions: analysis.relatedPartyTransactions ?? [],
-      contingentLiabilities: analysis.contingentLiabilities ?? [],
-      peerComparables: analysis.peerComparables ?? [],
-      financialHighlights: analysis.financialHighlights ?? null,
-    },
-    create: {
-      ipoId,
-      sourceUrl,
-      sourceType,
-      status: "ready",
-      generatedBy: modelUsed,
-      generatedAt: new Date(),
-      tldr: analysis.tldr ?? null,
-      issueDetails: analysis.issueDetails ?? null,
-      useOfProceeds: analysis.useOfProceeds ?? [],
-      riskFactors: analysis.riskFactors ?? [],
-      governance: analysis.governance ?? [],
-      relatedPartyTransactions: analysis.relatedPartyTransactions ?? [],
-      contingentLiabilities: analysis.contingentLiabilities ?? [],
-      peerComparables: analysis.peerComparables ?? [],
-      financialHighlights: analysis.financialHighlights ?? null,
-    },
+    update: fields as U,
+    create: { ipoId, ...fields } as C,
   });
 }

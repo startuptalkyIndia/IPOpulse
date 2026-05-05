@@ -1,9 +1,10 @@
 import Link from "next/link";
-import type { Ipo, IpoListing } from "@prisma/client";
+import type { Ipo, IpoListing, IpoDrhpAnalysis } from "@prisma/client";
 import { formatPriceBand, formatIssueSize, formatDateRange, formatDate, computeIpoStatus } from "@/lib/ipo";
 import { IpoStatusBadge } from "./IpoStatusBadge";
+import { RiskScoreBadge } from "./RiskScoreBadge";
 
-type IpoWithListing = Ipo & { listing?: IpoListing | null };
+type IpoWithListing = Ipo & { listing?: IpoListing | null; drhpAnalysis?: IpoDrhpAnalysis | null };
 
 interface Props {
   ipos: IpoWithListing[];
@@ -19,6 +20,10 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
       </div>
     );
   }
+
+  // Show the Risk column only when at least one row has an analysis ready —
+  // avoids an empty column on lists that pre-date DRHP intelligence.
+  const showRisk = ipos.some((i) => i.drhpAnalysis?.status === "ready" && i.drhpAnalysis.riskScore != null);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -36,6 +41,9 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
               {variant === "listed" ? (
                 <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-right">List gain</th>
               ) : null}
+              {showRisk ? (
+                <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-left">Risk</th>
+              ) : null}
               <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-left">Status</th>
             </tr>
           </thead>
@@ -47,6 +55,7 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
                 : null;
               const gainClass =
                 gain == null ? "text-gray-400" : gain > 0 ? "text-green-600" : gain < 0 ? "text-red-600" : "text-gray-600";
+              const riskReady = ipo.drhpAnalysis?.status === "ready" && ipo.drhpAnalysis.riskScore != null;
               return (
                 <tr key={ipo.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-3 py-3 text-sm">
@@ -70,6 +79,19 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
                   {variant === "listed" ? (
                     <td className={`px-3 py-3 text-sm text-right font-semibold tabular-nums ${gainClass}`}>
                       {gain == null ? "—" : `${gain > 0 ? "+" : ""}${gain.toFixed(2)}%`}
+                    </td>
+                  ) : null}
+                  {showRisk ? (
+                    <td className="px-3 py-3">
+                      {riskReady ? (
+                        <RiskScoreBadge
+                          score={ipo.drhpAnalysis!.riskScore!}
+                          band={ipo.drhpAnalysis!.riskBand}
+                          size="sm"
+                        />
+                      ) : (
+                        <span className="text-[11px] text-gray-400">—</span>
+                      )}
                     </td>
                   ) : null}
                   <td className="px-3 py-3">

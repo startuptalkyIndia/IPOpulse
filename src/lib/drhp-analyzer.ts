@@ -23,21 +23,110 @@ export interface DrhpAnalysis {
     ofsCr: number | null;
     anchorPortionCr: number | null;
   };
-  useOfProceeds: { purpose: string; amountCr: number | null; percent: number | null }[];
-  riskFactors: { severity: "high" | "medium" | "low"; headline: string; detail: string }[];
-  governance: { severity: "high" | "medium" | "low"; headline: string; detail: string }[];
+  useOfProceeds: { purpose: string; amountCr: number | null; percent: number | null; pageRef: string | null }[];
+  riskFactors: { severity: "high" | "medium" | "low"; headline: string; detail: string; pageRef: string | null }[];
+  governance: { severity: "high" | "medium" | "low"; headline: string; detail: string; pageRef: string | null }[];
   relatedPartyTransactions: {
     party: string;
     relationship: string;
     nature: string;
     amountCr: number | null;
+    pageRef: string | null;
   }[];
-  contingentLiabilities: { description: string; amountCr: number | null; status: string }[];
-  peerComparables: { name: string; rationale: string }[];
+  contingentLiabilities: { description: string; amountCr: number | null; status: string; pageRef: string | null }[];
+  peerComparables: { name: string; rationale: string; pageRef: string | null }[];
   financialHighlights: {
     revenue: { year: string; valueCr: number | null }[];
     ebitda: { year: string; valueCr: number | null }[];
     pat: { year: string; valueCr: number | null }[];
+    pageRef?: string | null;
+  };
+}
+
+/**
+ * Synthesized DRHP risk score (0-100).
+ *
+ * Lower = lower flagged risk per the prospectus extract. NOT a buy/sell
+ * signal. Formula is fully transparent and explainable; calibration improves
+ * over time as we backtest against listing performance.
+ *
+ * Components (capped at 100 total):
+ *   - Risk-factor severity sum  (high=15, med=8, low=3) max 50
+ *   - Governance severity sum   (high=15, med=8, low=3) max 30
+ *   - PAT trajectory penalty (declining or negative)    +0-15
+ *   - High debt penalty (D/E > 1.5)                     +0-10
+ *   - Excessive RPT count penalty                       +0-10
+ *
+ * Caller can interpret as bands:
+ *   0-25  = "Clean" (green)
+ *   26-50 = "Watch" (yellow)
+ *   51-75 = "Caution" (orange)
+ *   76+   = "High risk" (red)
+ */
+export interface RiskScore {
+  score: number;
+  band: "clean" | "watch" | "caution" | "high-risk";
+  components: {
+    riskFactorPoints: number;
+    governancePoints: number;
+    patTrajectoryPoints: number;
+    contingentLiabPoints: number;
+    rptPoints: number;
+  };
+  rationale: string[];
+}
+
+export function computeRiskScore(a: DrhpAnalysis): RiskScore {
+  const sevPts = (s: "high" | "medium" | "low") => (s === "high" ? 15 : s === "medium" ? 8 : 3);
+
+  const rfPts = Math.min(50, (a.riskFactors ?? []).reduce((s, r) => s + sevPts(r.severity), 0));
+  const govPts = Math.min(30, (a.governance ?? []).reduce((s, r) => s + sevPts(r.severity), 0));
+
+  // PAT trajectory: negative or declining adds penalty
+  const pat = (a.financialHighlights?.pat ?? [])
+    .filter((p) => p.valueCr != null)
+    .map((p) => p.valueCr as number);
+  let patPts = 0;
+  if (pat.length >= 2) {
+    const last = pat[pat.length - 1];
+    const prev = pat[pat.length - 2];
+    if (last < 0) patPts = 15;
+    else if (last < prev) patPts = 8;
+    else if (last < prev * 1.05) patPts = 3; // flat
+  }
+
+  // Contingent liabilities — large absolute ones add penalty
+  const liabSum = (a.contingentLiabilities ?? []).reduce((s, c) => s + (c.amountCr ?? 0), 0);
+  const liabPts = liabSum > 500 ? 10 : liabSum > 100 ? 5 : 0;
+
+  // Excessive related-party transactions
+  const rptCount = (a.relatedPartyTransactions ?? []).length;
+  const rptAmt = (a.relatedPartyTransactions ?? []).reduce((s, r) => s + (r.amountCr ?? 0), 0);
+  const rptPts = rptAmt > 200 ? 10 : rptCount >= 5 ? 6 : rptCount >= 3 ? 3 : 0;
+
+  const score = Math.min(100, rfPts + govPts + patPts + liabPts + rptPts);
+  const band: RiskScore["band"] =
+    score <= 25 ? "clean" : score <= 50 ? "watch" : score <= 75 ? "caution" : "high-risk";
+
+  const rationale: string[] = [];
+  if (rfPts >= 30) rationale.push(`Heavy risk-factor load (${a.riskFactors?.length ?? 0} flagged)`);
+  if (govPts >= 15) rationale.push(`Governance concerns flagged (${a.governance?.length ?? 0})`);
+  if (patPts >= 8) rationale.push(`PAT trajectory deteriorating year-on-year`);
+  if (liabPts >= 5) rationale.push(`Contingent liabilities total ₹${liabSum.toFixed(0)} Cr`);
+  if (rptPts >= 6) rationale.push(`High related-party transaction exposure`);
+  if (rationale.length === 0) rationale.push("No major flags surfaced from the prospectus extract.");
+
+  return {
+    score,
+    band,
+    components: {
+      riskFactorPoints: rfPts,
+      governancePoints: govPts,
+      patTrajectoryPoints: patPts,
+      contingentLiabPoints: liabPts,
+      rptPoints: rptPts,
+    },
+    rationale,
   };
 }
 
@@ -58,27 +147,28 @@ Output STRICT JSON (no markdown wrappers, no commentary) matching this exact sch
     "anchorPortionCr": <number or null>
   },
   "useOfProceeds": [
-    { "purpose": "<string>", "amountCr": <number or null>, "percent": <number or null> }
+    { "purpose": "<string>", "amountCr": <number or null>, "percent": <number or null>, "pageRef": "<eg. 'p. 122' or null>" }
   ],
   "riskFactors": [
-    { "severity": "high" | "medium" | "low", "headline": "<one line>", "detail": "<2-3 sentences>" }
+    { "severity": "high" | "medium" | "low", "headline": "<one line>", "detail": "<2-3 sentences>", "pageRef": "<eg. 'p. 47' or null>" }
   ],
   "governance": [
-    { "severity": "high" | "medium" | "low", "headline": "<one line>", "detail": "<2-3 sentences>" }
+    { "severity": "high" | "medium" | "low", "headline": "<one line>", "detail": "<2-3 sentences>", "pageRef": "<page or null>" }
   ],
   "relatedPartyTransactions": [
-    { "party": "<name>", "relationship": "<subsidiary | promoter | associate | KMP | director-controlled | ...>", "nature": "<loan | sale | service | guarantee | rent | ...>", "amountCr": <number or null> }
+    { "party": "<name>", "relationship": "<subsidiary | promoter | associate | KMP | director-controlled | ...>", "nature": "<loan | sale | service | guarantee | rent | ...>", "amountCr": <number or null>, "pageRef": "<page or null>" }
   ],
   "contingentLiabilities": [
-    { "description": "<string>", "amountCr": <number or null>, "status": "<string>" }
+    { "description": "<string>", "amountCr": <number or null>, "status": "<string>", "pageRef": "<page or null>" }
   ],
   "peerComparables": [
-    { "name": "<peer name>", "rationale": "<one line on why this is a peer>" }
+    { "name": "<peer name as it appears in prospectus>", "rationale": "<one line on why this is a peer>", "pageRef": "<page or null>" }
   ],
   "financialHighlights": {
     "revenue": [{ "year": "<FY23 etc.>", "valueCr": <number or null> }],
     "ebitda": [{ "year": "<FY23 etc.>", "valueCr": <number or null> }],
-    "pat":    [{ "year": "<FY23 etc.>", "valueCr": <number or null> }]
+    "pat":    [{ "year": "<FY23 etc.>", "valueCr": <number or null> }],
+    "pageRef": "<page where 'Restated Financial Information' begins, or null>"
   }
 }
 
@@ -88,11 +178,17 @@ EXTRACTION RULES — non-negotiable:
 3. governance: TOP 3 ONLY — concerns about board independence, auditor changes, qualified opinions, KMP attrition, promoter pledges, insider transactions.
 4. relatedPartyTransactions: TOP 5 ONLY by amount.
 5. contingentLiabilities: TOP 5 ONLY by amount.
-6. peerComparables: 3-5 peers — prefer those EXPLICITLY listed by the issuer. If none listed, infer from sector/market cap.
+6. peerComparables: 3-5 peers — STRONGLY prefer those EXPLICITLY listed in the "Basis for Issue Price" or "Comparison with Listed Peers" section. Use the company name as it appears in the prospectus (e.g. "Affle (India) Limited", not "Affle"). Only infer if none are listed.
 7. financialHighlights: Last 3 fiscal years if available.
 8. severity is YOUR analyst judgment based on materiality, not the issuer's framing.
 9. Compress issuer's verbose language to essentials. Be concise.
-10. If a section truly isn't present in the document, return [] or null. Don't pad.`;
+10. If a section truly isn't present in the document, return [] or null. Don't pad.
+
+PAGE CITATIONS — required on every extracted claim:
+- The prospectus PDF you receive has page numbers. Cite the page where each item appears.
+- Format pageRef as "p. NN" (e.g. "p. 47") or a range "p. 47-49" when the item spans pages.
+- If you genuinely cannot determine a page (e.g. derived from a table that spans many pages), set pageRef to null. Do not guess.
+- Page citations are how investors verify each claim against the source. Be precise.`;
 
 /** Minimum drift to treat the source URL as "changed" — strips query params */
 function normalizeUrl(url: string): string {

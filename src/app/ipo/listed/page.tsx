@@ -16,7 +16,7 @@ export default async function ListedIpoPage() {
   const ipos = await prisma.ipo.findMany({
     where: { status: "listed" },
     orderBy: { listingDate: "desc" },
-    include: { listing: true },
+    include: { listing: true, drhpAnalysis: true },
     take: 200,
   });
   return (
