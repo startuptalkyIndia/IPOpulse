@@ -17,6 +17,7 @@ import {
 import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
 import { SubscriptionVelocity } from "@/components/ipo/SubscriptionVelocity";
+import { DrhpAnalysisCard } from "@/components/ipo/DrhpAnalysisCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
@@ -60,6 +61,7 @@ export default async function IpoDetailPage({ params }: Props) {
       anchors: { orderBy: { value: "desc" } },
       listing: true,
       reviews: { orderBy: { publishedAt: "desc" } },
+      drhpAnalysis: true,
     },
   });
 
@@ -279,6 +281,26 @@ export default async function IpoDetailPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* AI-extracted DRHP / RHP intelligence — cached, no click needed */}
+      {ipo.drhpAnalysis ? (
+        <DrhpAnalysisCard
+          status={ipo.drhpAnalysis.status}
+          generatedBy={ipo.drhpAnalysis.generatedBy}
+          generatedAt={ipo.drhpAnalysis.generatedAt}
+          sourceType={ipo.drhpAnalysis.sourceType}
+          sourceUrl={ipo.drhpAnalysis.sourceUrl}
+          tldr={ipo.drhpAnalysis.tldr}
+          issueDetails={ipo.drhpAnalysis.issueDetails as never}
+          useOfProceeds={ipo.drhpAnalysis.useOfProceeds as never}
+          riskFactors={ipo.drhpAnalysis.riskFactors as never}
+          governance={ipo.drhpAnalysis.governance as never}
+          relatedPartyTransactions={ipo.drhpAnalysis.relatedPartyTransactions as never}
+          contingentLiabilities={ipo.drhpAnalysis.contingentLiabilities as never}
+          peerComparables={ipo.drhpAnalysis.peerComparables as never}
+          financialHighlights={ipo.drhpAnalysis.financialHighlights as never}
+        />
+      ) : null}
 
       {/* Subscription velocity over time — only renders if 2+ snapshots */}
       {ipo.subscriptions.length >= 2 ? (

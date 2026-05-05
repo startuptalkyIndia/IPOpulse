@@ -7,6 +7,7 @@ import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 import { sendDailyDigest } from "./jobs/daily-digest";
 import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
+import { analyzePendingDrhps } from "./jobs/drhp-analyze";
 
 let started = false;
 
@@ -68,7 +69,14 @@ export function startScheduler() {
     console.log(`[cron daily_market_summary] ${result.ok ? "ok" : "failed"}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri), daily_market_summary (16:30 IST Mon-Fri)");
+  // DRHP analyzer — every 6 hours. Caps at DRHP_MAX_PER_RUN (default 3) to
+  // protect Anthropic spend. Only re-analyzes when sourceUrl changes.
+  cron.schedule("17 */6 * * *", async () => {
+    const result = await runIngestion("drhp_analyze", analyzePendingDrhps);
+    console.log(`[cron drhp_analyze] ${result.ok ? "ok" : "failed"} analyzed=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri), daily_market_summary (16:30 IST Mon-Fri), drhp_analyze (every 6h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -79,4 +87,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   bse_announcements: ingestBseAnnouncements,
   daily_digest: sendDailyDigest,
   daily_market_summary: generateDailyMarketSummary,
+  drhp_analyze: analyzePendingDrhps,
 };
