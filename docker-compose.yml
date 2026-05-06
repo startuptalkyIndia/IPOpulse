@@ -29,10 +29,11 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:?NEXTAUTH_URL is required}
       - DATABASE_URL=postgresql://ipopulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/ipopulse
     volumes:
-      # Mount ~/.claude from the host so the Claude CLI (installed in Docker)
-      # can authenticate using the founder's existing Claude subscription.
-      # Server runs as ubuntu user → auth lives at /home/ubuntu/.claude
-      # Container runs as root → mount it to /root/.claude
+      # Mount Claude CLI binary + auth from host into container.
+      # Host (ubuntu user): binary at /usr/bin/claude, auth at /home/ubuntu/.claude
+      # Container (root): binary at /usr/local/bin/claude, auth at /root/.claude
+      # This activates DRHP AI, Concall AI, market summary — no ANTHROPIC_API_KEY needed.
+      - /usr/bin/claude:/usr/local/bin/claude:ro
       - /home/ubuntu/.claude:/root/.claude:ro
     depends_on:
       postgres:
