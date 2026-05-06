@@ -84,6 +84,11 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Mon–Fri at 22:30 IST",
     desc: "Fetches P/E, P/B, ROE, D/E, EPS, book value, and dividend yield for top 1,000 companies via Yahoo Finance quoteSummary API. Free, no auth. Powers the /screener filter columns.",
   },
+  nse_company_master: {
+    label: "NSE Company Master — full equity listing (~2,600 companies)",
+    schedule: "Monthly (run manually after first deploy)",
+    desc: "Downloads NSE EQUITY_L.csv and upserts all listed companies into the companies table. Run this ONCE after first deploy to populate screener, movers, market breadth, and bulk/insider deal matching. Safe to re-run — only updates name/ISIN, never clobbers prices or fundamentals.",
+  },
   bse_listing_sync: {
     label: "IPO listing price sync + GMP accuracy (Mon–Fri 20:00 IST)",
     schedule: "Mon–Fri at 20:00 IST",

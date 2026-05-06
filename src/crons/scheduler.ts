@@ -14,6 +14,7 @@ import { ingestYahooPrices } from "./jobs/yahoo-prices";
 import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
 import { ingestInsiderTrades } from "./jobs/nse-insider";
 import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
+import { ingestNseCompanyMaster } from "./jobs/nse-company-master";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
 
@@ -155,4 +156,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   super_investor: ingestSuperInvestorHoldings,
   screener_fundamentals: ingestScreenerFundamentals,
   bse_listing_sync: syncIpoListings,
+  nse_company_master: ingestNseCompanyMaster,
 };
