@@ -11,6 +11,9 @@ import { analyzePendingDrhps } from "./jobs/drhp-analyze";
 import { ingestUsIpos } from "./jobs/us-ipos";
 import { updateUsAdrs } from "./jobs/us-adrs";
 import { ingestYahooPrices } from "./jobs/yahoo-prices";
+import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
+import { ingestInsiderTrades } from "./jobs/nse-insider";
+import { refreshKiteToken } from "./jobs/kite-token-refresh";
 
 let started = false;
 
@@ -91,6 +94,25 @@ export function startScheduler() {
     console.log(`[cron us_adrs] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // Kite token auto-refresh via TOTP — 5:55am IST weekdays (before 6am expiry)
+  // Activates only when ZERODHA_USER_ID + ZERODHA_PASSWORD + ZERODHA_TOTP_SECRET are in .env
+  cron.schedule("55 5 * * 1-5", async () => {
+    const result = await runIngestion("kite_token_refresh", refreshKiteToken);
+    console.log(`[cron kite_token_refresh] ${result.ok ? "ok" : "failed"}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Bulk + block deals — daily at 5:30pm IST after NSE uploads
+  cron.schedule("30 17 * * 1-5", async () => {
+    const result = await runIngestion("nse_bulk_block", ingestBulkBlockDeals);
+    console.log(`[cron nse_bulk_block] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Insider trades — daily at 6pm IST (after bulk/block deals)
+  cron.schedule("0 18 * * 1-5", async () => {
+    const result = await runIngestion("nse_insider", ingestInsiderTrades);
+    console.log(`[cron nse_insider] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Indian stock live prices via Yahoo Finance — every 15 min during market hours
   // Free, no auth, ~15 min delayed. Replaces Kite Connect (₹500/mo) for screener data.
   cron.schedule("*/15 * * * *", async () => {
@@ -115,4 +137,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   us_ipos: ingestUsIpos,
   us_adrs: updateUsAdrs,
   yahoo_prices: ingestYahooPrices,
+  nse_bulk_block: ingestBulkBlockDeals,
+  nse_insider: ingestInsiderTrades,
+  kite_token_refresh: refreshKiteToken,
 };

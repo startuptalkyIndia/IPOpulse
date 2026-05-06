@@ -531,6 +531,73 @@ model IpoDrhpAnalysis {
 // US Investing for Indians (Round 30)
 // ============================================================
 
+// ============================================================
+// NSE / BSE Market Intelligence (Round 33)
+// ============================================================
+
+model BulkDeal {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @db.Date
+  exchange    String   // NSE | BSE
+  symbol      String
+  companyName String   @map("company_name")
+  clientName  String   @map("client_name")
+  dealType    String   @map("deal_type") // BUY | SELL
+  qty         BigInt
+  price       Decimal  @db.Decimal(12, 2)
+  valueCr     Decimal? @map("value_cr") @db.Decimal(14, 2)
+  createdAt   DateTime @default(now())
+
+  @@unique([date, exchange, symbol, clientName, dealType])
+  @@index([date])
+  @@index([symbol])
+  @@index([clientName])
+  @@map("bulk_deals")
+}
+
+model BlockDeal {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @db.Date
+  exchange    String
+  symbol      String
+  companyName String   @map("company_name")
+  clientName  String   @map("client_name")
+  dealType    String   @map("deal_type")
+  qty         BigInt
+  price       Decimal  @db.Decimal(12, 2)
+  valueCr     Decimal? @map("value_cr") @db.Decimal(14, 2)
+  createdAt   DateTime @default(now())
+
+  @@unique([date, exchange, symbol, clientName, dealType])
+  @@index([date])
+  @@index([symbol])
+  @@map("block_deals")
+}
+
+model InsiderTrade {
+  id              Int      @id @default(autoincrement())
+  date            DateTime @db.Date
+  exchange        String   // NSE | BSE
+  symbol          String
+  companyName     String   @map("company_name")
+  acquirerName    String   @map("acquirer_name")
+  acquirerType    String   @map("acquirer_type") // Promoter | Director | KMP | Other
+  securityType    String   @map("security_type") // Equity | Options | etc
+  tradeType       String   @map("trade_type") // Buy | Sell | Pledge | Revoke
+  qty             BigInt?
+  valueLakh       Decimal? @map("value_lakh") @db.Decimal(16, 2)
+  preHoldingPct   Decimal? @map("pre_holding_pct") @db.Decimal(8, 4)
+  postHoldingPct  Decimal? @map("post_holding_pct") @db.Decimal(8, 4)
+  disclosureDate  DateTime? @map("disclosure_date") @db.Date
+  createdAt       DateTime @default(now())
+
+  @@unique([date, exchange, symbol, acquirerName, tradeType, qty])
+  @@index([date])
+  @@index([symbol])
+  @@index([acquirerName])
+  @@map("insider_trades")
+}
+
 model UsIpo {
   id              Int      @id @default(autoincrement())
   symbol          String?  @unique
