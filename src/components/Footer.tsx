@@ -21,6 +21,8 @@ const columns = [
     title: "Markets",
     links: [
       { href: "/ticker", label: "Stock Ticker" },
+      { href: "/screener", label: "Stock Screener" },
+      { href: "/movers", label: "Gainers / Losers" },
       { href: "/sectors", label: "Sectors" },
       { href: "/sectors/momentum", label: "Sector Momentum" },
       { href: "/fii-dii", label: "FII/DII Activity" },
@@ -29,7 +31,7 @@ const columns = [
       { href: "/deals/bulk", label: "Bulk Deals" },
       { href: "/deals/block", label: "Block Deals" },
       { href: "/insider-trading", label: "Insider Trading" },
-      { href: "/movers", label: "Top Gainers / Losers" },
+      { href: "/unlisted-shares", label: "Unlisted Shares" },
       { href: "/corporate-actions", label: "Corporate Actions" },
       { href: "/mutual-funds", label: "Mutual Funds" },
     ],

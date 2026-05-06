@@ -61,6 +61,77 @@ export async function saveGmpEntry(formData: FormData) {
   return { ok: true };
 }
 
+export async function saveListingEntry(formData: FormData) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user?.email || (role !== "admin" && role !== "superadmin")) {
+    return { ok: false, error: "Forbidden" };
+  }
+
+  const ipoId = Number(formData.get("ipoId"));
+  const listingPrice = Number(formData.get("listingPrice"));
+  const dayClose = formData.get("dayClose") ? Number(formData.get("dayClose")) : null;
+  const dayHigh = formData.get("dayHigh") ? Number(formData.get("dayHigh")) : null;
+  const dayLow = formData.get("dayLow") ? Number(formData.get("dayLow")) : null;
+
+  if (!ipoId || !Number.isFinite(listingPrice) || listingPrice <= 0) {
+    return { ok: false, error: "IPO and listing price are required." };
+  }
+
+  const ipo = await prisma.ipo.findUnique({
+    where: { id: ipoId },
+    select: { slug: true, priceBandHigh: true },
+  });
+  if (!ipo) return { ok: false, error: "IPO not found" };
+
+  const issuePrice = ipo.priceBandHigh ? Number(ipo.priceBandHigh) : null;
+  const listingGainsPct = issuePrice
+    ? ((listingPrice - issuePrice) / issuePrice) * 100
+    : 0;
+
+  // Get last GMP entry before listing date
+  const lastGmp = await prisma.ipoGmp.findFirst({
+    where: { ipoId },
+    orderBy: { date: "desc" },
+    select: { gmp: true },
+  });
+  const gmpAtListing = lastGmp ? Number(lastGmp.gmp) : null;
+  const predictedPct = issuePrice && gmpAtListing != null
+    ? (gmpAtListing / issuePrice) * 100
+    : null;
+  const gmpError = predictedPct != null ? predictedPct - listingGainsPct : null;
+
+  await prisma.ipoListing.upsert({
+    where: { ipoId },
+    create: {
+      ipoId,
+      listingPrice,
+      listingGainsPct,
+      dayClose: dayClose ?? undefined,
+      dayHigh: dayHigh ?? undefined,
+      dayLow: dayLow ?? undefined,
+      gmpAtListing,
+      gmpError,
+    },
+    update: {
+      listingPrice,
+      listingGainsPct,
+      dayClose: dayClose ?? undefined,
+      dayHigh: dayHigh ?? undefined,
+      dayLow: dayLow ?? undefined,
+      gmpAtListing: gmpAtListing ?? undefined,
+      gmpError: gmpError ?? undefined,
+    },
+  });
+
+  revalidatePath("/sup-min/gmp");
+  revalidatePath(`/ipo/${ipo.slug}`);
+  revalidatePath("/ipo/gmp-accuracy");
+  maybePingSitemap().catch(() => {});
+
+  return { ok: true };
+}
+
 export async function deleteGmpEntry(id: number) {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;

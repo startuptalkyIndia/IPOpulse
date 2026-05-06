@@ -3,15 +3,16 @@ import { TrendingUp, User as UserIcon } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
 import { SearchPalette } from "./SearchPalette";
+import { MobileNav } from "./MobileNav";
 
 const links = [
   { href: "/ipo", label: "IPO" },
   { href: "/ticker", label: "Ticker" },
-  { href: "/sectors", label: "Sectors" },
+  { href: "/screener", label: "Screener" },
   { href: "/fii-dii", label: "FII/DII" },
   { href: "/market/breadth", label: "Breadth" },
   { href: "/calculators", label: "Calculators" },
-  { href: "/us-ipo", label: "US Markets" },
+  { href: "/us-ipo", label: "US" },
 ];
 
 export async function Nav() {
@@ -43,6 +44,7 @@ export async function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <MobileNav authed={authed} />
           <SearchPalette />
           <ThemeToggle />
           {authed ? (

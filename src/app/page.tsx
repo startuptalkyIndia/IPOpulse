@@ -9,6 +9,8 @@ import {
   LineChart,
   PieChart,
   FileText,
+  Filter,
+  Coins,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
@@ -88,6 +90,24 @@ const moduleCards = [
     icon: FileText,
     href: "/ipo/drhp",
     lines: ["Every IPO prospectus", "AI-powered search (coming)"],
+  },
+  {
+    title: "Screener",
+    icon: Filter,
+    href: "/screener",
+    lines: ["Filter 5,500+ stocks", "P/E · ROE · D/E · sector · market cap"],
+  },
+  {
+    title: "Gainers / Losers",
+    icon: TrendingUp,
+    href: "/movers",
+    lines: ["Today's top movers", "Delivery %, 52-week highs/lows"],
+  },
+  {
+    title: "Unlisted Shares",
+    icon: Coins,
+    href: "/unlisted-shares",
+    lines: ["Pre-IPO grey market prices", "Multi-dealer median index"],
   },
 ];
 
