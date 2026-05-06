@@ -8,10 +8,10 @@ const links = [
   { href: "/ipo", label: "IPO" },
   { href: "/ticker", label: "Ticker" },
   { href: "/sectors", label: "Sectors" },
-  { href: "/super-investor", label: "Super Investor" },
   { href: "/fii-dii", label: "FII/DII" },
+  { href: "/market/breadth", label: "Breadth" },
   { href: "/calculators", label: "Calculators" },
-  { href: "/compare", label: "Compare" },
+  { href: "/us-ipo", label: "US Markets" },
 ];
 
 export async function Nav() {

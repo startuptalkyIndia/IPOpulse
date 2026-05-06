@@ -24,6 +24,30 @@ const moduleCards = [
     lines: ["Upcoming · Live · Closed · Listed", "GMP · Subscription · Allotment"],
   },
   {
+    title: "Insider Trading",
+    icon: Users,
+    href: "/insider-trading",
+    lines: ["Promoter buy/sell disclosures", "SEBI SAST filings daily"],
+  },
+  {
+    title: "Bulk & Block Deals",
+    icon: Activity,
+    href: "/deals/bulk",
+    lines: ["Large institutional trades", "NSE bulk + block deals daily"],
+  },
+  {
+    title: "US Markets",
+    icon: PieChart,
+    href: "/us-ipo",
+    lines: ["US IPO tracker", "Indian ADRs · LRS calculator"],
+  },
+  {
+    title: "Market Breadth",
+    icon: LineChart,
+    href: "/market/breadth",
+    lines: ["Advance / decline ratio", "52-week highs · Circuit breakers"],
+  },
+  {
     title: "Ticker",
     icon: LineChart,
     href: "/ticker",

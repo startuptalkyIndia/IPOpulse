@@ -34,6 +34,46 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Every 2h between 09:00–21:00 IST",
     desc: "Scrapes api.bseindia.com/BseIndiaAPI/api/AnnSubCategoryGetData. Captures every announcement, auto-detects corporate actions (dividend/split/bonus/rights/buyback/AGM/board meeting) and inserts into corporate_actions.",
   },
+  daily_digest: {
+    label: "Daily email digest (Mon–Fri 07:00 IST)",
+    schedule: "Mon–Fri at 07:00 IST",
+    desc: "Sends daily IPO digest email to verified newsletter subscribers. Covers live + upcoming IPOs and FII/DII flows. Requires RESEND_API_KEY.",
+  },
+  daily_market_summary: {
+    label: "Daily market summary (Mon–Fri 16:30 IST)",
+    schedule: "Mon–Fri at 16:30 IST",
+    desc: "AI-generated EOD market wrap — top gainers/losers, FII/DII, sentiment. Stores in market_summaries table. Works via ANTHROPIC_API_KEY or Claude CLI.",
+  },
+  drhp_analyze: {
+    label: "DRHP AI analysis (every 6h)",
+    schedule: "Every 6 hours",
+    desc: "Auto-extracts risk factors, governance flags, related-party transactions, peer comparables, and risk score from new DRHP/RHP filings. Cap: DRHP_MAX_PER_RUN (default 3) per run. Works via ANTHROPIC_API_KEY or Claude CLI.",
+  },
+  us_ipos: {
+    label: "US IPO tracker — SEC EDGAR S-1 filings (every 6h)",
+    schedule: "Every 6 hours",
+    desc: "Fetches recent S-1 filings from SEC EDGAR full-text search API. Populates /us-ipo. No auth required.",
+  },
+  us_adrs: {
+    label: "US ADR prices — Yahoo Finance (Mon–Fri 22:00 IST)",
+    schedule: "Mon–Fri at 22:00 IST",
+    desc: "Fetches ADR closing prices for 12 Indian companies cross-listed on NYSE/NASDAQ via Yahoo Finance. Computes NSE vs ADR premium/discount. Populates /us-listing.",
+  },
+  yahoo_prices: {
+    label: "Indian stock prices — Yahoo Finance (every 15 min, market hours)",
+    schedule: "Every 15 min, 09:10–15:50 IST Mon–Fri",
+    desc: "Fetches live prices for top 500 NSE stocks via Yahoo Finance batch quote API. ~15 min delayed. Free. Replaces Kite Connect. Populates screener + ticker pages.",
+  },
+  nse_bulk_block: {
+    label: "NSE Bulk + Block deals (Mon–Fri 17:30 IST)",
+    schedule: "Mon–Fri at 17:30 IST",
+    desc: "Fetches last 30 days of bulk deals (>0.5% of company shares traded in one session) and block deals (pre-negotiated ≥₹10Cr trades) from NSE historical API. Populates /deals/bulk and /deals/block.",
+  },
+  nse_insider: {
+    label: "NSE Insider trading / SAST disclosures (Mon–Fri 18:00 IST)",
+    schedule: "Mon–Fri at 18:00 IST",
+    desc: "Fetches SEBI SAST disclosures for top 200 companies — promoter, director, and KMP buy/sell/pledge events. Rate-limited (500ms between companies). Populates /insider-trading.",
+  },
 };
 
 export default async function AdminIngestionPage() {
