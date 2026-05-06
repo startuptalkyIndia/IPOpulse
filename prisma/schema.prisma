@@ -527,6 +527,59 @@ model IpoDrhpAnalysis {
   @@map("ipo_drhp_analyses")
 }
 
+// ============================================================
+// US Investing for Indians (Round 30)
+// ============================================================
+
+model UsIpo {
+  id              Int      @id @default(autoincrement())
+  symbol          String?  @unique
+  companyName     String   @map("company_name")
+  slug            String   @unique
+  exchange        String?  // NYSE | NASDAQ | NYSE American
+  filedDate       DateTime? @map("filed_date") @db.Date
+  expectedDate    DateTime? @map("expected_date") @db.Date
+  priceLow        Decimal?  @map("price_low") @db.Decimal(10, 2)
+  priceHigh       Decimal?  @map("price_high") @db.Decimal(10, 2)
+  sizeUsdMn       Decimal?  @map("size_usd_mn") @db.Decimal(14, 2)
+  sector          String?
+  description     String?   @db.Text
+  s1Url           String?   @map("s1_url") @db.Text
+  status          String    @default("upcoming") // upcoming | priced | trading | withdrawn
+  listingPriceUsd Decimal?  @map("listing_price_usd") @db.Decimal(10, 2)
+  currentPriceUsd Decimal?  @map("current_price_usd") @db.Decimal(10, 2)
+  listingGainPct  Decimal?  @map("listing_gain_pct") @db.Decimal(8, 2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([expectedDate])
+  @@map("us_ipos")
+}
+
+model UsAdrlisting {
+  id              Int      @id @default(autoincrement())
+  companyName     String   @map("company_name")
+  slug            String   @unique
+  nseSymbol       String?  @map("nse_symbol")
+  bseCode         String?  @map("bse_code")
+  adrSymbol       String   @map("adr_symbol")
+  exchange        String?  // NYSE | NASDAQ
+  ratio           String?  // e.g. "1 ADR = 2 NSE shares"
+  nsePrice        Decimal? @map("nse_price") @db.Decimal(12, 2)
+  adrPriceUsd     Decimal? @map("adr_price_usd") @db.Decimal(10, 2)
+  premiumPct      Decimal? @map("premium_pct") @db.Decimal(8, 2)
+  usdInrRate      Decimal? @map("usd_inr_rate") @db.Decimal(8, 4)
+  pricesAt        DateTime? @map("prices_at")
+  sector          String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([adrSymbol])
+  @@map("us_adr_listings")
+}
+
 model MarketSummary {
   id          Int      @id @default(autoincrement())
   date        DateTime @unique  // one row per trading day

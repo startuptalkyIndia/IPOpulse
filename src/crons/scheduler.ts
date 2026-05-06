@@ -8,6 +8,8 @@ import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 import { sendDailyDigest } from "./jobs/daily-digest";
 import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
 import { analyzePendingDrhps } from "./jobs/drhp-analyze";
+import { ingestUsIpos } from "./jobs/us-ipos";
+import { updateUsAdrs } from "./jobs/us-adrs";
 
 let started = false;
 
@@ -76,7 +78,19 @@ export function startScheduler() {
     console.log(`[cron drhp_analyze] ${result.ok ? "ok" : "failed"} analyzed=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii (19:15 IST Mon-Fri), bse_ipos (every 4h), amfi_navs (23:00 IST), nse_bhavcopy (19:00 Mon-Fri), bse_announcements (every 2h 9-21 IST), daily_digest (07:00 IST Mon-Fri), daily_market_summary (16:30 IST Mon-Fri), drhp_analyze (every 6h)");
+  // US IPO tracker — SEC EDGAR S-1 feed, every 6 hours
+  cron.schedule("45 */6 * * *", async () => {
+    const result = await runIngestion("us_ipos", ingestUsIpos);
+    console.log(`[cron us_ipos] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // US ADR prices — Yahoo Finance, daily at 22:00 IST (US market close ~21:30 IST)
+  cron.schedule("0 22 * * 1-5", async () => {
+    const result = await runIngestion("us_adrs", updateUsAdrs);
+    console.log(`[cron us_adrs] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii, bse_ipos, amfi_navs, nse_bhavcopy, bse_announcements, daily_digest, daily_market_summary, drhp_analyze, us_ipos, us_adrs");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -88,4 +102,6 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   daily_digest: sendDailyDigest,
   daily_market_summary: generateDailyMarketSummary,
   drhp_analyze: analyzePendingDrhps,
+  us_ipos: ingestUsIpos,
+  us_adrs: updateUsAdrs,
 };

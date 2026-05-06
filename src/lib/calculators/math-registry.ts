@@ -17,6 +17,8 @@ import {
   ltcgStcgCalc,
   fnoMarginCalc,
   goalCalc,
+  lrsTcsCalc,
+  usdReturnsCalc,
 } from "./math";
 import type { CalcResult } from "./types";
 
@@ -41,4 +43,6 @@ export const mathBySlug: Record<string, (i: Record<string, number>) => CalcResul
   "ltcg-stcg": ltcgStcgCalc,
   "fno-margin": fnoMarginCalc,
   goal: goalCalc,
+  "lrs-tcs": lrsTcsCalc,
+  "usd-returns": usdReturnsCalc,
 };
