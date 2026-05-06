@@ -10,6 +10,7 @@ import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
 import { analyzePendingDrhps } from "./jobs/drhp-analyze";
 import { ingestUsIpos } from "./jobs/us-ipos";
 import { updateUsAdrs } from "./jobs/us-adrs";
+import { ingestYahooPrices } from "./jobs/yahoo-prices";
 
 let started = false;
 
@@ -90,7 +91,16 @@ export function startScheduler() {
     console.log(`[cron us_adrs] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii, bse_ipos, amfi_navs, nse_bhavcopy, bse_announcements, daily_digest, daily_market_summary, drhp_analyze, us_ipos, us_adrs");
+  // Indian stock live prices via Yahoo Finance — every 15 min during market hours
+  // Free, no auth, ~15 min delayed. Replaces Kite Connect (₹500/mo) for screener data.
+  cron.schedule("*/15 * * * *", async () => {
+    const result = await runIngestion("yahoo_prices", ingestYahooPrices);
+    if (result.rowsIn && result.rowsIn > 0) {
+      console.log(`[cron yahoo_prices] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    }
+  }, { timezone: "Asia/Kolkata" });
+
+  console.log("[scheduler] Registered: nse_fii_dii, bse_ipos, amfi_navs, nse_bhavcopy, bse_announcements, daily_digest, daily_market_summary, drhp_analyze, us_ipos, us_adrs, yahoo_prices");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -104,4 +114,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   drhp_analyze: analyzePendingDrhps,
   us_ipos: ingestUsIpos,
   us_adrs: updateUsAdrs,
+  yahoo_prices: ingestYahooPrices,
 };
