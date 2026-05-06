@@ -240,38 +240,22 @@ export default async function HomePage() {
         <NewsletterSignup variant="card" />
       </section>
 
-      {/* Coming soon data teasers */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-900">Live IPOs</h3>
-              <span className="badge badge-warning">Wiring up</span>
-            </div>
-            <p className="text-xs text-gray-500">
-              Real-time subscription status (Retail / NII / QIB / Employee), anchor allocations, and
-              GMP with full history.
-            </p>
-          </div>
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-900">FII / DII Today</h3>
-              <span className="badge badge-warning">Wiring up</span>
-            </div>
-            <p className="text-xs text-gray-500">
-              Daily cash and F&amp;O flows from NSE, plus NSDL's monthly FPI AUC with sector-wise
-              breakdown charts.
-            </p>
-          </div>
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-900">Super Investor Moves</h3>
-              <span className="badge badge-warning">Wiring up</span>
-            </div>
-            <p className="text-xs text-gray-500">
-              Rekha Jhunjhunwala, Damani, Kacholia, Kedia and 40+ others — every quarterly move,
-              with free email alerts.
-            </p>
+      {/* Why IPOpulse strip */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <div className="bg-indigo-50 rounded-2xl px-6 py-8 md:px-10">
+          <h2 className="text-base font-semibold text-indigo-900 mb-4">Why IPOpulse?</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { stat: "5,500+", label: "Listed companies tracked" },
+              { stat: "20+", label: "Free calculators" },
+              { stat: "Daily", label: "FII/DII & bulk deal updates" },
+              { stat: "AI", label: "DRHP risk analysis & summaries" },
+            ].map((item) => (
+              <div key={item.stat} className="text-center">
+                <div className="text-2xl font-bold text-indigo-700">{item.stat}</div>
+                <div className="text-xs text-indigo-600 mt-0.5">{item.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
