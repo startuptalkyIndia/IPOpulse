@@ -4,14 +4,20 @@ import { availableJobs } from "@/crons/scheduler";
 import { runIngestion } from "@/crons/runIngestion";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ job: string }> },
 ) {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  // Cron triggers are admin-only — any logged-in user must NOT be allowed
-  if (role !== "admin" && role !== "superadmin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Allow either admin session OR a shared CRON_SECRET header (for server-side curl triggers)
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = request.headers.get("authorization");
+  const secretOk = cronSecret && authHeader === `Bearer ${cronSecret}`;
+
+  if (!secretOk) {
+    const session = await auth();
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    if (role !== "admin" && role !== "superadmin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const { job } = await params;
