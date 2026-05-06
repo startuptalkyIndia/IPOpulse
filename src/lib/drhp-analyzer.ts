@@ -209,6 +209,13 @@ export function urlChanged(prev: string | null | undefined, next: string): boole
  * Run the analysis via the Anthropic SDK with the prospectus URL as a
  * `document` content block. Returns parsed JSON or throws.
  */
+/**
+ * Run the analysis via the Anthropic SDK with the prospectus URL as a
+ * `document` content block. This path requires ANTHROPIC_API_KEY.
+ * Note: PDF document blocks are only supported via the SDK (not CLI),
+ * so the DRHP deep-dive always uses SDK when available, and falls back
+ * to a text-extraction prompt via CLI when not.
+ */
 export async function analyzeDrhpViaSdk(opts: {
   apiKey: string;
   pdfUrl: string;
@@ -249,6 +256,25 @@ export async function analyzeDrhpViaSdk(opts: {
   }
   const parsed = JSON.parse(jsonMatch[0]) as DrhpAnalysis;
   return { analysis: parsed, modelUsed: model };
+}
+
+/**
+ * Auto-select: uses SDK (PDF document block) if ANTHROPIC_API_KEY is set,
+ * otherwise falls back to Claude CLI. The CLI path fetches the PDF text
+ * by instructing Claude to read the URL directly via its web tool.
+ */
+export async function analyzeDrhpAuto(opts: {
+  pdfUrl: string;
+  ipoName: string;
+  ipoType: string;
+  sourceType: "DRHP" | "RHP";
+}): Promise<{ analysis: DrhpAnalysis; modelUsed: string }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (apiKey) {
+    return analyzeDrhpViaSdk({ ...opts, apiKey });
+  }
+  // CLI path
+  return analyzeDrhpViaClaudeCli(opts);
 }
 
 /**

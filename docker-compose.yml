@@ -28,12 +28,18 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
       - NEXTAUTH_URL=${NEXTAUTH_URL:?NEXTAUTH_URL is required}
       - DATABASE_URL=postgresql://ipopulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/ipopulse
+    volumes:
+      # Mount ~/.claude from the host so the Claude CLI (installed in Docker)
+      # can authenticate using the founder's existing Claude subscription.
+      # After deploying, run `claude` once on the server to log in, then
+      # restart this container — all AI features activate without ANTHROPIC_API_KEY.
+      - /root/.claude:/root/.claude:ro
     depends_on:
       postgres:
         condition: service_healthy
     # Heavy app tier per _shared/templates/docker-compose.template.yml — IPOpulse runs
     # BSE/NSE/AMFI/NSDL/SEBI cron crawlers, dynamic OG image generation via @vercel/og,
-    # Anthropic SDK calls (DRHP search), and Recharts SSR. Justifies the 2g / 2.0 cpus tier.
+    # Anthropic SDK calls / Claude CLI (DRHP search), and Recharts SSR.
     mem_limit: 2g
     memswap_limit: 3g
     cpus: 2.0

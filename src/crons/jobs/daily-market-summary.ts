@@ -63,16 +63,16 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
     take: 5,
   });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  let headline = "Indian markets close mixed";
-  let body = "Market closed for the day. AI narrative is disabled (ANTHROPIC_API_KEY missing).";
+  let headline = "Indian markets close for the day";
+  let body = "AI narrative not yet generated. Summary updates once Claude is configured.";
   let sentiment: string | null = null;
   let generatedBy: string | null = null;
 
-  if (apiKey) {
+  // Uses SDK or CLI — whichever is available
+  const { callClaudeJson, claudeAvailable } = await import("@/lib/claude-runner");
+  const { available, via } = await claudeAvailable();
+  if (available) {
     try {
-      const { default: Anthropic } = await import("@anthropic-ai/sdk");
-      const client = new Anthropic({ apiKey });
       const ctx = JSON.stringify({
         date: latestDate.date.toISOString().slice(0, 10),
         topGainers: gainers.slice(0, 5).map((g) => ({ n: g.name, p: g.pct.toFixed(2) })),
@@ -81,22 +81,15 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
         diiNet: diiNet?.toFixed(0),
         liveIpos: liveIpos.map((i) => i.name),
       });
-      const resp = await client.messages.create({
-        model: "claude-sonnet-4-5",
-        max_tokens: 600,
+      const parsed = await callClaudeJson<{ headline: string; body: string; sentiment: string }>({
         system: `You are an Indian equity-market commentator. Write a sharp, factual end-of-day market wrap (under 200 words). Output strict JSON: { headline: string (1 line), body: string (3 short paragraphs, plain text), sentiment: "bullish" | "neutral" | "bearish" }. Don't editorialize beyond the data. Be concrete: name companies, cite percentages, mention FII/DII flows.`,
-        messages: [{ role: "user", content: `Today's snapshot: ${ctx}\n\nWrite the wrap.` }],
+        user: `Today's snapshot: ${ctx}\n\nWrite the wrap.`,
+        maxTokens: 600,
       });
-      const textBlock = resp.content.find((b) => b.type === "text");
-      const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
-      const m = raw.match(/\{[\s\S]*\}/);
-      if (m) {
-        const parsed = JSON.parse(m[0]) as { headline: string; body: string; sentiment: string };
-        headline = parsed.headline;
-        body = parsed.body;
-        sentiment = parsed.sentiment;
-      }
-      generatedBy = "claude-sonnet-4-5";
+      headline = parsed.headline;
+      body = parsed.body;
+      sentiment = parsed.sentiment;
+      generatedBy = via === "cli" ? "claude-cli" : "claude-sonnet-4-5";
     } catch (err) {
       console.error("[daily-summary] AI call failed:", err);
     }

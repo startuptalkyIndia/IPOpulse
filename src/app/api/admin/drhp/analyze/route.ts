@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { analyzeDrhpViaSdk, analyzeDrhpViaClaudeCli } from "@/lib/drhp-analyzer";
+import { analyzeDrhpAuto, analyzeDrhpViaClaudeCli } from "@/lib/drhp-analyzer";
 import { persistAnalysis } from "@/crons/jobs/drhp-analyze";
 
 /**
@@ -49,23 +49,11 @@ export async function POST(request: Request) {
   try {
     let result: { analysis: import("@/lib/drhp-analyzer").DrhpAnalysis; modelUsed: string };
 
+    // "cli" forces the Claude CLI path; default "sdk" uses auto-detect (SDK → CLI)
     if (via === "cli") {
-      result = await analyzeDrhpViaClaudeCli({
-        pdfUrl,
-        ipoName: ipo.name,
-        ipoType: ipo.type,
-        sourceType,
-      });
+      result = await analyzeDrhpViaClaudeCli({ pdfUrl, ipoName: ipo.name, ipoType: ipo.type, sourceType });
     } else {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
-      if (!apiKey) return NextResponse.json({ error: "ANTHROPIC_API_KEY missing on server" }, { status: 503 });
-      result = await analyzeDrhpViaSdk({
-        apiKey,
-        pdfUrl,
-        ipoName: ipo.name,
-        ipoType: ipo.type,
-        sourceType,
-      });
+      result = await analyzeDrhpAuto({ pdfUrl, ipoName: ipo.name, ipoType: ipo.type, sourceType });
     }
 
     await persistAnalysis(ipo.id, pdfUrl, sourceType, result.analysis, result.modelUsed);

@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { callClaudeJson, claudeAvailable, ClaudeUnavailableError } from "@/lib/claude-runner";
 
 /**
- * Earnings concall summarizer. Paste a transcript, get structured insights:
- *   - 3-line TL;DR
- *   - guidance changes (raised / lowered / reaffirmed)
- *   - sentiment (bullish / neutral / bearish)
- *   - key takeaways (5-7 bullets)
- *   - red flags (concentrations, debt, regulatory)
- *
- * Auth: signed-in users only. Rate-limited to 5 req/min/user (cost guard).
+ * Earnings concall summarizer — works via Anthropic SDK OR Claude CLI.
+ * Paste a transcript, get structured JSON: TL;DR, sentiment, guidance, takeaways, red flags, numbers, quotes.
  */
 
 const rateMap = new Map<string, { count: number; resetAt: number }>();
@@ -35,12 +30,9 @@ export async function POST(request: Request) {
     rateMap.set(userId, { count: 1, resetAt: now + WINDOW });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "Concall AI is not enabled — ANTHROPIC_API_KEY missing." },
-      { status: 503 },
-    );
+  const { available, via } = await claudeAvailable();
+  if (!available) {
+    return NextResponse.json({ error: "Concall AI not available. Set ANTHROPIC_API_KEY or install the Claude CLI." }, { status: 503 });
   }
 
   const body = await request.json().catch(() => ({}));
@@ -55,49 +47,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Transcript too long (max 200K chars)" }, { status: 400 });
   }
 
-  try {
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
-    const resp = await client.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 2000,
-      system: `You are an Indian equity-research analyst summarizing an earnings concall.
+  const SYSTEM = `You are an Indian equity-research analyst summarizing an earnings concall.
 Output strict JSON with the keys exactly:
   tldr: string (3 lines, plain text)
   sentiment: "bullish" | "neutral" | "bearish"
   guidance: "raised" | "reaffirmed" | "lowered" | "withdrawn" | "not-given"
   keyTakeaways: string[] (5-7 bullets, factual, no opinion)
   redFlags: string[] (0-5 bullets — concentrations, debt, regulatory, attrition, deferred revenue, etc.)
-  numbers: { metric: string, value: string, vsLast: string }[] (5-10 quoted numerical disclosures from the call)
+  numbers: { metric: string, value: string, vsLast: string }[] (5-10 quoted numerical disclosures)
   quotedFromManagement: string[] (3-5 verbatim quotes that capture key shifts)
+Be precise. Quote actual numbers. Do NOT invent figures.`;
 
-Be precise. Quote actual numbers from the transcript. Do NOT invent figures. If a value is not stated, omit it.`,
-      messages: [
-        {
-          role: "user",
-          content: `Company: ${company || "(unspecified)"}\nQuarter: ${quarter || "(unspecified)"}\n\nTranscript:\n\n${transcript}`,
-        },
-      ],
+  try {
+    const summary = await callClaudeJson({
+      system: SYSTEM,
+      user: `Company: ${company || "(unspecified)"}\nQuarter: ${quarter || "(unspecified)"}\n\nTranscript:\n\n${transcript}`,
+      maxTokens: 2000,
     });
-    const textBlock = resp.content.find((b) => b.type === "text");
-    const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
-
-    // Try to extract JSON (Claude sometimes wraps in markdown code fences)
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: "AI response was not valid JSON", raw }, { status: 500 });
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(jsonMatch[0]);
-    } catch {
-      return NextResponse.json({ error: "AI returned invalid JSON", raw }, { status: 500 });
-    }
-    return NextResponse.json({ summary: parsed });
+    return NextResponse.json({ summary, via });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "AI request failed" },
-      { status: 500 },
-    );
+    if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "AI failed" }, { status: 500 });
   }
 }

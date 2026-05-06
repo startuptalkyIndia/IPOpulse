@@ -23,6 +23,12 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 RUN apk add --no-cache openssl
 
+# Install Claude CLI for AI features without requiring ANTHROPIC_API_KEY.
+# Credentials are mounted from the host at ~/.claude (see docker-compose.yml).
+# If `npm install -g` fails in CI/CD (offline build), the app still works —
+# claude-runner.ts gracefully falls back to SDK if the binary isn't found.
+RUN npm install -g @anthropic-ai/claude-code --legacy-peer-deps 2>/dev/null || true
+
 ENV NODE_ENV=production
 ENV PORT=3065
 ENV HOSTNAME=0.0.0.0

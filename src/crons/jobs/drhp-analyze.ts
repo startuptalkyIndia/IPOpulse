@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { analyzeDrhpViaSdk, urlChanged, computeRiskScore, type DrhpAnalysis } from "@/lib/drhp-analyzer";
+import { analyzeDrhpAuto, urlChanged, computeRiskScore, type DrhpAnalysis } from "@/lib/drhp-analyzer";
 import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 
 /**
@@ -21,9 +21,11 @@ import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 const MAX_PER_RUN = parseInt(process.env.DRHP_MAX_PER_RUN ?? "3", 10);
 
 export async function analyzePendingDrhps(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { rowsIn: 0, notes: "ANTHROPIC_API_KEY missing — DRHP analyzer skipped." };
+  // Check if any Claude path is available (SDK or CLI)
+  const { claudeAvailable } = await import("@/lib/claude-runner");
+  const { available, via } = await claudeAvailable();
+  if (!available) {
+    return { rowsIn: 0, notes: "No Claude path available. Set ANTHROPIC_API_KEY or install the Claude CLI." };
   }
 
   // Candidate IPOs:
@@ -77,8 +79,7 @@ export async function analyzePendingDrhps(): Promise<{ rowsIn: number; rowsError
     });
 
     try {
-      const { analysis, modelUsed } = await analyzeDrhpViaSdk({
-        apiKey,
+      const { analysis, modelUsed } = await analyzeDrhpAuto({
         pdfUrl: w.pdfUrl,
         ipoName: w.ipo.name,
         ipoType: w.ipo.type,
