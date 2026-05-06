@@ -74,6 +74,21 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Mon–Fri at 18:00 IST",
     desc: "Fetches SEBI SAST disclosures for top 200 companies — promoter, director, and KMP buy/sell/pledge events. Rate-limited (500ms between companies). Populates /insider-trading.",
   },
+  super_investor: {
+    label: "Super Investor holdings — BSE quarterly filings (monthly, 15th)",
+    schedule: "Monthly on the 15th at 09:00 IST",
+    desc: "Fetches BSE shareholding pattern for top 500 companies, matches holder names to our 15+ tracked investors, computes QoQ change, and upserts into super_investor_holdings. Trigger manually after every quarterly disclosure season (Jan/Apr/Jul/Oct).",
+  },
+  screener_fundamentals: {
+    label: "Screener fundamentals — Yahoo Finance (Mon–Fri 22:30 IST)",
+    schedule: "Mon–Fri at 22:30 IST",
+    desc: "Fetches P/E, P/B, ROE, D/E, EPS, book value, and dividend yield for top 1,000 companies via Yahoo Finance quoteSummary API. Free, no auth. Powers the /screener filter columns.",
+  },
+  bse_listing_sync: {
+    label: "IPO listing price sync + GMP accuracy (Mon–Fri 20:00 IST)",
+    schedule: "Mon–Fri at 20:00 IST",
+    desc: "Finds newly-listed IPOs without an IpoListing record, matches them to BhavcopyDaily data for their listing day, calculates listing gain % vs issue price, captures last GMP as gmpAtListing, and stores gmpError. Powers the GMP Accuracy Scorecard at /ipo/gmp-accuracy.",
+  },
 };
 
 export default async function AdminIngestionPage() {

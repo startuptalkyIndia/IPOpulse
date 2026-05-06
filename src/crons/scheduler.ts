@@ -13,6 +13,9 @@ import { updateUsAdrs } from "./jobs/us-adrs";
 import { ingestYahooPrices } from "./jobs/yahoo-prices";
 import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
 import { ingestInsiderTrades } from "./jobs/nse-insider";
+import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
+import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
+import { syncIpoListings } from "./jobs/bse-listing-sync";
 
 let started = false;
 
@@ -105,6 +108,24 @@ export function startScheduler() {
     console.log(`[cron nse_insider] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // Super Investor holdings — BSE quarterly filings, monthly on the 15th at 9 AM IST
+  cron.schedule("0 9 15 * *", async () => {
+    const result = await runIngestion("super_investor", ingestSuperInvestorHoldings);
+    console.log(`[cron super_investor] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Screener fundamentals — Yahoo Finance quoteSummary, nightly at 10:30 PM IST
+  cron.schedule("30 22 * * 1-5", async () => {
+    const result = await runIngestion("screener_fundamentals", ingestScreenerFundamentals);
+    console.log(`[cron screener_fundamentals] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // IPO listing sync — auto-capture listing price + gmpAtListing, daily at 8 PM IST (after bhavcopy at 7 PM)
+  cron.schedule("0 20 * * 1-5", async () => {
+    const result = await runIngestion("bse_listing_sync", syncIpoListings);
+    console.log(`[cron bse_listing_sync] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Indian stock live prices via Yahoo Finance — every 15 min during market hours
   // Free, no auth, ~15 min delayed. Replaces Kite Connect (₹500/mo) for screener data.
   cron.schedule("*/15 * * * *", async () => {
@@ -131,4 +152,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   yahoo_prices: ingestYahooPrices,
   nse_bulk_block: ingestBulkBlockDeals,
   nse_insider: ingestInsiderTrades,
+  super_investor: ingestSuperInvestorHoldings,
+  screener_fundamentals: ingestScreenerFundamentals,
+  bse_listing_sync: syncIpoListings,
 };

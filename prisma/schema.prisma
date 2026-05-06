@@ -171,15 +171,40 @@ model Company {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  bhavcopy         BhavcopyDaily[]
-  announcements    Announcement[]
-  corporateActions CorporateAction[]
+  bhavcopy              BhavcopyDaily[]
+  announcements         Announcement[]
+  corporateActions      CorporateAction[]
+  superInvestorHoldings SuperInvestorHolding[]
 
   @@index([sector])
   @@index([marketCap])
   @@index([peRatio])
   @@index([roePercent])
   @@map("companies")
+}
+
+// ============================================================
+// Super Investor Holdings
+// ============================================================
+
+model SuperInvestorHolding {
+  id           Int      @id @default(autoincrement())
+  investorSlug String   @map("investor_slug")
+  companyId    Int      @map("company_id")
+  quarter      String   // "Q4FY25", "Q1FY26"
+  pctHeld      Decimal  @map("pct_held") @db.Decimal(7, 3)
+  sharesHeld   BigInt?  @map("shares_held")
+  valueCr      Decimal? @map("value_cr") @db.Decimal(16, 2)
+  qoqChange    String?  @map("qoq_change") // new|added|same|reduced|exited
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([investorSlug, companyId, quarter])
+  @@index([investorSlug, quarter])
+  @@index([companyId])
+  @@map("super_investor_holdings")
 }
 
 // ============================================================
