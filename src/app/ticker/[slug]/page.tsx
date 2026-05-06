@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
+import { PriceChart } from "@/components/PriceChart";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -83,7 +84,7 @@ export default async function CompanyPage({ params }: Props) {
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="text-xs text-gray-500">LTP</div>
-            <div className="text-sm font-semibold text-gray-400 tabular-nums mt-0.5">Live price soon</div>
+            <div className="text-sm font-semibold text-gray-400 tabular-nums mt-0.5 text-[11px]">See chart below</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="text-xs text-gray-500">P/E</div>
@@ -127,6 +128,13 @@ export default async function CompanyPage({ params }: Props) {
             ))}
           </div>
         </section>
+      ) : null}
+
+      {/* Price chart — Yahoo Finance, 15-min delayed, free */}
+      {company.nseSymbol ? (
+        <PriceChart symbol={company.nseSymbol} name={company.name} />
+      ) : company.bseCode ? (
+        <PriceChart symbol={`${company.bseCode}.BO`} name={company.name} />
       ) : null}
 
       <DiscussionThread targetType="stock" targetSlug={company.slug} />
