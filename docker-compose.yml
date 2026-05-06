@@ -31,9 +31,9 @@ services:
     volumes:
       # Mount ~/.claude from the host so the Claude CLI (installed in Docker)
       # can authenticate using the founder's existing Claude subscription.
-      # After deploying, run `claude` once on the server to log in, then
-      # restart this container — all AI features activate without ANTHROPIC_API_KEY.
-      - /root/.claude:/root/.claude:ro
+      # Server runs as ubuntu user → auth lives at /home/ubuntu/.claude
+      # Container runs as root → mount it to /root/.claude
+      - /home/ubuntu/.claude:/root/.claude:ro
     depends_on:
       postgres:
         condition: service_healthy
