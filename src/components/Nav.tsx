@@ -20,14 +20,14 @@ export async function Nav() {
   const authed = !!session?.user;
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm">
             <TrendingUp className="w-4 h-4" />
           </div>
           <span className="font-bold text-gray-900 text-lg">
-            IPO<span className="text-indigo-600">pulse</span>
+            IPO<span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">pulse</span>
           </span>
         </Link>
 

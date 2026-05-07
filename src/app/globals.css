@@ -107,3 +107,17 @@ body {
 .badge-error {
   @apply bg-red-100 text-red-800;
 }
+.badge-live {
+  @apply bg-emerald-100 text-emerald-800;
+}
+.badge-upcoming {
+  @apply bg-amber-100 text-amber-800;
+}
+.badge-ai {
+  @apply bg-violet-100 text-violet-800;
+}
+
+/* Gain / loss semantic colours used across pages */
+.text-gain { @apply text-emerald-600; }
+.text-loss { @apply text-red-500; }
+.text-flat { @apply text-gray-400; }
