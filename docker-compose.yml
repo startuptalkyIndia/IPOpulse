@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    restart: always
+    restart: on-failure
     environment:
       POSTGRES_DB: ipopulse
       POSTGRES_USER: ipopulse
@@ -20,7 +20,7 @@ services:
 
   ipopulse:
     build: .
-    restart: always
+    restart: on-failure
     ports:
       - "3065:3065"
     env_file: .env
