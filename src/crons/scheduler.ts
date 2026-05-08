@@ -15,6 +15,9 @@ import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
 import { ingestInsiderTrades } from "./jobs/nse-insider";
 import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
 import { ingestNseCompanyMaster } from "./jobs/nse-company-master";
+import { ingestNseSectorMap } from "./jobs/nse-sector-map";
+import { ingestHistoricalBhavcopy } from "./jobs/nse-bhavcopy-historical";
+import { ingestHistoricalFiiDii } from "./jobs/nse-fii-dii-historical";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
 
@@ -157,4 +160,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   screener_fundamentals: ingestScreenerFundamentals,
   bse_listing_sync: syncIpoListings,
   nse_company_master: ingestNseCompanyMaster,
+  nse_sector_map: ingestNseSectorMap,
+  bhavcopy_historical: ingestHistoricalBhavcopy,
+  fii_dii_historical: ingestHistoricalFiiDii,
 };

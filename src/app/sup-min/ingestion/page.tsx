@@ -84,6 +84,21 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Mon–Fri at 22:30 IST",
     desc: "Fetches P/E, P/B, ROE, D/E, EPS, book value, and dividend yield for top 1,000 companies via Yahoo Finance quoteSummary API. Free, no auth. Powers the /screener filter columns.",
   },
+  nse_sector_map: {
+    label: "NSE Sector Mapper — map sectors to all 2,500+ companies",
+    schedule: "Run once (then monthly)",
+    desc: "Downloads Nifty 500 + sector index CSVs and maps Industry/Sector to every company by NSE symbol. Unlocks screener sector filter and /sectors pages. Run after nse_company_master.",
+  },
+  bhavcopy_historical: {
+    label: "Historical Bhavcopy Backfill — 6 months of price history",
+    schedule: "Run once (manual trigger)",
+    desc: "Fetches sec_bhavdata_full CSVs for past 130 trading days from NSE archives. Populates historical OHLCV data for stock charts. Takes ~5 min (1s delay between dates). Set BHAVCOPY_BACKFILL_DAYS env to limit.",
+  },
+  fii_dii_historical: {
+    label: "Historical FII/DII Backfill — 2 years of flow data",
+    schedule: "Run once (manual trigger)",
+    desc: "Fetches month-by-month FII/DII cash flows from NSE historical API (same session-cookie approach as daily cron). Populates 2 years of FII/DII history for the flows chart at /fii-dii.",
+  },
   nse_company_master: {
     label: "NSE Company Master — full equity listing (~2,600 companies)",
     schedule: "Monthly (run manually after first deploy)",
