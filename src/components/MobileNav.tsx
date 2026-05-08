@@ -47,6 +47,9 @@ const sections = [
       { href: "/calculators/lrs-tcs", label: "LRS / TCS" },
       { href: "/tools/concall-summary", label: "Concall AI" },
       { href: "/tools/promoter-check", label: "Promoter Check" },
+      { href: "/compare/brokers", label: "Compare Brokers" },
+      { href: "/compare/credit-cards", label: "Credit Cards" },
+      { href: "/compare/insurance", label: "Insurance Plans" },
     ],
   },
 ];

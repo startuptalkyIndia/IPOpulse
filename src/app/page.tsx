@@ -13,6 +13,9 @@ import {
   Coins,
   Globe,
   Newspaper,
+  Scale,
+  CreditCard,
+  Shield,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
@@ -148,6 +151,30 @@ const moduleCards = [
     color: "bg-pink-50 text-pink-600",
     accent: "group-hover:text-pink-800",
     lines: ["AI market summary at 4:30 PM", "Gainers · losers · FII/DII · IPOs"],
+  },
+  {
+    title: "Compare Brokers",
+    icon: Scale,
+    href: "/compare/brokers",
+    color: "bg-indigo-50 text-indigo-600",
+    accent: "group-hover:text-indigo-800",
+    lines: ["Zerodha · Groww · Upstox · Angel", "Fees, platforms, API access"],
+  },
+  {
+    title: "Credit Cards",
+    icon: CreditCard,
+    href: "/compare/credit-cards",
+    color: "bg-green-50 text-green-600",
+    accent: "group-hover:text-green-800",
+    lines: ["Top 6 Indian credit cards", "Rewards · lounge · annual fee"],
+  },
+  {
+    title: "Insurance",
+    icon: Shield,
+    href: "/compare/insurance",
+    color: "bg-blue-50 text-blue-600",
+    accent: "group-hover:text-blue-800",
+    lines: ["Term life & health plans", "Premium · claim ratio · features"],
   },
 ];
 
