@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { PriceChart } from "@/components/PriceChart";
+import { StockNews } from "@/components/StockNews";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -136,6 +137,13 @@ export default async function CompanyPage({ params }: Props) {
       ) : company.bseCode ? (
         <PriceChart symbol={`${company.bseCode}.BO`} name={company.name} />
       ) : null}
+
+      {/* News & BSE filings */}
+      <StockNews
+        symbol={company.nseSymbol}
+        name={company.name}
+        companyId={company.id}
+      />
 
       <DiscussionThread targetType="stock" targetSlug={company.slug} />
     </div>
