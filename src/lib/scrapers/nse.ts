@@ -57,12 +57,16 @@ export async function buildNseSession(): Promise<NseClientResult> {
     return response;
   });
 
-  // Prime session
+  // Prime session — Akamai returns 403 from cloud IPs but STILL sets cookies
+  // that are required for subsequent API calls. Accept any status < 500.
+  const acceptAll = { validateStatus: (s: number) => s < 500 };
   await client.get("https://www.nseindia.com/", {
     headers: { Referer: "https://www.google.com/" },
+    ...acceptAll,
   });
   await client.get("https://www.nseindia.com/reports-indices", {
     headers: { Referer: "https://www.nseindia.com/" },
+    ...acceptAll,
   });
 
   return { client, jar };
