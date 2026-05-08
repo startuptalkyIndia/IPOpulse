@@ -153,6 +153,14 @@ const moduleCards = [
     lines: ["AI market summary at 4:30 PM", "Gainers · losers · FII/DII · IPOs"],
   },
   {
+    title: "Tomorrow's Picks",
+    icon: TrendingUp,
+    href: "/research/next-day",
+    color: "bg-rose-50 text-rose-600",
+    accent: "group-hover:text-rose-800",
+    lines: ["AI pre-market watch list", "Stocks · sector · FII signal · events"],
+  },
+  {
     title: "Compare Brokers",
     icon: Scale,
     href: "/compare/brokers",

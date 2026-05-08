@@ -26,6 +26,7 @@ const sections = [
       { href: "/screener", label: "Screener" },
       { href: "/movers", label: "Gainers / Losers" },
       { href: "/daily-summary", label: "Daily Market Wrap" },
+      { href: "/research/next-day", label: "Tomorrow's Watch List" },
       { href: "/sectors", label: "Sectors" },
       { href: "/fii-dii", label: "FII / DII" },
       { href: "/market/breadth", label: "Market Breadth" },

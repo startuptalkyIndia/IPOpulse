@@ -690,6 +690,28 @@ model MarketSummary {
   @@map("market_summaries")
 }
 
+// ============================================================
+// Next-Day Market Preview (AI-generated at 8 PM IST)
+// ============================================================
+model NextDayPreview {
+  id            Int      @id @default(autoincrement())
+  forDate       DateTime @unique @map("for_date") @db.Date // the trading day this covers (tomorrow)
+  headline      String   @db.Text                          // e.g. "Watch IT + HDFC Bank; FII net sellers"
+  body          String   @db.Text                          // 150-word AI narrative
+  sentiment     String?                                    // "cautious" | "neutral" | "positive"
+  stocksToWatch Json?    @map("stocks_to_watch")           // [{symbol, name, reason, level}]
+  sectorFocus   String?  @map("sector_focus")              // "IT" | "Banking" etc.
+  keyEvents     Json?    @map("key_events")                // [{type, desc, date}] — IPO opens, ex-dates, etc.
+  fiiSignal     String?  @map("fii_signal")                // "buy" | "sell" | "neutral"
+  fiiNet        Decimal? @map("fii_net") @db.Decimal(14, 2)
+  diiNet        Decimal? @map("dii_net") @db.Decimal(14, 2)
+  generatedBy   String?  @map("generated_by")
+  createdAt     DateTime @default(now())
+
+  @@index([forDate])
+  @@map("next_day_previews")
+}
+
 model NewsletterSub {
   id          Int      @id @default(autoincrement())
   email       String   @unique

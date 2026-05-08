@@ -24,6 +24,7 @@ const columns = [
       { href: "/screener", label: "Stock Screener" },
       { href: "/movers", label: "Gainers / Losers" },
       { href: "/daily-summary", label: "Daily Market Wrap" },
+      { href: "/research/next-day", label: "Tomorrow's Watch List" },
       { href: "/sectors", label: "Sectors" },
       { href: "/sectors/momentum", label: "Sector Momentum" },
       { href: "/fii-dii", label: "FII/DII Activity" },

@@ -1,0 +1,227 @@
+export const dynamic = "force-dynamic";
+
+import type { Metadata } from "next";
+import Link from "next/link";
+import { TrendingUp, TrendingDown, AlertCircle, Calendar, Zap, ArrowUpRight, Clock } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { formatCurrency } from "@/lib/format";
+
+export const metadata: Metadata = {
+  title: "Tomorrow's Stock Watch List — AI pre-market research for Indian equities",
+  description:
+    "AI-generated next-day market preview. Stocks to watch, sector focus, FII/DII signal, upcoming IPO events, and key levels — updated every evening at 8 PM IST.",
+  alternates: { canonical: "/research/next-day" },
+};
+
+interface StockToWatch {
+  symbol: string;
+  name: string;
+  reason: string;
+  todayPct: number;
+}
+
+interface KeyEvent {
+  type: string;
+  desc: string;
+}
+
+const sentimentConfig = {
+  positive: { label: "Positive", cls: "badge-live", icon: TrendingUp },
+  neutral:  { label: "Neutral",  cls: "badge-info",    icon: AlertCircle },
+  cautious: { label: "Cautious", cls: "badge-warning", icon: TrendingDown },
+};
+
+const fiiSignalConfig = {
+  buy:     { label: "FII Buying",  cls: "text-emerald-600", bg: "bg-emerald-50" },
+  sell:    { label: "FII Selling", cls: "text-red-600",     bg: "bg-red-50" },
+  neutral: { label: "FII Neutral", cls: "text-gray-500",    bg: "bg-gray-50" },
+};
+
+const eventTypeIcon: Record<string, string> = {
+  ipo_open:  "🟢",
+  ipo_close: "🔴",
+  allotment: "📋",
+  listing:   "🔔",
+  dividend:  "💰",
+  board_meeting: "📅",
+  agm:       "🏛️",
+};
+
+export default async function NextDayPreviewPage() {
+  const latest = await prisma.nextDayPreview.findFirst({ orderBy: { forDate: "desc" } });
+  const history = await prisma.nextDayPreview.findMany({
+    where: latest ? { forDate: { lt: latest.forDate } } : {},
+    orderBy: { forDate: "desc" },
+    take: 7,
+    select: { forDate: true, headline: true, sentiment: true, sectorFocus: true },
+  });
+
+  const sentConf = latest?.sentiment ? sentimentConfig[latest.sentiment as keyof typeof sentimentConfig] : null;
+  const fiiConf = latest?.fiiSignal ? fiiSignalConfig[latest.fiiSignal as keyof typeof fiiSignalConfig] : null;
+
+  const stocksToWatch = (latest?.stocksToWatch ?? []) as unknown as StockToWatch[];
+  const keyEvents = (latest?.keyEvents ?? []) as unknown as KeyEvent[];
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Tomorrow&apos;s Watch List</h1>
+          {sentConf && (
+            <span className={`badge ${sentConf.cls} flex items-center gap-1`}>
+              <sentConf.icon className="w-3 h-3" /> {sentConf.label}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-500">
+          AI-generated pre-market research · Updated 8 PM IST daily · {" "}
+          <span className="text-gray-400">Not investment advice</span>
+        </p>
+      </div>
+
+      {!latest ? (
+        <div className="card text-center py-12">
+          <Clock className="w-8 h-8 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-700">Preview generates at 8:00 PM IST</p>
+          <p className="text-xs text-gray-400 mt-1">Check back after market close</p>
+        </div>
+      ) : (
+        <>
+          {/* Main card */}
+          <div className="card border-l-4 border-l-indigo-500">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div>
+                <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  For {new Date(latest.forDate).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+                </p>
+                <h2 className="text-lg font-bold text-gray-900">{latest.headline}</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {fiiConf && (
+                  <span className={`text-xs font-medium px-2 py-1 rounded-lg ${fiiConf.bg} ${fiiConf.cls}`}>
+                    {fiiConf.label}
+                    {latest.fiiNet && ` ${Number(latest.fiiNet) > 0 ? "+" : ""}${Number(latest.fiiNet).toFixed(0)} Cr`}
+                  </span>
+                )}
+                {latest.sectorFocus && (
+                  <span className="text-xs font-medium px-2 py-1 rounded-lg bg-purple-50 text-purple-700">
+                    Focus: {latest.sectorFocus}
+                  </span>
+                )}
+              </div>
+            </div>
+            <p className="text-sm text-gray-700 leading-relaxed">{latest.body}</p>
+            {latest.generatedBy && (
+              <p className="text-[11px] text-gray-400 mt-3 flex items-center gap-1">
+                <Zap className="w-3 h-3" /> Generated by {latest.generatedBy}
+              </p>
+            )}
+          </div>
+
+          {/* Stocks to watch */}
+          {stocksToWatch.length > 0 && (
+            <section>
+              <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">👁</span>
+                Stocks to Watch
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {stocksToWatch.map((s, i) => (
+                  <Link
+                    key={i}
+                    href={`/ticker/${s.symbol?.toLowerCase()}`}
+                    className="card hover:border-indigo-300 hover:shadow-sm transition group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">{s.symbol}</span>
+                        <p className="text-sm font-semibold text-gray-900 mt-1 leading-tight">{s.name}</p>
+                      </div>
+                      <span className={`text-sm font-bold tabular-nums ${s.todayPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        {s.todayPct >= 0 ? "+" : ""}{Number(s.todayPct).toFixed(1)}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">{s.reason}</p>
+                    <div className="mt-2 text-xs text-indigo-500 group-hover:text-indigo-700 flex items-center gap-0.5">
+                      View chart <ArrowUpRight className="w-3 h-3" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Key events tomorrow */}
+          {keyEvents.length > 0 && (
+            <section>
+              <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-amber-100 text-amber-600 flex items-center justify-center text-xs">📅</span>
+                Key Events Tomorrow
+              </h2>
+              <div className="card divide-y divide-gray-100">
+                {keyEvents.map((e, i) => (
+                  <div key={i} className="py-2.5 flex items-center gap-3">
+                    <span className="text-base">{eventTypeIcon[e.type] ?? "📌"}</span>
+                    <span className="text-sm text-gray-700">{e.desc}</span>
+                    <span className="ml-auto text-[10px] font-medium text-gray-400 uppercase">{e.type.replace("_", " ")}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* FII/DII context */}
+          {(latest.fiiNet != null || latest.diiNet != null) && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className={`card ${Number(latest.fiiNet) >= 0 ? "border-l-4 border-l-emerald-400" : "border-l-4 border-l-red-400"}`}>
+                <p className="text-xs text-gray-500 mb-1">FII net (today)</p>
+                <p className={`text-xl font-bold tabular-nums ${Number(latest.fiiNet) >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                  {latest.fiiNet != null ? formatCurrency(Number(latest.fiiNet)) : "—"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Signal for tomorrow&apos;s gap</p>
+              </div>
+              <div className={`card ${Number(latest.diiNet) >= 0 ? "border-l-4 border-l-blue-400" : "border-l-4 border-l-orange-400"}`}>
+                <p className="text-xs text-gray-500 mb-1">DII net (today)</p>
+                <p className={`text-xl font-bold tabular-nums ${Number(latest.diiNet) >= 0 ? "text-blue-600" : "text-orange-500"}`}>
+                  {latest.diiNet != null ? formatCurrency(Number(latest.diiNet)) : "—"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Domestic counter-flow</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* History */}
+      {history.length > 0 && (
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Past previews</h2>
+          <div className="card divide-y divide-gray-100">
+            {history.map((h) => {
+              const sc = h.sentiment ? sentimentConfig[h.sentiment as keyof typeof sentimentConfig] : null;
+              return (
+                <div key={h.forDate.toISOString()} className="py-2.5 flex items-start gap-3">
+                  <span className="text-xs text-gray-400 w-24 shrink-0 tabular-nums">
+                    {new Date(h.forDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                  </span>
+                  <span className="text-sm text-gray-700 flex-1 leading-snug">{h.headline}</span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {h.sectorFocus && <span className="text-[10px] text-purple-600 font-medium">{h.sectorFocus}</span>}
+                    {sc && <span className={`badge ${sc.cls} text-[10px]`}>{sc.label}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <p className="text-[11px] text-gray-400 max-w-2xl">
+        This is an AI-generated research aid based on publicly available market data. It is not investment advice.
+        Past performance and AI predictions are not indicative of future results. Always do your own research.
+      </p>
+    </div>
+  );
+}
