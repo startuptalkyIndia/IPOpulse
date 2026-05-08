@@ -92,18 +92,18 @@ export async function StockNews({ symbol, name, companyId }: Props) {
     fetchGoogleNews(symbol ?? name),
     prisma.announcement.findMany({
       where: { companyId },
-      orderBy: { announcedAt: "desc" },
+      orderBy: { broadcastAt: "desc" },
       take: 4,
-      select: { id: true, subject: true, category: true, announcedAt: true, url: true },
+      select: { id: true, headline: true, category: true, broadcastAt: true, pdfUrl: true },
     }),
   ]);
 
   // Merge DB announcements as items
   const dbItems: NewsItem[] = dbAnnouncements.map((a) => ({
-    title: a.subject,
-    link: a.url ?? "#",
+    title: a.headline,
+    link: a.pdfUrl ?? "#",
     source: "BSE Filing",
-    pubDate: a.announcedAt.toISOString(),
+    pubDate: a.broadcastAt.toISOString(),
     type: "announcement" as const,
   }));
 
