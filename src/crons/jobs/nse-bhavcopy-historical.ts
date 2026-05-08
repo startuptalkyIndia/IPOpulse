@@ -17,8 +17,8 @@ import { prisma } from "@/lib/db";
 import { fetchNseBhavcopy } from "@/lib/scrapers/nse-bhavcopy";
 import type { IngestionResult } from "../runIngestion";
 
-// How many past trading days to attempt (6 months ≈ 130)
-const MAX_DAYS = parseInt(process.env.BHAVCOPY_BACKFILL_DAYS ?? "130", 10);
+// How many past trading days to attempt (default 30 = safe for memory; set env for more)
+const MAX_DAYS = parseInt(process.env.BHAVCOPY_BACKFILL_DAYS ?? "30", 10);
 
 function isWeekend(d: Date): boolean {
   const dow = d.getDay();
