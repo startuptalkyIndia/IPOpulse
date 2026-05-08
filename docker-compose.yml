@@ -33,7 +33,7 @@ services:
       # Host (ubuntu user): binary at /usr/bin/claude, auth at /home/ubuntu/.claude
       # Container (root): binary at /usr/local/bin/claude, auth at /root/.claude
       # This activates DRHP AI, Concall AI, market summary — no ANTHROPIC_API_KEY needed.
-      - /usr/bin/claude:/usr/local/bin/claude:ro
+      - /usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe:/usr/local/bin/claude:ro
       - /home/ubuntu/.claude:/root/.claude:ro
     depends_on:
       postgres:
