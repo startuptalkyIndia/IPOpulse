@@ -98,7 +98,7 @@ async function callViaCli(bin: string, opts: ClaudeCallOptions): Promise<string>
    *   --model             only when explicitly requested
    */
   const combinedPrompt = `<system>\n${opts.system}\n</system>\n\n${opts.user}`;
-  const args = ["-p", "--output-format", "text", "--no-history"];
+  const args = ["-p", "--output-format", "text"];
   if (opts.model) args.push("--model", opts.model);
 
   return new Promise<string>((resolve, reject) => {
