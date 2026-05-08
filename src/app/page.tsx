@@ -12,6 +12,7 @@ import {
   Filter,
   Coins,
   Globe,
+  Newspaper,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
@@ -139,6 +140,14 @@ const moduleCards = [
     color: "bg-yellow-50 text-yellow-600",
     accent: "group-hover:text-yellow-800",
     lines: ["Pre-IPO grey market prices", "Multi-dealer median index"],
+  },
+  {
+    title: "Daily Wrap",
+    icon: Newspaper,
+    href: "/daily-summary",
+    color: "bg-pink-50 text-pink-600",
+    accent: "group-hover:text-pink-800",
+    lines: ["AI market summary at 4:30 PM", "Gainers · losers · FII/DII · IPOs"],
   },
 ];
 

@@ -25,6 +25,7 @@ const sections = [
       { href: "/ticker", label: "Stock Ticker" },
       { href: "/screener", label: "Screener" },
       { href: "/movers", label: "Gainers / Losers" },
+      { href: "/daily-summary", label: "Daily Market Wrap" },
       { href: "/sectors", label: "Sectors" },
       { href: "/fii-dii", label: "FII / DII" },
       { href: "/market/breadth", label: "Market Breadth" },

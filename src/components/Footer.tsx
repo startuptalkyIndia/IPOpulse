@@ -23,6 +23,7 @@ const columns = [
       { href: "/ticker", label: "Stock Ticker" },
       { href: "/screener", label: "Stock Screener" },
       { href: "/movers", label: "Gainers / Losers" },
+      { href: "/daily-summary", label: "Daily Market Wrap" },
       { href: "/sectors", label: "Sectors" },
       { href: "/sectors/momentum", label: "Sector Momentum" },
       { href: "/fii-dii", label: "FII/DII Activity" },
