@@ -19,14 +19,14 @@ RUN npx prisma generate
 RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
 
 # Stage 3: Production runner
-FROM node:20-alpine AS runner
+# node:20-slim (Debian/glibc) instead of Alpine — required for Claude CLI
+# which is a glibc binary and cannot run on Alpine's musl libc.
+FROM node:20-slim AS runner
 WORKDIR /app
-RUN apk add --no-cache openssl
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
-# Install Claude CLI for AI features without requiring ANTHROPIC_API_KEY.
-# Credentials are mounted from the host at ~/.claude (see docker-compose.yml).
-# If `npm install -g` fails in CI/CD (offline build), the app still works —
-# claude-runner.ts gracefully falls back to SDK if the binary isn't found.
+# Install Claude CLI — works on Debian/glibc. Credentials mounted from host.
+# Falls back gracefully if install fails (claude-runner.ts handles unavailability).
 RUN npm install -g @anthropic-ai/claude-code --legacy-peer-deps 2>/dev/null || true
 
 ENV NODE_ENV=production
