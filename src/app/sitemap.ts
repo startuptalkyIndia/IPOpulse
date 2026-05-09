@@ -73,6 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/ipo/year/2025`, lastModified: now, priority: 0.7, changeFrequency: "monthly" },
     { url: `${BASE}/ipo/year/2026`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/learn`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/glossary`, lastModified: now, priority: 0.8, changeFrequency: "monthly" },
     { url: `${BASE}/ipo/stats`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/about`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },
     { url: `${BASE}/contact`, lastModified: now, priority: 0.3, changeFrequency: "yearly" },

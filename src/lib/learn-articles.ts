@@ -811,6 +811,602 @@ export const articles: Article[] = [
   },
 ];
 
+  // ─── New articles ─────────────────────────────────────────────────────────
+  {
+    slug: "what-is-demat-account",
+    title: "What is a Demat Account — And How to Open One in India",
+    description:
+      "Everything you need to know about demat accounts in India — what they hold, how to open one, annual charges, CDSL vs NSDL, and which broker to choose.",
+    readingTime: 5,
+    publishedAt: "2026-04-01",
+    relatedSlugs: ["how-to-apply-ipo", "what-is-market-cap", "pe-ratio"],
+    content: `
+<h2>What is a Demat Account?</h2>
+<p>A <strong>demat account</strong> (short for dematerialised account) holds your shares, bonds, ETFs, mutual fund units, and sovereign gold bonds in electronic form. Just like a bank account holds your money, a demat account holds your financial securities. Without one, you cannot buy or sell shares on NSE or BSE.</p>
+<p>Before 1996, shares were held as physical certificates — paper documents that could be lost, forged, or damaged. SEBI mandated dematerialisation, and today 100% of trading is electronic.</p>
+
+<h2>CDSL vs NSDL — Two Depositories</h2>
+<p>India has two central depositories that actually hold your securities electronically:</p>
+<ul>
+  <li><strong>CDSL (Central Depository Services Limited):</strong> Promoted by BSE. Used by Zerodha, Groww, Angel One, and most discount brokers. Listed company — ticker CDSL on NSE.</li>
+  <li><strong>NSDL (National Securities Depository Limited):</strong> Promoted by NSE. Used by ICICI Direct, HDFC Securities, Kotak Securities, and most bank-backed brokers.</li>
+</ul>
+<p>Your broker decides which depository you are on. For most retail investors, the choice is irrelevant — both depositories are equally safe and regulated by SEBI.</p>
+
+<h2>What Can a Demat Account Hold?</h2>
+<ul>
+  <li>Equity shares (NSE/BSE listed companies)</li>
+  <li>Preference shares</li>
+  <li>Bonds and debentures</li>
+  <li>Exchange-Traded Funds (ETFs)</li>
+  <li>Sovereign Gold Bonds (SGBs)</li>
+  <li>Government securities (G-Secs)</li>
+  <li>Mutual fund units (only if held in demat form — optional)</li>
+</ul>
+
+<h2>Demat Account Charges</h2>
+<p>Understanding charges prevents bill shock:</p>
+<ul>
+  <li><strong>Account opening fee:</strong> ₹0–₹500. Most discount brokers (Zerodha, Groww) offer free opening.</li>
+  <li><strong>Annual Maintenance Charge (AMC):</strong> ₹0–₹750/year. Many brokers charge ₹300–₹400. Zerodha charges ₹300 after first year.</li>
+  <li><strong>DP (Depository Participant) transaction charges:</strong> ₹13.5 + GST per debit transaction (sell side). This is charged by CDSL/NSDL regardless of broker.</li>
+  <li><strong>Custodian fees:</strong> If you hold SGB, G-Secs — typically ₹0 to minimal.</li>
+</ul>
+
+<h2>How to Open a Demat Account</h2>
+<p>Opening takes 10–30 minutes online (Aadhaar-linked, paperless). You need:</p>
+<ul>
+  <li>PAN card (mandatory)</li>
+  <li>Aadhaar card (for e-KYC via OTP)</li>
+  <li>Bank account details (cancelled cheque or bank statement)</li>
+  <li>Signature (uploaded photo)</li>
+  <li>Webcam or front camera for in-person verification (IPV)</li>
+</ul>
+<p>Popular choices: Zerodha (large discount broker, ₹20/trade), Groww (zero AMC first year, beginner-friendly), Angel One (₹20/order), ICICI Direct (full-service, higher cost but bank integration).</p>
+
+<h2>One Demat, Multiple Trading Accounts?</h2>
+<p>Yes. You can have demat accounts with multiple depositories (up to one CDSL + one NSDL) and link different trading accounts to each. Many investors hold a primary demat at one broker and a secondary at another for IPO allotment diversification (applying with different ASBA bank accounts).</p>
+    `,
+    faq: [
+      {
+        q: "Is a demat account and a trading account the same thing?",
+        a: "No. A demat account stores your shares electronically. A trading account is used to place buy/sell orders on exchanges. You need both — brokers typically open both simultaneously.",
+      },
+      {
+        q: "Can I have a demat account without a trading account?",
+        a: "Yes. If you only want to hold securities (e.g., you received shares as an off-market transfer), you can hold a demat account without actively trading.",
+      },
+      {
+        q: "What happens to my demat account if my broker shuts down?",
+        a: "Your securities are safe. They are held by CDSL/NSDL, not your broker. You can transfer them to another broker's demat account.",
+      },
+      {
+        q: "Is there a minimum balance required in a demat account?",
+        a: "No minimum balance of securities is required. You can have an empty demat account (though you'll still pay AMC).",
+      },
+    ],
+  },
+  {
+    slug: "what-is-market-cap",
+    title: "What is Market Cap? Large-Cap, Mid-Cap, Small-Cap Explained",
+    description:
+      "Market capitalisation (market cap) determines whether a stock is large-cap, mid-cap, or small-cap in India. Learn how it is calculated and what it means for risk and returns.",
+    readingTime: 4,
+    publishedAt: "2026-04-05",
+    relatedSlugs: ["pe-ratio", "what-is-roe-roce", "what-is-mutual-fund"],
+    content: `
+<h2>What is Market Capitalisation?</h2>
+<p><strong>Market capitalisation</strong> (market cap) is the total market value of a company's outstanding shares. It is calculated as:</p>
+<ul>
+  <li><strong>Market Cap = Current Share Price × Total Shares Outstanding</strong></li>
+</ul>
+<p>Example: If a company has 50 crore shares outstanding and each share trades at ₹200, its market cap is ₹10,000 crore (₹100 billion).</p>
+<p>Market cap is the most widely used measure of a company's size in the stock market. It does not equal the company's book value, revenue, or profit.</p>
+
+<h2>SEBI's Market Cap Classification for India</h2>
+<p>SEBI mandates a specific classification for Indian mutual funds, revised annually by AMFI (Association of Mutual Funds in India):</p>
+<ul>
+  <li><strong>Large-Cap:</strong> Top 100 companies by market cap. Includes Reliance, TCS, HDFC Bank, Infosys, ICICI Bank. Generally ₹20,000+ crore.</li>
+  <li><strong>Mid-Cap:</strong> Rank 101–250 by market cap. Companies like Persistent Systems, Thermax, Voltas. Generally ₹5,000–₹20,000 crore.</li>
+  <li><strong>Small-Cap:</strong> Rank 251 and beyond. Generally below ₹5,000 crore. Includes several thousand companies on NSE/BSE.</li>
+</ul>
+<p>AMFI publishes this list every six months (January and July). A company can be reclassified up or down based on market cap movement.</p>
+
+<h2>Free Float vs Full Market Cap</h2>
+<p><strong>Full market cap</strong> uses all outstanding shares including promoter holdings. <strong>Free-float market cap</strong> only counts shares available for public trading (excludes promoter-locked shares). Nifty 50 and Sensex use free-float methodology to reflect actual tradeable size.</p>
+
+<h2>What Market Cap Tells You About Risk</h2>
+<ul>
+  <li><strong>Large-cap:</strong> Established businesses, lower volatility, lower return potential, high liquidity. Best for conservative investors.</li>
+  <li><strong>Mid-cap:</strong> Growth companies with moderate risk. Can outperform large-caps over long horizons. Less liquid during corrections.</li>
+  <li><strong>Small-cap:</strong> Highest growth potential, highest volatility, lowest liquidity. Prices can fall 50%+ in market downturns. Suit experienced investors with long horizons.</li>
+</ul>
+
+<h2>Enterprise Value vs Market Cap</h2>
+<p>Enterprise Value (EV) is a more complete measure of company worth: <strong>EV = Market Cap + Total Debt − Cash</strong>. It accounts for the fact that a buyer acquiring the company assumes its debt. EV/EBITDA is a common valuation ratio used alongside P/E.</p>
+
+<h2>Market Cap and Index Eligibility</h2>
+<p>Nifty 50 requires companies to be in the top 1.5× the required number by free-float market cap. Large free-float market cap = higher index weight = more passive fund buying = typically more stable price.</p>
+    `,
+    faq: [
+      {
+        q: "Does a higher market cap mean a better company?",
+        a: "Not necessarily. Market cap reflects investor expectations, not fundamental quality. Some large-cap companies are expensive relative to earnings; some small-caps are undervalued gems.",
+      },
+      {
+        q: "How do I find a company's market cap on IPOpulse?",
+        a: "Every company ticker page on IPOpulse shows market cap in crore rupees. The screener also lets you filter by market cap range.",
+      },
+      {
+        q: "What is nano-cap?",
+        a: "Nano-cap typically refers to companies below ₹100–200 crore market cap. These are very high risk, often illiquid, and mostly found on the SME segment of NSE/BSE.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-dividend",
+    title: "What is a Dividend? Dividend Yield, Ex-Date, Record Date Explained",
+    description:
+      "Learn how dividends work in India — interim vs final dividend, dividend yield, ex-dividend date, record date, and tax treatment for retail investors.",
+    readingTime: 5,
+    publishedAt: "2026-04-08",
+    relatedSlugs: ["pe-ratio", "what-is-market-cap", "what-is-roe-roce"],
+    content: `
+<h2>What is a Dividend?</h2>
+<p>A <strong>dividend</strong> is a portion of a company's profits paid to its shareholders. When a company earns a profit, it can either reinvest it (retained earnings) or distribute part of it to shareholders as dividends. Dividends are declared by the board of directors and approved by shareholders at the AGM or through board resolutions.</p>
+<p>In India, dividends are paid in cash and credited directly to your bank account linked to your demat account (via ECS/NEFT). No action is required from investors — you simply need to hold the shares before the ex-dividend date.</p>
+
+<h2>Interim vs Final Dividend</h2>
+<ul>
+  <li><strong>Interim Dividend:</strong> Paid during the financial year, before the annual accounts are finalised. Declared by the board without shareholder approval. Common in Q2 or Q3.</li>
+  <li><strong>Final Dividend:</strong> Declared at the end of the financial year, approved at the AGM. Legally requires shareholder resolution.</li>
+</ul>
+
+<h2>Key Dates You Must Know</h2>
+<ul>
+  <li><strong>Declaration Date:</strong> Date the board announces the dividend amount.</li>
+  <li><strong>Record Date:</strong> The cut-off date — you must hold shares in your demat account on this date to receive the dividend.</li>
+  <li><strong>Ex-Dividend Date:</strong> One trading day before the record date (T+1 settlement). If you buy shares on or after the ex-date, you will not receive the current dividend. The share price typically drops by approximately the dividend amount on the ex-date.</li>
+  <li><strong>Payment Date:</strong> Dividend is credited to your account. SEBI mandates payment within 30 days of the record date.</li>
+</ul>
+
+<h2>Dividend Yield</h2>
+<p>Dividend Yield measures the annual dividend relative to the current share price:</p>
+<ul>
+  <li><strong>Dividend Yield = Annual Dividend Per Share / Current Share Price × 100</strong></li>
+</ul>
+<p>Example: If a company pays ₹20 annual dividend and the share trades at ₹500, yield = 4%. PSU companies (Coal India, Power Finance Corp) often yield 5–8%, making them attractive for income investors.</p>
+
+<h2>Dividend Payout Ratio</h2>
+<p>Payout ratio = Dividends Paid / Net Profit. A payout ratio of 40% means the company distributes 40% of profit as dividends and retains 60% for reinvestment. High-payout companies (70%+) include many PSUs and mature cash-generative businesses. Growth companies typically have low or zero payout.</p>
+
+<h2>Dividend Taxation in India (Post April 2020)</h2>
+<p>Since FY2020-21, dividends are <strong>taxable in the hands of the investor</strong> at the applicable income tax slab rate. TDS of 10% is deducted at source if dividends exceed ₹5,000 in a financial year. High-income investors (30% bracket) pay effectively 30% on dividends. This reduced the attractiveness of high-dividend stocks for HNIs compared to earlier when dividends were tax-free.</p>
+
+<h2>Special Dividends and Buybacks</h2>
+<p>Companies sometimes declare special one-time dividends from accumulated reserves or asset sales. Alternatively, companies prefer <strong>buybacks</strong> (repurchasing own shares) over dividends because buyback is taxed at a lower rate for companies and was previously tax-efficient for investors. Post-2024 budget changes, buyback tax has been shifted to investors — making dividends and buybacks more comparable from a tax perspective.</p>
+    `,
+    faq: [
+      {
+        q: "If I buy shares one day before the ex-date, do I get the dividend?",
+        a: "Yes. Under T+1 settlement (which India implemented in 2023), buying shares one day before the ex-date gives you record date holding. But confirm your specific stock's settlement cycle.",
+      },
+      {
+        q: "Does the share price always fall by the dividend amount on ex-date?",
+        a: "Theoretically yes, but in practice the price adjusts approximately for the dividend, modified by market movements. Trying to arbitrage ex-dividend drops is generally unprofitable after transaction costs.",
+      },
+      {
+        q: "Where can I find upcoming dividend dates?",
+        a: "IPOpulse's Corporate Actions section lists upcoming dividend record dates, ex-dates, and payment amounts for all NSE/BSE listed companies.",
+      },
+    ],
+  },
+  {
+    slug: "cagr-meaning",
+    title: "What is CAGR? Compounded Annual Growth Rate Explained",
+    description:
+      "CAGR (Compounded Annual Growth Rate) is the most important return metric for long-term investors. Learn what it means, how to calculate it, and when to use it vs XIRR.",
+    readingTime: 4,
+    publishedAt: "2026-04-10",
+    relatedSlugs: ["sip-guide", "pe-ratio", "what-is-mutual-fund"],
+    content: `
+<h2>What is CAGR?</h2>
+<p><strong>CAGR (Compounded Annual Growth Rate)</strong> is the rate at which an investment grows from its beginning value to its ending value, assuming profits are reinvested at the same rate each year. It is the "smoothed" annual return — it ignores volatility and shows what constant annual rate would produce the same result.</p>
+<p>Formula: <strong>CAGR = (Ending Value / Beginning Value) ^ (1 / Years) − 1</strong></p>
+<p>Example: If ₹1 lakh grows to ₹2.5 lakh in 5 years → CAGR = (2.5) ^ (1/5) − 1 = 20.1% per year.</p>
+
+<h2>Why CAGR is Better Than Simple Returns</h2>
+<p>Simple return: ₹1 lakh → ₹2.5 lakh = 150% gain. This says nothing about how long it took. CAGR normalises for time, making different investments comparable:</p>
+<ul>
+  <li>Investment A: 100% return in 2 years → CAGR = 41%</li>
+  <li>Investment B: 100% return in 10 years → CAGR = 7.2%</li>
+</ul>
+<p>Investment A is clearly superior — but simple percentage alone hides this.</p>
+
+<h2>CAGR of Nifty 50 (Historical)</h2>
+<ul>
+  <li>10-year CAGR (2014–2024): approximately 12–13% per year</li>
+  <li>20-year CAGR (2004–2024): approximately 14–15% per year</li>
+  <li>30-year CAGR (1994–2024): approximately 12–13% per year</li>
+</ul>
+<p>These returns assume reinvestment of dividends (total return). Pure price CAGR is slightly lower. Historical CAGR is not a guarantee of future returns but is a useful benchmark.</p>
+
+<h2>How to Use CAGR for Goal Planning</h2>
+<p>Using the reverse CAGR formula, you can estimate how long it takes to double money at a given return rate — approximately following the <strong>Rule of 72</strong>:</p>
+<ul>
+  <li><strong>Years to double = 72 / CAGR%</strong></li>
+  <li>At 12% CAGR: money doubles in 6 years</li>
+  <li>At 15% CAGR: money doubles in 4.8 years</li>
+  <li>At 7% (FD rates): money doubles in ~10 years</li>
+</ul>
+
+<h2>CAGR vs XIRR — When to Use Which</h2>
+<ul>
+  <li><strong>CAGR:</strong> Use when comparing point-to-point investment returns (one lump sum invested at one time, redeemed at one time). Great for mutual fund fact sheets, index performance, stocks.</li>
+  <li><strong>XIRR:</strong> Use when there are multiple cash flows (monthly SIPs, irregular investments, partial redemptions). XIRR accounts for the timing of each cash flow. CAGR cannot handle this correctly.</li>
+</ul>
+
+<h2>Common CAGR Misconceptions</h2>
+<ul>
+  <li><strong>"CAGR of 25% means consistent 25% every year"</strong> — FALSE. CAGR is the geometric average. Years could be +80%, −30%, +45% — the CAGR is still calculated from start to end value only.</li>
+  <li><strong>"Higher CAGR always means better investment"</strong> — FALSE. CAGR ignores volatility. A 25% CAGR investment with 60% drawdowns may not suit a conservative investor even though the numbers look great.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "How do I calculate CAGR in Excel or Google Sheets?",
+        a: "=(End_Value/Start_Value)^(1/Years)-1. Enter as percentage format. For example: =(250000/100000)^(1/5)-1 = 0.201 = 20.1%.",
+      },
+      {
+        q: "Can CAGR be negative?",
+        a: "Yes. If your investment loses value overall, CAGR is negative. Example: ₹1 lakh shrinks to ₹70,000 in 3 years → CAGR = (0.7)^(1/3) − 1 = −10.8% per year.",
+      },
+      {
+        q: "IPOpulse shows '3Y Return' — is that CAGR?",
+        a: "Yes. When IPOpulse or any financial site shows a 3-year or 5-year return for a fund or stock, it is almost always stated as CAGR (annualised return), not cumulative return.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-mutual-fund",
+    title: "What is a Mutual Fund? Types, NAV, and How to Invest in India",
+    description:
+      "A complete guide to mutual funds in India — what NAV means, types of mutual funds (equity, debt, hybrid), SIP vs lumpsum, and how SEBI categorises funds.",
+    readingTime: 6,
+    publishedAt: "2026-04-12",
+    relatedSlugs: ["sip-guide", "cagr-meaning", "fii-dii-guide"],
+    content: `
+<h2>What is a Mutual Fund?</h2>
+<p>A <strong>mutual fund</strong> is a pool of money collected from thousands of investors, professionally managed by a fund manager, and invested in a diversified portfolio of stocks, bonds, or other securities. Each investor owns units of the fund proportional to their investment. The fund's gains, losses, and income are shared proportionally.</p>
+<p>In India, mutual funds are regulated by SEBI and managed by Asset Management Companies (AMCs) like SBI Mutual Fund, HDFC Mutual Fund, Nippon India, Kotak, Axis, and Mirae Asset.</p>
+
+<h2>What is NAV?</h2>
+<p><strong>NAV (Net Asset Value)</strong> is the per-unit price of the mutual fund. It is calculated daily after market close:</p>
+<ul>
+  <li><strong>NAV = (Total Assets − Liabilities) / Number of Units Outstanding</strong></li>
+</ul>
+<p>When you invest ₹10,000 in a fund with NAV ₹200, you get 50 units. When NAV rises to ₹250, your investment is worth ₹12,500. A higher NAV doesn't mean the fund is expensive — it simply means the fund is older and has grown. Always evaluate funds by returns, not NAV level.</p>
+
+<h2>SEBI's Mutual Fund Categories</h2>
+<p>SEBI mandated a rationalisation of fund categories in 2018. Key equity fund categories:</p>
+<ul>
+  <li><strong>Large-Cap Fund:</strong> Minimum 80% in top 100 companies. Lower risk, stable returns.</li>
+  <li><strong>Mid-Cap Fund:</strong> Minimum 65% in 101–250 ranked companies. Higher growth, more volatile.</li>
+  <li><strong>Small-Cap Fund:</strong> Minimum 65% in 251+ ranked companies. Highest risk/return.</li>
+  <li><strong>Flexi-Cap Fund:</strong> No market-cap restriction. Manager allocates freely. Popular category.</li>
+  <li><strong>ELSS (Tax-Saving Fund):</strong> 80% equity minimum, 3-year lock-in, ₹1.5 lakh tax deduction under Section 80C.</li>
+  <li><strong>Index Fund/ETF:</strong> Passively tracks an index (Nifty 50, Sensex, Nifty Next 50). Zero fund manager risk, very low expense ratio (0.1–0.2%).</li>
+</ul>
+
+<h2>Equity vs Debt vs Hybrid Funds</h2>
+<ul>
+  <li><strong>Equity Funds:</strong> Invest primarily in stocks. Higher long-term returns (10–15% CAGR historically), higher short-term volatility. Suitable for 5+ year horizons.</li>
+  <li><strong>Debt Funds:</strong> Invest in government bonds, corporate bonds, money market instruments. Lower returns (5–7%), lower risk. Suitable for 1–3 year horizons.</li>
+  <li><strong>Hybrid Funds:</strong> Mix of equity and debt. Balanced Advantage Funds dynamically shift allocation between equity and debt based on market valuations.</li>
+</ul>
+
+<h2>SIP vs Lumpsum</h2>
+<ul>
+  <li><strong>SIP (Systematic Investment Plan):</strong> Fixed amount every month. Benefits from rupee-cost averaging. Ideal for salaried investors.</li>
+  <li><strong>Lumpsum:</strong> One-time large investment. Best when markets have corrected significantly. Higher risk of buying at a peak.</li>
+</ul>
+
+<h2>Expense Ratio — The Silent Wealth Destroyer</h2>
+<p>Expense ratio is the annual fee charged by the AMC, deducted from the fund's NAV daily. Even a small difference in expense ratio compounds significantly over decades:</p>
+<ul>
+  <li>Index fund: 0.1–0.2% expense ratio</li>
+  <li>Active large-cap fund: 0.8–1.5%</li>
+  <li>Active small-cap fund: 1.5–2.5%</li>
+</ul>
+<p>Over 20 years, a 1% higher expense ratio reduces your corpus by approximately 15–18%. This is why index funds often outperform active funds after expenses.</p>
+
+<h2>Direct vs Regular Plans</h2>
+<p>Every mutual fund has two variants: <strong>Direct Plan</strong> (invest directly with the AMC, no distributor commission, lower expense ratio by ~0.5–1%) and <strong>Regular Plan</strong> (purchased through a distributor/broker, who earns trail commission). Always choose Direct plans — the long-term saving is significant. Invest via platforms like MF Central, Coin by Zerodha, or AMC websites for Direct access.</p>
+    `,
+    faq: [
+      {
+        q: "Is investing in mutual funds safe?",
+        a: "Equity mutual funds carry market risk — your capital can decline in the short term. Debt funds carry credit risk and interest rate risk. There is no capital guarantee. However, mutual funds are regulated by SEBI and are transparent — much safer than unregulated schemes.",
+      },
+      {
+        q: "What is the minimum investment in a mutual fund?",
+        a: "Most funds allow SIP starting at ₹100–₹500/month and lumpsum starting at ₹1,000–₹5,000. Some funds have higher minimums.",
+      },
+      {
+        q: "Are mutual fund returns taxed?",
+        a: "Equity fund LTCG (held 1+ year): 12.5% on gains above ₹1.25 lakh per year. STCG (held under 1 year): 20%. Debt fund gains are taxed at income tax slab rate regardless of holding period (post April 2023).",
+      },
+    ],
+  },
+  {
+    slug: "rights-issue-bonus-share",
+    title: "Rights Issue vs Bonus Share — Key Differences Explained",
+    description:
+      "What is a rights issue? What is a bonus share? Learn the key differences, their impact on share price and earnings per share, and how to respond as a retail investor.",
+    readingTime: 5,
+    publishedAt: "2026-04-15",
+    relatedSlugs: ["what-is-dividend", "what-is-market-cap", "pe-ratio"],
+    content: `
+<h2>What is a Rights Issue?</h2>
+<p>A <strong>rights issue</strong> is when a company offers existing shareholders the right to buy additional shares at a discounted price, in proportion to their current holdings. It is a way to raise fresh capital from existing shareholders rather than the open market.</p>
+<p>Example: A 1:3 rights issue at ₹150 (current market price ₹200) means for every 3 shares you hold, you can buy 1 additional share at ₹150. You are not obligated — you can let the rights lapse or sell them in the market (if listed).</p>
+
+<h2>Impact of Rights Issue on Share Price</h2>
+<p>After a rights issue, the share price adjusts to account for the dilution. The theoretical ex-rights price is calculated as:</p>
+<ul>
+  <li><strong>Theoretical Ex-Rights Price = (N × Market Price + Rights Price) / (N + 1)</strong></li>
+  <li>where N is the ratio (e.g., 3 for 1:3 rights issue)</li>
+</ul>
+<p>Using the example: (3 × 200 + 150) / 4 = ₹187.50. Shareholders who exercise rights should see no change in overall portfolio value at this price — but those who do NOT exercise rights will face dilution.</p>
+
+<h2>Should You Exercise Rights?</h2>
+<p>Generally yes, if you have conviction in the company's prospects. Reasons to exercise:</p>
+<ul>
+  <li>Discount to market price means immediate value accretion</li>
+  <li>Not exercising dilutes your ownership percentage</li>
+</ul>
+<p>Reasons to sell rights (if listed on exchange) or let lapse:</p>
+<ul>
+  <li>Lack of liquidity to fund the purchase</li>
+  <li>Loss of conviction in company fundamentals</li>
+</ul>
+
+<h2>What is a Bonus Share?</h2>
+<p>A <strong>bonus share</strong> issue (also called a stock dividend) is when a company distributes free additional shares to existing shareholders by capitalising its accumulated reserves. No cash leaves the company.</p>
+<p>Example: A 1:1 bonus means for every share you hold, you get 1 free share. If you held 100 shares at ₹500, after 1:1 bonus you have 200 shares at ₹250. Your total value remains unchanged — ₹50,000.</p>
+
+<h2>Why Companies Issue Bonus Shares</h2>
+<ul>
+  <li>Signals confidence — management shows the company has strong reserves</li>
+  <li>Makes shares more affordable by reducing price per share</li>
+  <li>Improves liquidity of the stock</li>
+  <li>Rewards loyal shareholders without cash outflow</li>
+</ul>
+
+<h2>Key Differences</h2>
+<ul>
+  <li><strong>Cash flow:</strong> Rights issue brings in cash to company; bonus share is a bookkeeping entry with no cash</li>
+  <li><strong>Cost to shareholder:</strong> Rights require payment; bonus is free</li>
+  <li><strong>EPS impact:</strong> Both dilute EPS (more shares outstanding) — but rights issue also adds to earnings (if capital deployed productively); bonus does not change earnings</li>
+  <li><strong>Purpose:</strong> Rights = growth capital or debt repayment; Bonus = shareholder reward from reserves</li>
+</ul>
+
+<h2>Taxation</h2>
+<p>Bonus shares: Received at zero cost. When sold, the entire sale proceeds are treated as capital gain. Holding period for LTCG is measured from the date of allotment of bonus shares, not the original shares.</p>
+<p>Rights shares: Purchased at issue price (cost basis). Capital gain measured from date of purchase.</p>
+    `,
+    faq: [
+      {
+        q: "Do I need to do anything for a bonus share issue?",
+        a: "No action required. Bonus shares are automatically credited to your demat account on the record date. Simply ensure you hold shares before the ex-date.",
+      },
+      {
+        q: "Is a rights issue a sign of financial distress?",
+        a: "Not necessarily. Rights issues are used for expansion, acquisitions, or debt reduction. However, if a company is consistently raising rights capital to repay debt rather than grow, it may indicate financial stress.",
+      },
+      {
+        q: "Can I renounce my rights?",
+        a: "Yes. You can sell your rights entitlement to another investor if the rights are listed on the exchange (Renouncement Form / RERF). Not all rights issues have listed rights.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-read-annual-report",
+    title: "How to Read an Annual Report — Key Sections for Indian Investors",
+    description:
+      "A practical guide to reading Indian company annual reports — where to find financials, what the auditor's report reveals, how to spot red flags in MD&A, and key ratios to calculate.",
+    readingTime: 6,
+    publishedAt: "2026-04-18",
+    relatedSlugs: ["what-is-roe-roce", "pe-ratio", "drhp-guide"],
+    content: `
+<h2>Why Read an Annual Report?</h2>
+<p>An annual report is the most comprehensive, legally-mandated disclosure a company makes. Unlike quarterly results, which are brief, annual reports include audited financials, management commentary, risk disclosures, segment details, and corporate governance data. For a long-term investor, the annual report is the single most important document about a business.</p>
+
+<h2>Where to Find Annual Reports</h2>
+<ul>
+  <li><strong>BSE:</strong> bseindia.com → Company Info → Annual Reports section</li>
+  <li><strong>NSE:</strong> nseindia.com → Corporates → Annual Reports</li>
+  <li><strong>Company website:</strong> Most IR (Investor Relations) sections post PDFs directly</li>
+  <li><strong>SEBI SCORES / Stock Exchange filings:</strong> All mandatory disclosures appear within 24 hours of filing</li>
+</ul>
+
+<h2>Key Sections to Focus On</h2>
+<p><strong>1. Management Discussion &amp; Analysis (MD&amp;A):</strong> The most readable section. Management explains business performance, industry conditions, strategy, and risks. Compare what management said last year against actual results — consistent delivery vs promises shows credibility.</p>
+<p><strong>2. Auditor's Report:</strong> Read the first two paragraphs. If the auditor gives a "qualified opinion," an "adverse opinion," or an "emphasis of matter," investigate immediately. These are red flags. An unqualified (clean) opinion is what you want.</p>
+<p><strong>3. Balance Sheet:</strong> Assets = Liabilities + Equity. Key items to check: debt levels (long-term borrowings), cash and cash equivalents, goodwill (check for impairment), accounts receivable (high receivables may indicate collection risk), and inventory.</p>
+<p><strong>4. Profit &amp; Loss Statement:</strong> Revenue → Gross Profit → EBITDA → EBIT → PBT → PAT. Check revenue growth, gross margin trends, EBITDA margin, and whether PAT growth matches EBITDA growth (if not, check exceptional items or tax changes).</p>
+<p><strong>5. Cash Flow Statement:</strong> The most manipulation-resistant statement. <strong>Operating Cash Flow (OCF) should be close to or higher than Net Profit.</strong> Companies that consistently show high profit but low OCF may be recognising revenue without receiving cash — a red flag.</p>
+
+<h2>Red Flags to Watch For</h2>
+<ul>
+  <li><strong>Auditor qualification or change:</strong> If auditors resign or are changed frequently, investigate why</li>
+  <li><strong>Rising receivables faster than revenue:</strong> May indicate aggressive revenue recognition</li>
+  <li><strong>High related-party transactions:</strong> Promoters routing money through subsidiaries</li>
+  <li><strong>Goodwill that keeps rising without acquisitions:</strong> May indicate accounting irregularities</li>
+  <li><strong>Pledged promoter shares:</strong> Check Pledged Promoter Holdings table — high pledge (50%+) is very high risk</li>
+  <li><strong>Employee count falling while revenue grows:</strong> May be unsustainable or indicate outsourcing risks</li>
+</ul>
+
+<h2>Key Ratios to Calculate From Annual Report</h2>
+<ul>
+  <li><strong>Return on Equity (ROE) = PAT / Shareholders' Equity</strong></li>
+  <li><strong>Return on Capital Employed (ROCE) = EBIT / Capital Employed</strong></li>
+  <li><strong>Debt-to-Equity = Total Debt / Shareholders' Equity</strong></li>
+  <li><strong>Current Ratio = Current Assets / Current Liabilities</strong> (should be above 1.5)</li>
+  <li><strong>Interest Coverage = EBIT / Interest Expense</strong> (should be above 3)</li>
+</ul>
+
+<h2>The One Question to Answer</h2>
+<p>After reading the annual report, ask: <em>"Does management's story match what the numbers say?"</em> If management claims strong growth but cash flows are deteriorating, something doesn't add up. Always follow the cash.</p>
+    `,
+    faq: [
+      {
+        q: "How long does it take to read a full annual report?",
+        a: "A thorough first read of a typical company's annual report takes 3–6 hours. Experienced analysts focus on key sections (MD&A, auditor's report, cash flows, notes) and can complete a review in 1–2 hours.",
+      },
+      {
+        q: "Do I need an accounting background to read annual reports?",
+        a: "Basic accounting literacy helps but isn't required. Understanding revenue, profit, debt, and cash flow concepts is enough to identify red flags. You don't need to understand every note to the accounts.",
+      },
+      {
+        q: "Are standalone or consolidated financials more important?",
+        a: "For companies with subsidiaries, always use consolidated financials — they include subsidiary revenues, profits, and debts. Standalone hides off-balance sheet exposure in subsidiaries.",
+      },
+    ],
+  },
+  {
+    slug: "what-are-futures-options",
+    title: "What are Futures and Options (F&O)? A Beginner's Guide for Indian Investors",
+    description:
+      "Futures and options are derivatives traded on NSE. Learn what call and put options mean, how futures contracts work, lot sizes, expiry, and whether F&O is suitable for you.",
+    readingTime: 6,
+    publishedAt: "2026-04-20",
+    relatedSlugs: ["nifty-50-explained", "fii-dii-guide", "52-week-high-low"],
+    content: `
+<h2>What are Derivatives?</h2>
+<p><strong>Derivatives</strong> are financial contracts whose value is derived from an underlying asset — typically a stock index (Nifty 50, Bank Nifty), individual stocks (around 200 stocks in F&O on NSE), commodities, or currencies. In India, NSE is the world's largest derivatives exchange by contract volume.</p>
+<p>There are two main types of equity derivatives: <strong>Futures</strong> and <strong>Options</strong>.</p>
+
+<h2>What is a Futures Contract?</h2>
+<p>A <strong>futures contract</strong> is an agreement to buy or sell an asset at a predetermined price on a specific future date. Both parties are obligated — the buyer must buy, the seller must sell.</p>
+<p>Example: Nifty 50 futures lot size = 75 units. If Nifty is at 24,000 and you buy 1 Nifty Futures lot, your contract value = 24,000 × 75 = ₹18 lakh. You pay margin (typically 10–15%), not the full value — roughly ₹1.8–2.7 lakh. If Nifty rises to 24,500, profit = 500 × 75 = ₹37,500. If it falls to 23,500, loss = 500 × 75 = ₹37,500.</p>
+<p>Key features of futures:</p>
+<ul>
+  <li>Obligatory contract (unlike options)</li>
+  <li>Daily mark-to-market (profits/losses settled daily to margin account)</li>
+  <li>Expiry on last Thursday of every month (weekly expiry for Nifty Bank Nifty)</li>
+  <li>High leverage — small margin controls large contract value</li>
+</ul>
+
+<h2>What are Options?</h2>
+<p>An <strong>option</strong> gives the buyer the <em>right but not the obligation</em> to buy or sell the underlying at a specific price (strike price) before or on the expiry date. The buyer pays a premium for this right. The seller (writer) receives the premium and takes on the obligation.</p>
+<ul>
+  <li><strong>Call Option:</strong> Right to buy. You buy a call if you expect the underlying to rise.</li>
+  <li><strong>Put Option:</strong> Right to sell. You buy a put if you expect the underlying to fall.</li>
+</ul>
+<p>Example: Nifty is at 24,000. You buy a Nifty 24,200 Call at ₹80 premium (lot = 75). Cost = ₹80 × 75 = ₹6,000. If Nifty rises to 24,500 at expiry, intrinsic value = 24,500 − 24,200 = ₹300. Profit = (₹300 − ₹80) × 75 = ₹16,500. If Nifty stays below 24,200, the call expires worthless and you lose ₹6,000.</p>
+
+<h2>F&O Lot Sizes and Expiry</h2>
+<p>SEBI sets minimum lot sizes to prevent excessive leverage. Nifty 50 lot = 75. Bank Nifty lot = 30. Individual stocks have varying lot sizes. Expiry: Monthly (last Thursday), Weekly (Nifty and Bank Nifty have weekly options on every Thursday). After the 2023 regulatory changes, weekly options for individual stocks were discontinued.</p>
+
+<h2>Is F&O Suitable for You?</h2>
+<p>SEBI data shows that over <strong>89% of individual F&O traders lose money</strong>. The average loss per losing trader is ₹1.1 lakh per year. F&O is a zero-sum game — your gain is another participant's loss. Market makers and institutions have significant informational and structural advantages.</p>
+<p>F&O is suitable for experienced investors who need to <strong>hedge</strong> existing positions — for example, buying Nifty puts to protect a large equity portfolio against a market crash. It is not suitable for beginners as a wealth-building tool.</p>
+
+<h2>F&O Taxation in India</h2>
+<p>F&O trading is treated as <strong>business income</strong> in India, regardless of whether you hold shares for delivery. Profits are taxed at your applicable income tax slab rate. Losses can be carried forward for up to 8 years and set off against future business income. Tax audit is mandatory if F&O turnover exceeds ₹10 crore (or ₹2 crore if loss is claimed).</p>
+    `,
+    faq: [
+      {
+        q: "Can I lose more than my investment in F&O?",
+        a: "For option buyers, maximum loss is the premium paid. For futures traders and option sellers, losses can exceed the margin deposited — you may receive margin calls requiring additional deposits.",
+      },
+      {
+        q: "What is an option's theta decay?",
+        a: "Theta is the daily time decay of an option's premium. As expiry approaches, options lose value rapidly even if the underlying doesn't move. This benefits option sellers but harms buyers — especially for weekly options close to expiry.",
+      },
+      {
+        q: "Do I need special permission to trade F&O?",
+        a: "You need F&O segment activation from your broker. Most brokers require you to confirm understanding of risks. SEBI's 2023 circular mandates a mandatory 'true to label' risk disclosure before F&O activation.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-roe-roce",
+    title: "ROE vs ROCE — Which Profitability Ratio Matters More?",
+    description:
+      "ROE (Return on Equity) and ROCE (Return on Capital Employed) are the two most important profitability ratios for equity investors. Learn what each measures, how to calculate them, and when ROCE matters more than ROE.",
+    readingTime: 5,
+    publishedAt: "2026-04-22",
+    relatedSlugs: ["pe-ratio", "what-is-market-cap", "how-to-read-annual-report"],
+    content: `
+<h2>Return on Equity (ROE)</h2>
+<p><strong>ROE</strong> measures how much profit a company generates for every rupee of shareholders' equity (net worth). It answers: "How efficiently is management using shareholder capital?"</p>
+<ul>
+  <li><strong>ROE = Net Profit (PAT) / Shareholders' Equity × 100</strong></li>
+</ul>
+<p>Example: Company A has PAT of ₹100 crore and shareholders' equity of ₹500 crore → ROE = 20%.</p>
+<p>A consistently high ROE (15%+) over 5–10 years suggests a business with competitive advantages (moats) — like strong brands, network effects, or cost advantages that allow superior returns.</p>
+<p>Warren Buffett's first filter for any investment: <em>ROE consistently above 15% without excessive leverage.</em></p>
+
+<h2>What "Without Excessive Leverage" Means</h2>
+<p>The DuPont formula breaks ROE into three components:</p>
+<ul>
+  <li><strong>ROE = Net Profit Margin × Asset Turnover × Financial Leverage</strong></li>
+  <li>or equivalently: ROE = (PAT/Sales) × (Sales/Assets) × (Assets/Equity)</li>
+</ul>
+<p>A company can boost ROE by taking on more debt (financial leverage). This makes ROE misleading for leveraged businesses. A bank or NBFC with 20% ROE funded mostly by deposits (effectively debt) cannot be compared directly to a software company with 20% ROE and zero debt. Always check the debt-to-equity ratio alongside ROE.</p>
+
+<h2>Return on Capital Employed (ROCE)</h2>
+<p><strong>ROCE</strong> measures return on all capital used — both equity and debt. It is a better measure for capital-intensive businesses (manufacturing, infrastructure, telecom) where debt funding is common.</p>
+<ul>
+  <li><strong>ROCE = EBIT / Capital Employed × 100</strong></li>
+  <li>Capital Employed = Total Assets − Current Liabilities, or equivalently, Shareholders' Equity + Long-term Debt</li>
+</ul>
+<p>Example: EBIT ₹200 crore, Equity ₹500 crore, Long-term Debt ₹300 crore → Capital Employed = ₹800 crore → ROCE = 25%.</p>
+
+<h2>When to Use ROE vs ROCE</h2>
+<ul>
+  <li><strong>Use ROCE</strong> for capital-intensive sectors: manufacturing, power, infrastructure, cement, metals, telecom. These businesses inherently carry debt to fund assets.</li>
+  <li><strong>Use ROE</strong> for asset-light businesses: software, consumer brands, hospitals, financial services (with caution on leverage).</li>
+  <li><strong>ROCE &gt; Cost of Capital</strong> (WACC) means the business is creating value. If ROCE is below cost of capital, the business is destroying shareholder value even if PAT is positive.</li>
+</ul>
+
+<h2>Indian Sector Benchmarks (Approximate)</h2>
+<ul>
+  <li>IT Services: ROE 20–40%, ROCE 25–45% (high asset-light returns)</li>
+  <li>FMCG: ROE 30–60%, ROCE 35–60% (iconic consumer brands)</li>
+  <li>Pharmaceuticals: ROE 15–25%, ROCE 15–25%</li>
+  <li>Cement: ROE 12–20%, ROCE 12–18%</li>
+  <li>Banks: ROE 12–20% (leverage makes ROCE irrelevant for banks; use ROA instead)</li>
+  <li>Steel: ROE 8–20% (cyclical, varies widely)</li>
+</ul>
+
+<h2>Red Flags in ROE/ROCE Analysis</h2>
+<ul>
+  <li>ROE declining for 3+ consecutive years: Eroding competitive advantage</li>
+  <li>High ROE but very low ROCE: Company funded by high debt — dangerous</li>
+  <li>One-time exceptional items boosting PAT: Adjustments needed for true ROE</li>
+  <li>Goodwill from acquisitions inflating assets: Reduces apparent ROCE if goodwill is large</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "What is a good ROE for an Indian company?",
+        a: "15%+ is the general benchmark. 20%+ sustained over 5 years indicates a high-quality business. Below 12% suggests poor capital allocation unless the sector inherently has low margins (utilities, commodities).",
+      },
+      {
+        q: "Why don't banks have a meaningful ROCE?",
+        a: "Banks use deposits (essentially debt) as their primary input. Capital Employed includes customer deposits which are liabilities, making ROCE misleading. Use Return on Assets (ROA) and ROE for banks instead.",
+      },
+      {
+        q: "Where can I find ROE and ROCE data for Indian stocks?",
+        a: "IPOpulse's screener shows ROE and other fundamentals for listed companies. You can filter stocks by ROE minimum to find high-quality businesses.",
+      },
+    ],
+  },
+];
+
 export function getArticle(slug: string): Article | undefined {
   return articles.find((a) => a.slug === slug);
 }

@@ -11,114 +11,98 @@ import {
   LineChart,
   Scale,
   Activity,
+  Target,
+  BookOpen,
+  Eye,
+  Users,
+  Percent,
+  Wallet,
+  PieChart,
+  Building2,
+  ArrowUpDown,
+  Calculator,
+  Globe,
+  Award,
 } from "lucide-react";
+import { articles } from "@/lib/learn-articles";
 
 export const metadata: Metadata = {
   title: "IPO & Stock Market Learning Hub — Guides for Indian Investors",
   description:
-    "Free educational guides on IPO GMP, allotment status, DRHP, ASBA/UPI application, FII/DII flows, P/E ratio, and more — written for Indian retail investors.",
+    "Free educational guides on IPO GMP, allotment status, DRHP, ASBA/UPI application, FII/DII flows, P/E ratio, demat account, mutual funds and more — written for Indian retail investors.",
   alternates: { canonical: "/learn" },
 };
 
-interface ArticleCard {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  readingTime: number;
-  href: string;
-}
+const iconMap: Record<string, React.ElementType> = {
+  "ipo-gmp": TrendingUp,
+  "ipo-allotment": CheckCircle2,
+  "mainboard-vs-sme": GitCompare,
+  "drhp-guide": FileText,
+  "how-to-apply-ipo": BadgePlus,
+  "fii-dii-guide": BarChart2,
+  "bulk-block-deals": Layers,
+  "sip-guide": LineChart,
+  "pe-ratio": Scale,
+  "52-week-high-low": Activity,
+  "what-is-allotment-probability": Target,
+  "nifty-50-explained": BookOpen,
+  "how-gmp-predicts-listing": Eye,
+  "ipo-anchor-investors": Users,
+  "understanding-ipo-subscription": Percent,
+  "what-is-demat-account": Wallet,
+  "what-is-market-cap": PieChart,
+  "what-is-dividend": Award,
+  "cagr-meaning": Calculator,
+  "what-is-mutual-fund": Globe,
+  "rights-issue-bonus-share": Building2,
+  "how-to-read-annual-report": FileText,
+  "what-are-futures-options": ArrowUpDown,
+  "what-is-roe-roce": Scale,
+};
 
-const articleCards: ArticleCard[] = [
-  {
-    title: "What is IPO GMP (Grey Market Premium)?",
-    description:
-      "Understand how grey market premiums work, how GMP is calculated, and whether you should trust it before applying for an IPO.",
-    icon: TrendingUp,
-    readingTime: 5,
-    href: "/learn/ipo-gmp",
-  },
-  {
-    title: "How to Check IPO Allotment Status",
-    description:
-      "Step-by-step guide to checking allotment on BSE, KFintech, Linkintime, and through your broker app using your PAN.",
-    icon: CheckCircle2,
-    readingTime: 4,
-    href: "/learn/ipo-allotment",
-  },
-  {
-    title: "Mainboard vs SME IPO — Key Differences",
-    description:
-      "Compare mainboard and SME IPOs — eligibility, lot size, exchange, risk profile, and subscription rules.",
-    icon: GitCompare,
-    readingTime: 5,
-    href: "/learn/mainboard-vs-sme",
-  },
-  {
-    title: "What is DRHP and How to Read It",
-    description:
-      "A practical guide to reading DRHP documents — key sections, financial red flags, and what to look for before applying.",
-    icon: FileText,
-    readingTime: 6,
-    href: "/learn/drhp-guide",
-  },
-  {
-    title: "How to Apply for IPO (ASBA / UPI)",
-    description:
-      "Complete step-by-step guide to applying via ASBA through your bank or UPI through Zerodha, Groww, or Upstox.",
-    icon: BadgePlus,
-    readingTime: 5,
-    href: "/learn/how-to-apply-ipo",
-  },
-  {
-    title: "FII vs DII — What Institutional Flow Means for Markets",
-    description:
-      "Learn what FII and DII buying and selling signals mean for Indian markets, sectors, and individual stocks.",
-    icon: BarChart2,
-    readingTime: 5,
-    href: "/learn/fii-dii-guide",
-  },
-  {
-    title: "What is Bulk Deal vs Block Deal",
-    description:
-      "Understand the difference between bulk and block deals, who participates, and what large institutional trades signal.",
-    icon: Layers,
-    readingTime: 4,
-    href: "/learn/bulk-block-deals",
-  },
-  {
-    title: "SIP Calculator Guide — How SIP Returns Work",
-    description:
-      "How SIP returns, XIRR, rupee-cost averaging, and step-up SIPs work — with practical examples for Indian investors.",
-    icon: LineChart,
-    readingTime: 5,
-    href: "/learn/sip-guide",
-  },
-  {
-    title: "Understanding P/E Ratio for Indian Stocks",
-    description:
-      "What the Price-to-Earnings ratio means, sector benchmarks for India, and its limitations as a valuation tool.",
-    icon: Scale,
-    readingTime: 5,
-    href: "/learn/pe-ratio",
-  },
-  {
-    title: "52-Week High/Low — Trading Strategy",
-    description:
-      "Why 52-week highs and lows are key psychological levels, and how traders use them as entry and exit signals.",
-    icon: Activity,
-    readingTime: 4,
-    href: "/learn/52-week-high-low",
-  },
-];
+const categoryMap: Record<string, string[]> = {
+  "IPO Basics": [
+    "ipo-gmp",
+    "ipo-allotment",
+    "mainboard-vs-sme",
+    "drhp-guide",
+    "how-to-apply-ipo",
+    "ipo-anchor-investors",
+    "understanding-ipo-subscription",
+    "what-is-allotment-probability",
+    "how-gmp-predicts-listing",
+  ],
+  "Markets & Data": [
+    "fii-dii-guide",
+    "bulk-block-deals",
+    "nifty-50-explained",
+    "52-week-high-low",
+  ],
+  "Investing Fundamentals": [
+    "pe-ratio",
+    "sip-guide",
+    "what-is-demat-account",
+    "what-is-market-cap",
+    "what-is-dividend",
+    "cagr-meaning",
+    "what-is-mutual-fund",
+    "rights-issue-bonus-share",
+    "how-to-read-annual-report",
+    "what-are-futures-options",
+    "what-is-roe-roce",
+  ],
+};
 
 export default function LearnHubPage() {
+  const articleMap = new Map(articles.map((a) => [a.slug, a]));
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
       {/* Header */}
       <div className="mb-10">
         <div className="inline-flex items-center gap-2 text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-3">
           <FileText className="w-3.5 h-3.5" />
-          Free guides for retail investors
+          Free guides for retail investors · {articles.length} articles
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           IPO &amp; Stock Market Learning Hub
@@ -130,40 +114,72 @@ export default function LearnHubPage() {
         </p>
       </div>
 
-      {/* Article grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {articleCards.map((article) => {
-          const Icon = article.icon;
-          return (
-            <Link
-              key={article.href}
-              href={article.href}
-              className="card hover:border-indigo-300 hover:shadow-sm transition group flex flex-col"
-            >
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition leading-snug">
-                    {article.title}
-                  </h2>
-                  <span className="text-[11px] text-gray-400 mt-0.5 block">
-                    {article.readingTime} min read
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed flex-1">{article.description}</p>
-              <div className="mt-4 text-xs font-medium text-indigo-600 group-hover:text-indigo-800">
-                Read article →
-              </div>
-            </Link>
-          );
-        })}
+      {/* Categories */}
+      {Object.entries(categoryMap).map(([category, slugs]) => {
+        const categoryArticles = slugs
+          .map((slug) => articleMap.get(slug))
+          .filter(Boolean) as (typeof articles)[number][];
+
+        return (
+          <section key={category} className="mb-10">
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <span className="w-1 h-5 bg-indigo-600 rounded-full inline-block" />
+              {category}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {categoryArticles.map((article) => {
+                const Icon = iconMap[article.slug] ?? BookOpen;
+                return (
+                  <Link
+                    key={article.slug}
+                    href={`/learn/${article.slug}`}
+                    className="card hover:border-indigo-300 hover:shadow-sm transition group flex flex-col"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 transition leading-snug">
+                          {article.title}
+                        </h3>
+                        <span className="text-[11px] text-gray-400 mt-0.5 block">
+                          {article.readingTime} min read
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed flex-1">
+                      {article.description}
+                    </p>
+                    <div className="mt-4 text-xs font-medium text-indigo-600 group-hover:text-indigo-800">
+                      Read article →
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* Glossary CTA */}
+      <div className="mb-8 rounded-xl bg-violet-50 border border-violet-100 px-6 py-6 flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex-1">
+          <h2 className="text-base font-bold text-gray-900 mb-1">📖 Financial Glossary</h2>
+          <p className="text-sm text-gray-600">
+            A–Z definitions of 80+ stock market terms used on IPOpulse — from ASBA to XIRR.
+          </p>
+        </div>
+        <Link
+          href="/glossary"
+          className="shrink-0 bg-violet-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-violet-700 transition"
+        >
+          Browse Glossary →
+        </Link>
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-12 rounded-xl bg-indigo-50 border border-indigo-100 px-6 py-8 text-center">
+      <div className="rounded-xl bg-indigo-50 border border-indigo-100 px-6 py-8 text-center">
         <h2 className="text-lg font-bold text-gray-900 mb-1">Track Every IPO in Real Time</h2>
         <p className="text-sm text-gray-600 mb-4">
           Live GMP, subscription data, allotment probability, DRHP AI search, and more — all free.

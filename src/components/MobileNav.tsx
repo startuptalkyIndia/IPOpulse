@@ -44,6 +44,7 @@ const sections = [
     title: "US & Tools",
     links: [
       { href: "/learn", label: "Learning Hub" },
+      { href: "/glossary", label: "Glossary" },
       { href: "/us-ipo", label: "US IPO Tracker" },
       { href: "/us-listing", label: "Indian ADRs" },
       { href: "/calculators", label: "All Calculators" },

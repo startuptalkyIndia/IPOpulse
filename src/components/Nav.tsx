@@ -11,7 +11,7 @@ const links = [
   { href: "/screener", label: "Screener" },
   { href: "/indices", label: "Indices" },
   { href: "/fii-dii", label: "FII/DII" },
-  
+  { href: "/learn", label: "Learn" },
   { href: "/calculators", label: "Calculators" },
   { href: "/us-ipo", label: "US" },
 ];
