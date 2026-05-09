@@ -211,10 +211,11 @@ const whyStats = [
 ];
 
 export default async function HomePage() {
-  const [liveCount, upcomingCount, todayFiiDii] = await Promise.all([
+  const [liveCount, upcomingCount, todayFiiDii, nifty50] = await Promise.all([
     prisma.ipo.count({ where: { status: "live" } }).catch(() => 0),
     prisma.ipo.count({ where: { status: "upcoming" } }).catch(() => 0),
     prisma.fiiDiiDaily.findFirst({ where: { segment: "cash" }, orderBy: { date: "desc" } }).catch(() => null),
+    prisma.niftyIndex.findFirst({ where: { indexName: "Nifty 50" }, orderBy: { date: "desc" } }).catch(() => null),
   ]);
   const fiiNet = todayFiiDii?.fiiNet ? Number(todayFiiDii.fiiNet) : null;
   const diiNet = todayFiiDii?.diiNet ? Number(todayFiiDii.diiNet) : null;
@@ -294,24 +295,41 @@ export default async function HomePage() {
             </div>
 
             {/* Live stats strip */}
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl">
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 max-w-3xl">
+              {/* Nifty 50 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5 col-span-1">
+                <div className="text-[11px] text-slate-400 mb-0.5">Nifty 50</div>
+                <div className="text-base font-bold text-white tabular-nums">
+                  {nifty50 ? Number(nifty50.close).toLocaleString("en-IN") : "—"}
+                </div>
+                {nifty50?.changePct != null && (
+                  <div className={`text-[11px] tabular-nums font-medium ${Number(nifty50.changePct) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {Number(nifty50.changePct) >= 0 ? "▲" : "▼"} {Math.abs(Number(nifty50.changePct)).toFixed(2)}%
+                  </div>
+                )}
+              </div>
+              {/* Nifty P/E */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5">
+                <div className="text-[11px] text-slate-400 mb-0.5">Nifty P/E</div>
+                <div className="text-base font-bold text-indigo-300 tabular-nums">
+                  {nifty50?.pe ? Number(nifty50.pe).toFixed(1) : "—"}
+                </div>
+                {nifty50?.divYield && <div className="text-[11px] text-slate-400">div {Number(nifty50.divYield).toFixed(2)}%</div>}
+              </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5">
                 <div className="text-[11px] text-slate-400 mb-0.5">Open IPOs</div>
-                <div className="text-xl font-bold text-emerald-400 tabular-nums">{liveCount}</div>
+                <div className="text-base font-bold text-emerald-400 tabular-nums">{liveCount}</div>
+                <div className="text-[11px] text-slate-400">{upcomingCount} upcoming</div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5">
-                <div className="text-[11px] text-slate-400 mb-0.5">Upcoming IPOs</div>
-                <div className="text-xl font-bold text-amber-400 tabular-nums">{upcomingCount}</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5">
-                <div className="text-[11px] text-slate-400 mb-0.5">FII net (today)</div>
-                <div className={`text-xl font-bold tabular-nums ${fiiNet == null ? "text-slate-500" : fiiNet >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <div className="text-[11px] text-slate-400 mb-0.5">FII net</div>
+                <div className={`text-base font-bold tabular-nums ${fiiNet == null ? "text-slate-500" : fiiNet >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {fiiNet == null ? "—" : formatCurrency(fiiNet)}
                 </div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 px-3 py-2.5">
-                <div className="text-[11px] text-slate-400 mb-0.5">DII net (today)</div>
-                <div className={`text-xl font-bold tabular-nums ${diiNet == null ? "text-slate-500" : diiNet >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <div className="text-[11px] text-slate-400 mb-0.5">DII net</div>
+                <div className={`text-base font-bold tabular-nums ${diiNet == null ? "text-slate-500" : diiNet >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {diiNet == null ? "—" : formatCurrency(diiNet)}
                 </div>
               </div>

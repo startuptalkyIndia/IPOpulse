@@ -17,6 +17,7 @@ import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
 import { ingestNseCompanyMaster } from "./jobs/nse-company-master";
 import { ingestNseSectorMap } from "./jobs/nse-sector-map";
 import { generateNextDayPreview } from "./jobs/next-day-preview";
+import { ingestNseIndices } from "./jobs/nse-indices";
 import { ingestHistoricalBhavcopy } from "./jobs/nse-bhavcopy-historical";
 import { ingestHistoricalFiiDii } from "./jobs/nse-fii-dii-historical";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
@@ -125,6 +126,12 @@ export function startScheduler() {
     console.log(`[cron screener_fundamentals] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // NSE Index daily data — Nifty 50 + 70 indices with P/E, P/B — 4 PM IST (after market close)
+  cron.schedule("0 16 * * 1-5", async () => {
+    const result = await runIngestion("nse_indices", ingestNseIndices);
+    console.log(`[cron nse_indices] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Next-day market preview — AI "stocks to watch" at 8:30 PM IST (after bhavcopy + FII/DII + listing sync)
   cron.schedule("30 20 * * 1-5", async () => {
     const result = await runIngestion("next_day_preview", generateNextDayPreview);
@@ -169,6 +176,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   nse_company_master: ingestNseCompanyMaster,
   nse_sector_map: ingestNseSectorMap,
   next_day_preview: generateNextDayPreview,
+  nse_indices: ingestNseIndices,
   bhavcopy_historical: ingestHistoricalBhavcopy,
   fii_dii_historical: ingestHistoricalFiiDii,
 };

@@ -84,6 +84,11 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Mon–Fri at 22:30 IST",
     desc: "Fetches P/E, P/B, ROE, D/E, EPS, book value, and dividend yield for top 1,000 companies via Yahoo Finance quoteSummary API. Free, no auth. Powers the /screener filter columns.",
   },
+  nse_indices: {
+    label: "NSE Index daily data — Nifty 50 + 70 indices (Mon–Fri 16:00 IST)",
+    schedule: "Mon–Fri at 16:00 IST",
+    desc: "Downloads ind_close_all_DDMMYYYY.csv from NSE archives. 70+ indices with OHLC, Points/% change, Volume, Turnover, P/E, P/B, Dividend Yield. Powers homepage Nifty stats, sector P/E on sector pages, and the /indices page.",
+  },
   next_day_preview: {
     label: "Next-Day Market Preview — AI watch list (Mon–Fri 20:30 IST)",
     schedule: "Mon–Fri at 20:30 IST",

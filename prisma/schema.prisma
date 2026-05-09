@@ -673,6 +673,33 @@ model UsAdrlisting {
   @@map("us_adr_listings")
 }
 
+// ============================================================
+// Nifty Index Daily Data (from NSE archives ind_close_all_DDMMYYYY.csv)
+// Contains P/E, P/B, Div Yield for 70+ indices
+// ============================================================
+model NiftyIndex {
+  id          Int      @id @default(autoincrement())
+  indexName   String   @map("index_name")
+  date        DateTime @db.Date
+  open        Decimal  @db.Decimal(14, 2)
+  high        Decimal  @db.Decimal(14, 2)
+  low         Decimal  @db.Decimal(14, 2)
+  close       Decimal  @db.Decimal(14, 2)
+  pointsChg   Decimal? @map("points_chg") @db.Decimal(10, 2)
+  changePct   Decimal? @map("change_pct") @db.Decimal(8, 4)
+  volume      BigInt?
+  turnoverCr  Decimal? @map("turnover_cr") @db.Decimal(16, 2)
+  pe          Decimal? @db.Decimal(8, 2)
+  pb          Decimal? @db.Decimal(8, 2)
+  divYield    Decimal? @map("div_yield") @db.Decimal(6, 2)
+  createdAt   DateTime @default(now())
+
+  @@unique([indexName, date])
+  @@index([date])
+  @@index([indexName])
+  @@map("nifty_indices")
+}
+
 model MarketSummary {
   id          Int      @id @default(autoincrement())
   date        DateTime @unique  // one row per trading day
