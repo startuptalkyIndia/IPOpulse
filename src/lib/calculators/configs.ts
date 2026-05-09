@@ -887,6 +887,48 @@ calculators.push(
     ],
     tags: ["us stocks", "s&p 500", "nasdaq", "dollar returns", "international investing"],
   },
+  {
+    slug: "capital-gains",
+    title: "Capital Gains Tax Calculator",
+    shortTitle: "Capital Gains",
+    heading: "Capital Gains Tax Calculator — STCG & LTCG on stocks and mutual funds",
+    description:
+      "Calculate capital gains tax on equity, mutual funds, debt, and gold investments. Covers post-July 2024 Budget rules: STCG 20%, LTCG 12.5% with ₹1.25L annual exemption. Debt funds at slab rate.",
+    category: "tax",
+    iconName: "TrendingUp",
+    inputs: [],
+    faq: [
+      {
+        q: "What changed in the July 2024 Budget for capital gains?",
+        a: "Two key changes: (1) STCG on equity/equity MFs went from 15% to 20%, (2) LTCG on equity went from 10% to 12.5%, and the annual exemption limit was raised from ₹1 lakh to ₹1.25 lakh. These changes apply to transactions on or after 23 July 2024.",
+      },
+      {
+        q: "How is LTCG on equity calculated?",
+        a: "Long-term capital gains on listed equity (held ≥ 12 months) are taxed at 12.5% on the gains above ₹1.25 lakh per financial year. The first ₹1.25 lakh of LTCG is completely tax-free. Example: ₹3 lakh LTCG → taxable gain = ₹1.75 lakh → tax = ₹21,875 (before cess).",
+      },
+      {
+        q: "Are debt mutual funds taxed differently?",
+        a: "Yes. Since April 2023, gains from debt mutual funds are no longer classified as long-term capital gains. All gains are now treated as ordinary income and taxed at your applicable income tax slab rate (5%, 10%, 20%, or 30%). No indexation benefit is available.",
+      },
+      {
+        q: "What about the 4% health and education cess?",
+        a: "This calculator shows the base tax amount before cess. Add 4% of the tax amount to get the final tax payable. Example: ₹20,000 base tax → ₹800 cess → total ₹20,800.",
+      },
+      {
+        q: "Is Sovereign Gold Bond (SGB) exempt from capital gains?",
+        a: "Yes, if you hold SGB to maturity (8 years), the capital gains are fully exempt from tax. However, if you sell SGBs on the exchange before maturity, the gains are taxable as capital gains.",
+      },
+    ],
+    related: ["tax-harvester", "ltcg-stcg", "tax"],
+    overview: [
+      "India's capital gains tax framework was significantly revised by the July 2024 Union Budget. The headline change: short-term capital gains (STCG) on equity and equity mutual funds jumped from 15% to 20%, while long-term capital gains (LTCG) moved from 10% to 12.5%. The silver lining was raising the annual LTCG exemption from ₹1 lakh to ₹1.25 lakh — a small but real benefit for smaller investors.",
+      "For equity investors, the holding period rule is simple: hold for less than 12 months and you pay 20% STCG on any profit. Hold for 12 months or more, and only the gains above ₹1.25 lakh in a financial year attract 12.5% LTCG. This makes the ₹1.25 lakh annual exemption extremely valuable for medium-sized portfolios — a couple selling ₹2.5 lakh of equity gains each year (₹1.25L each) pays zero tax on that portion.",
+      "Debt mutual funds underwent a more dramatic change earlier, in April 2023. Before that date, debt MFs held for 3+ years enjoyed indexation benefits and a 20% LTCG rate — making them highly tax-efficient compared to FDs for investors in the 30% tax bracket. Post-April 2023, all debt MF gains are added to income and taxed at the investor's slab rate, regardless of holding period. This effectively eliminated the tax advantage that made debt MFs the preferred fixed-income vehicle for high-income investors.",
+      "Gold investment taxation: physical gold and gold ETFs are now taxed at slab rate (same as debt MFs, post 2023). Gold sovereign bonds (SGBs) held to maturity (8 years from issue) are still fully exempt — making SGBs the most tax-efficient way to own gold in India. Digital gold and gold fund of funds follow the debt MF taxation rules.",
+      "A key practical point: 4% health and education cess applies on top of all capital gains tax. So a 20% STCG effectively becomes 20.8%, and 12.5% LTCG effectively becomes 13%. Surcharge may also apply for very high-income taxpayers (gains above ₹50 lakh/₹1 crore). Always consult a CA for high-value transactions.",
+    ],
+    tags: ["capital gains", "ltcg", "stcg", "equity", "mutual fund", "tax"],
+  },
 );
 
 export function getCalcBySlug(slug: string): CalcMeta | undefined {
