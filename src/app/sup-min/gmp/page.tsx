@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { GmpEntryForm } from "./GmpEntryForm";
 import { ListingEntryForm } from "./ListingEntryForm";
+import { SubscriptionEntryForm } from "./SubscriptionEntryForm";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,15 @@ export default async function AdminGmpPage() {
           Record today's grey market premium for each active IPO. Entries auto-update the public pages.
         </p>
         <GmpEntryForm ipos={serializable} />
+      </div>
+
+      {/* Subscription entry */}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Subscription Data Entry</h2>
+        <p className="text-sm text-gray-500 mb-4">
+          BSE API blocked — enter retail/HNI/QIB subscription figures manually from BSE or NSE website.
+        </p>
+        <SubscriptionEntryForm ipos={serializable.map(i => ({ id: i.id, name: i.name, status: i.status }))} />
       </div>
 
       {pendingListingSer.length > 0 && (

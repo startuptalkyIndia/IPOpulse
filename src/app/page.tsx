@@ -161,6 +161,14 @@ const moduleCards = [
     lines: ["AI pre-market watch list", "Stocks · sector · FII signal · events"],
   },
   {
+    title: "Research Hub",
+    icon: FileText,
+    href: "/research",
+    color: "bg-indigo-50 text-indigo-600",
+    accent: "group-hover:text-indigo-800",
+    lines: ["AI tools in one place", "DRHP · Concall · Promoter · Previews"],
+  },
+  {
     title: "Compare Brokers",
     icon: Scale,
     href: "/compare/brokers",

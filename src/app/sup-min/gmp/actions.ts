@@ -61,6 +61,36 @@ export async function saveGmpEntry(formData: FormData) {
   return { ok: true };
 }
 
+export async function saveSubscriptionEntry(formData: FormData) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user?.email || (role !== "admin" && role !== "superadmin")) {
+    return { ok: false, error: "Forbidden" };
+  }
+
+  const ipoId = Number(formData.get("ipoId"));
+  const retailX  = formData.get("retailX")  ? Number(formData.get("retailX"))  : null;
+  const hniX     = formData.get("hniX")     ? Number(formData.get("hniX"))     : null;
+  const qibX     = formData.get("qibX")     ? Number(formData.get("qibX"))     : null;
+  const totalX   = formData.get("totalX")   ? Number(formData.get("totalX"))   : null;
+  const employeeX = formData.get("employeeX") ? Number(formData.get("employeeX")) : null;
+
+  if (!ipoId) return { ok: false, error: "Select an IPO" };
+
+  const capturedAt = new Date();
+  capturedAt.setSeconds(0, 0);
+
+  await prisma.ipoSubscription.create({
+    data: { ipoId, capturedAt, retailX, hniX, qibX, totalX, employeeX },
+  });
+
+  revalidatePath("/sup-min/gmp");
+  const ipo = await prisma.ipo.findUnique({ where: { id: ipoId }, select: { slug: true } });
+  if (ipo) revalidatePath(`/ipo/${ipo.slug}`);
+
+  return { ok: true };
+}
+
 export async function saveListingEntry(formData: FormData) {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;

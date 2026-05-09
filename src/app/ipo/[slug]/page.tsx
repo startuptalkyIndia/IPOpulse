@@ -130,7 +130,25 @@ export default async function IpoDetailPage({ params }: Props) {
       })
     : null;
 
+  // JSON-LD structured data for Google rich snippets
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FinancialProduct",
+    name: `${ipo.name} IPO`,
+    description: `${ipo.name} IPO — price band ${formatPriceBand(ipo)}, lot size ${ipo.lotSize ?? "—"}, issue size ${formatIssueSize(ipo.issueSize ? Number(ipo.issueSize) : null)}`,
+    url: `https://ipopulse.talkytools.com/ipo/${ipo.slug}`,
+    feesAndCommissionsSpecification: ipo.priceBandHigh ? `₹${Number(ipo.priceBandHigh)} per share` : undefined,
+    offers: ipo.priceBandHigh ? {
+      "@type": "Offer",
+      price: Number(ipo.priceBandHigh),
+      priceCurrency: "INR",
+      availability: status === "live" ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+    } : undefined,
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="space-y-6">
       <Link href="/ipo" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
         <ArrowLeft className="w-4 h-4" /> IPO Dashboard
@@ -425,6 +443,7 @@ export default async function IpoDetailPage({ params }: Props) {
         />
       ) : null}
     </div>
+    </>
   );
 }
 
