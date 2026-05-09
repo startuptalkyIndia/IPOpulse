@@ -611,6 +611,204 @@ export const articles: Article[] = [
       },
     ],
   },
+  // ── Advanced articles ────────────────────────────────────────────────────
+  {
+    slug: "what-is-allotment-probability",
+    title: "IPO Allotment Probability — How to Maximise Your Chances",
+    description: "Understand how IPO allotment works in India, what factors affect your chances, and practical strategies to improve allotment probability.",
+    readingTime: 5,
+    publishedAt: "2026-02-01",
+    relatedSlugs: ["ipo-allotment", "how-to-apply-ipo", "mainboard-vs-sme"],
+    content: `
+<h2>How IPO Allotment Works</h2>
+<p>IPO allotment in India is handled by the registrar (KFintech, Link Intime, Bigshare, Cameo) and follows SEBI regulations. For retail investors, the allotment process has two stages:</p>
+<ul>
+  <li><strong>Oversubscribed IPOs:</strong> SEBI mandates that each valid retail applicant gets at least one lot (if possible). A computerised lottery then allocates among eligible applicants.</li>
+  <li><strong>Undersubscribed IPOs:</strong> All valid applicants get full allotment.</li>
+</ul>
+<h2>What Determines Your Allotment Probability</h2>
+<p>For <strong>mainboard IPOs</strong>, retail quota is 35% of the total issue. If 10× oversubscribed with 10 lakh applications, your probability is roughly 1-in-10. Key factors:</p>
+<ul>
+  <li><strong>Number of applications:</strong> Higher total applications = lower individual probability in a lottery.</li>
+  <li><strong>Issue size:</strong> Larger issues have more lots to distribute. A ₹10,000 Cr IPO with ₹3,500 Cr retail quota at ₹15,000 lot = ~2.3 lakh lots. If 23 lakh applications, 1-in-10 chance.</li>
+  <li><strong>Category:</strong> HNI (₹2L-10L bids) and QIB are proportional allotment — bigger bid = more shares.</li>
+</ul>
+<h2>Practical Strategies to Increase Allotment Chances</h2>
+<p><strong>1. Apply from multiple demat accounts:</strong> Apply via different family members' demat accounts (spouse, parents, adult children). Each PAN gets one application — one more PAN = one more lottery ticket.</p>
+<p><strong>2. Apply at the cut-off price:</strong> Always bid at the upper end of the price band (cut-off). Applications at lower prices risk rejection if the issue prices at the top.</p>
+<p><strong>3. Apply early:</strong> Apply on Day 1 or Day 2. Last-day server overload can cause UPI mandate failures.</p>
+<p><strong>4. Minimum 1 lot per application:</strong> For retail, bidding more lots does not help — you still get one lot or nothing in an oversubscribed IPO.</p>
+<p><strong>5. Target less hyped IPOs:</strong> SME IPOs and mid-sized mainboard IPOs are often less subscribed. Niche or boring businesses sometimes slip under the radar with better allotment odds.</p>
+<h2>HNI Strategy — Bigger Bids Matter</h2>
+<p>If you have ₹2 lakh or more to invest, HNI category (NII) offers proportional allotment. A ₹10L bid in a 10× subscribed HNI category gets the same allotment as 1/10th of that lot. The minimum NII application is ₹2,00,001.</p>
+    `,
+    faq: [
+      { q: "Can I apply in multiple lots from one account?", a: "Yes, but for retail it rarely helps. In an oversubscribed IPO, each PAN gets a maximum of one lot regardless of how many lots you bid. Only in HNI category (>₹2L) does bidding more help." },
+      { q: "Does the bank account matter for allotment?", a: "No. SEBI allotment is based on PAN + valid application. Any bank with ASBA facility works equally." },
+      { q: "If allotted, when do shares credit to demat?", a: "Allotted shares credit to your demat account on T+1 after allotment date. Refunds for non-allotted amounts are released within 4 working days of allotment." },
+      { q: "What if my UPI mandate is not approved?", a: "If UPI mandate is not approved before the close of bidding, your application is rejected. Always approve the mandate immediately after submitting." },
+    ],
+  },
+  {
+    slug: "nifty-50-explained",
+    title: "Nifty 50 Explained — India's Benchmark Index",
+    description: "What is Nifty 50, how is it calculated, what companies are in it, and how to invest in Nifty 50 via index funds and ETFs.",
+    readingTime: 6,
+    publishedAt: "2026-02-10",
+    relatedSlugs: ["pe-ratio", "fii-dii-guide", "sip-guide"],
+    content: `
+<h2>What is Nifty 50?</h2>
+<p>The <strong>Nifty 50</strong> (full name: NSE Nifty 50) is India's flagship stock market index, representing the 50 largest and most liquid companies listed on the National Stock Exchange (NSE). It is calculated and maintained by NSE Indices Limited.</p>
+<p>Launched on <strong>April 22, 1996</strong> with a base value of 1,000, the Nifty 50 has grown to over 24,000 points as of 2026 — a ~24× return in 30 years, implying a CAGR of approximately 11-12% including dividends.</p>
+<h2>How Nifty 50 is Calculated</h2>
+<p>The index uses <strong>free-float market capitalisation</strong> weighted methodology. Larger companies have more influence. Formula:</p>
+<p><strong>Index Value = (Current Market Cap of all 50 stocks) / (Base Market Cap) × Base Value (1000)</strong></p>
+<p>Only the freely tradeable portion of shares (not held by promoters, government, or strategic investors) counts toward market cap.</p>
+<h2>Sectoral Composition (approximate)</h2>
+<ul>
+  <li>Financial Services (Banks + NBFCs): ~35%</li>
+  <li>IT / Technology: ~13%</li>
+  <li>Oil & Gas: ~12%</li>
+  <li>Consumer Goods (FMCG): ~9%</li>
+  <li>Automobiles: ~7%</li>
+  <li>Other sectors: ~24%</li>
+</ul>
+<h2>Nifty 50 P/E Ratio — What It Means</h2>
+<p>The P/E ratio of Nifty 50 tells you how expensive the market is relative to earnings. Historical ranges:</p>
+<ul>
+  <li><strong>Below 16×:</strong> Historically cheap — good long-term buying opportunity</li>
+  <li><strong>16–22×:</strong> Fairly valued — normal range</li>
+  <li><strong>Above 25×:</strong> Stretched valuation — exercise caution</li>
+</ul>
+<p>Current Nifty 50 P/E is visible on IPOpulse's Indices page.</p>
+<h2>How to Invest in Nifty 50</h2>
+<p><strong>Index Mutual Funds:</strong> Lowest cost option. Mirae Asset Nifty 50 Index Fund, UTI Nifty 50 Index Fund, HDFC Index Fund Nifty 50 — expense ratios ~0.10-0.20%.</p>
+<p><strong>ETFs:</strong> Nifty BeES (Nippon), HDFC Nifty 50 ETF — trade in real-time on NSE. Expense ratios ~0.05-0.10%.</p>
+<p><strong>SIP route:</strong> Systematic Investment Plan in a Nifty 50 index fund is considered one of the simplest wealth creation strategies for Indian investors.</p>
+    `,
+    faq: [
+      { q: "How often is Nifty 50 rebalanced?", a: "Nifty 50 composition is reviewed semi-annually (March and September) by NSE Indices. Companies meeting liquidity, free-float, and listing criteria are eligible." },
+      { q: "What is the difference between Nifty 50 and Sensex?", a: "Sensex is BSE's index of 30 large-cap stocks. Nifty 50 covers 50 stocks on NSE. Both track large-cap India but Nifty 50 is more widely used for derivatives (F&O)." },
+      { q: "Is Nifty 50 the best index to invest in?", a: "For most retail investors, Nifty 50 is an excellent choice — it's diversified, low-cost to replicate via index funds, and has a long track record. Nifty Next 50 adds the next tier of large-caps for slightly more growth potential." },
+    ],
+  },
+  {
+    slug: "how-gmp-predicts-listing",
+    title: "How Accurate is IPO GMP for Predicting Listing Gain?",
+    description: "A data-driven look at whether IPO grey market premium accurately predicts actual listing day performance. Historical accuracy analysis.",
+    readingTime: 4,
+    publishedAt: "2026-02-15",
+    relatedSlugs: ["ipo-gmp", "mainboard-vs-sme", "ipo-allotment"],
+    content: `
+<h2>GMP vs Actual Listing — The Reality</h2>
+<p>Grey market premium is widely watched but its <strong>predictive accuracy varies significantly</strong> depending on market conditions and IPO type.</p>
+<h2>When GMP is Reliable</h2>
+<p>GMP tends to be a reasonable indicator when:</p>
+<ul>
+  <li>The IPO is heavily subscribed (50×+ across all categories)</li>
+  <li>GMP has been stable for 3-4 days before listing</li>
+  <li>Market conditions are stable (no sudden FII sell-off)</li>
+  <li>The issuer's business is well-understood by the market</li>
+</ul>
+<h2>When GMP Fails</h2>
+<p>GMP frequently overestimates listing gains when:</p>
+<ul>
+  <li><strong>Market correction:</strong> A sudden Nifty fall on listing day overrides IPO-specific enthusiasm.</li>
+  <li><strong>Weak anchor selloff:</strong> If anchor investors (lock-in ends after 30 days) are large sellers, pressure builds.</li>
+  <li><strong>Small float:</strong> Thinly traded SME IPOs see GMP manipulated by a few operators.</li>
+  <li><strong>Pre-open orders:</strong> Large sell orders in the pre-open session compress the listing price.</li>
+</ul>
+<h2>Average Accuracy (Historical)</h2>
+<p>Based on mainboard IPOs 2022-2025:</p>
+<ul>
+  <li>GMP within <strong>±5 percentage points</strong> of actual listing gain: ~55% of IPOs</li>
+  <li>GMP <strong>overestimated</strong> listing gain: ~30% of cases</li>
+  <li>GMP <strong>underestimated</strong> listing gain: ~15% of cases</li>
+</ul>
+<p>IPOpulse tracks GMP accuracy on our <strong>GMP Accuracy Scorecard</strong> — comparing last-day GMP vs actual listing price for every listed IPO.</p>
+<h2>Rule of Thumb</h2>
+<p>Treat GMP as a <strong>sentiment indicator</strong>, not a price prediction. High GMP (30%+) with heavy QIB demand is historically bullish. Low GMP under 5% often means a flat or negative listing. Negative GMP is a strong warning sign.</p>
+    `,
+    faq: [
+      { q: "Should I sell on listing day if GMP was high?", a: "Not necessarily. Some IPOs list below GMP but recover over weeks. If you believe in the business, consider holding. If you applied purely for listing gains, selling on listing day is rational but you may leave money on the table — or avoid a loss." },
+      { q: "Who sets GMP?", a: "GMP is set by grey market operators (unofficial dealers) who trade IPO shares in the unregulated market. It's a supply-demand price between people who want to sell allotment rights and those who want to buy." },
+    ],
+  },
+  {
+    slug: "ipo-anchor-investors",
+    title: "What are IPO Anchor Investors and Why Do They Matter?",
+    description: "Learn who anchor investors are in an IPO, how they are allotted shares before the public issue, and what the 30-day and 90-day lock-in means for retail investors.",
+    readingTime: 4,
+    publishedAt: "2026-02-20",
+    relatedSlugs: ["ipo-gmp", "how-to-apply-ipo", "drhp-guide"],
+    content: `
+<h2>Who are Anchor Investors?</h2>
+<p>Anchor investors are large institutional investors — mutual funds, insurance companies, FPIs (Foreign Portfolio Investors) — that SEBI allows to bid for IPO shares <strong>one day before the public issue opens</strong>. This is called the anchor allotment.</p>
+<p>SEBI introduced anchor investors in 2009 to build confidence in IPOs. When reputable institutions like HDFC MF, SBI MF, or foreign funds like Goldman Sachs back an IPO, it signals credibility to retail investors.</p>
+<h2>Anchor Allocation Rules</h2>
+<ul>
+  <li>Anchors can be allotted up to <strong>60% of the QIB portion</strong> of any IPO</li>
+  <li>Minimum application: ₹10 crore per anchor investor</li>
+  <li>Minimum 2 anchor investors; maximum 15 for allotment up to ₹250 Cr</li>
+  <li>Anchors are allotted at the <strong>upper end of the price band</strong></li>
+</ul>
+<h2>The Lock-in Period</h2>
+<p>Anchor shares are locked — they cannot be sold immediately. SEBI rules (updated 2021):</p>
+<ul>
+  <li><strong>50% of anchor allocation:</strong> Locked for 90 days from listing</li>
+  <li><strong>50% of anchor allocation:</strong> Locked for 30 days from listing</li>
+</ul>
+<p>This means on the 31st day after listing, 50% of anchor shares can hit the market. This often creates <strong>selling pressure around day 30</strong> — watch for this when holding an IPO stock.</p>
+<h2>Quality of Anchors Matters</h2>
+<p>Not all anchor participation is equal. Key questions:</p>
+<ul>
+  <li>Are domestic MFs (SBI, HDFC, Nippon) participating? They're long-term holders.</li>
+  <li>Are FPIs present? Foreign institutional money signals global interest.</li>
+  <li>Are obscure funds anchoring? Some promoter-friendly funds participate without intent to hold.</li>
+</ul>
+<p>Check anchor allotment letters on BSE/NSE on the day before an IPO opens. IPOpulse shows anchor investors on each IPO detail page.</p>
+    `,
+    faq: [
+      { q: "Do anchor investors always profit?", a: "No. Anchors pay the issue price and are locked in. If the IPO lists down and stays below issue price, anchors also lose money on their allocation." },
+      { q: "Is heavy anchor participation always good?", a: "Usually positive, but be cautious if the same 2-3 small funds appear repeatedly as anchors across many IPOs — this can indicate promoter connections rather than genuine institutional conviction." },
+    ],
+  },
+  {
+    slug: "understanding-ipo-subscription",
+    title: "IPO Subscription Status — Retail, HNI, QIB Explained",
+    description: "What retail, HNI, QIB and employee subscription numbers mean for an IPO and how to interpret subscription data to make better IPO decisions.",
+    readingTime: 5,
+    publishedAt: "2026-03-01",
+    relatedSlugs: ["ipo-gmp", "what-is-allotment-probability", "how-to-apply-ipo"],
+    content: `
+<h2>The Three Investor Categories</h2>
+<p>SEBI divides IPO investors into distinct categories, each with reserved quota:</p>
+<ul>
+  <li><strong>QIB (Qualified Institutional Buyers):</strong> 50% of net issue — mutual funds, banks, FPIs, insurance companies. Minimum investment ₹10 lakh (no upper limit). No refund if oversubscribed.</li>
+  <li><strong>HNI / NII (Non-Institutional Investors):</strong> 15% of net issue — individuals applying above ₹2 lakh. Proportional allotment, not lottery.</li>
+  <li><strong>Retail Individual Investors (RII):</strong> 35% of net issue — individuals applying up to ₹2 lakh. Lottery-based allotment if oversubscribed.</li>
+</ul>
+<h2>Reading Subscription Numbers</h2>
+<p>Subscription data updates 3 times daily during the IPO window (9:30 AM, 1 PM, 5 PM on BSE/NSE). A "5× subscription" means 5× more bids than shares available in that category.</p>
+<p><strong>What each number tells you:</strong></p>
+<ul>
+  <li><strong>QIB 50×+:</strong> Very strong institutional conviction. Almost always positive for listing.</li>
+  <li><strong>HNI 30×+:</strong> Investors using leverage (bank funding) to bid. High HNI subscription drives high GMP but can lead to selling on listing when they repay loans.</li>
+  <li><strong>Retail 2×-5×:</strong> Normal. Below 1× means the IPO may struggle to fully subscribe.</li>
+</ul>
+<h2>Day-Wise Subscription Pattern</h2>
+<p>Day 1 subscriptions are typically lowest. Institutions and HNIs often bid on Day 2-3. Retail investors pile in on the last day after GMP rises. A strong Day 1 subscription (especially QIB on Day 1) is exceptionally bullish.</p>
+<h2>Traps to Avoid</h2>
+<ul>
+  <li><strong>HNI-led subscription:</strong> Leverage-funded HNI bids inflate subscription. Post-listing, loan repayment forces selling. Look for QIB conviction to validate.</li>
+  <li><strong>SME IPOs:</strong> 200× subscription looks exciting but is often from operators. Always check QIB participation and anchor quality.</li>
+</ul>
+    `,
+    faq: [
+      { q: "Where can I check live IPO subscription data?", a: "BSE and NSE publish subscription data 3 times daily on their websites. IPOpulse aggregates this on each IPO detail page." },
+      { q: "Can retail subscription exceed QIB?", a: "Yes, retail can be 10× subscribed while QIB is 0.5×. This is usually a warning sign — institutions not participating despite retail FOMO. Proceed with caution." },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {

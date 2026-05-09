@@ -192,6 +192,22 @@ const moduleCards = [
     accent: "group-hover:text-blue-800",
     lines: ["Term life & health plans", "Premium · claim ratio · features"],
   },
+  {
+    title: "Learn",
+    icon: FileText,
+    href: "/learn",
+    color: "bg-emerald-50 text-emerald-600",
+    accent: "group-hover:text-emerald-800",
+    lines: ["IPO guides · GMP · DRHP", "Calculators · ratios · strategies"],
+  },
+  {
+    title: "IPO Stats 2026",
+    icon: LineChart,
+    href: "/ipo/stats",
+    color: "bg-orange-50 text-orange-600",
+    accent: "group-hover:text-orange-800",
+    lines: ["All IPO listing gains", "Best · worst · monthly trends"],
+  },
 ];
 
 const calcShortcuts = [
