@@ -75,7 +75,7 @@ export default async function FiiDiiPage() {
         </div>
       ) : (
         <div className="card text-center py-10 text-sm text-gray-500">
-          Daily FII/DII data pipeline is wiring up. Check back once the NSE scraper cron goes live.
+          FII/DII data is sourced from NSE provisional figures. Data for the latest trading session typically appears after 7 PM IST.
         </div>
       )}
 

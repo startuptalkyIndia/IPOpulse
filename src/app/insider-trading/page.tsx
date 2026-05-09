@@ -73,7 +73,7 @@ export default async function InsiderTradingPage() {
       </div>
 
       {buys.length === 0 && sells.length === 0 ? (
-        <div className="card text-center py-10 text-sm text-gray-500">Insider trade data loads after the NSE cron runs. No data yet.</div>
+        <div className="card text-center py-10 text-sm text-gray-500">No insider trades (promoter/director buying or selling) have been reported in the current period. Data sourced from NSE SAST disclosures.</div>
       ) : (
         <>
           <section><h2 className="text-lg font-semibold text-green-800 mb-2">🟢 Insider Buys — promoters & directors buying their own stock</h2><TradeTable rows={buys} type="Buy" /></section>

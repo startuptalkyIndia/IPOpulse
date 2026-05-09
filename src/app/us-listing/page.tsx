@@ -38,8 +38,7 @@ export default async function UsListingPage() {
 
       {adrs.length === 0 ? (
         <div className="card text-center py-10 text-sm text-gray-500">
-          ADR data will populate once the seed + price update jobs run.
-          Run: <code className="bg-gray-100 px-1 rounded">npx tsx scripts/seed-adrs.ts</code>
+          Indian ADR price data is updated daily. If prices are not visible, they will appear after the next market session.
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

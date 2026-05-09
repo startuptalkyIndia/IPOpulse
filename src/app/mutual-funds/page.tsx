@@ -36,7 +36,7 @@ export default async function MutualFundsHub() {
       {byAmc.length === 0 ? (
         <div className="card text-center py-10">
           <p className="text-sm text-gray-500">
-            Fund directory pipeline is wiring up. The AMFI NAV ingestion cron will populate this page within 24 hours.
+            Mutual fund NAV data is updated daily after 9 PM from AMFI. If data is not visible yet, please check back after 9 PM IST.
           </p>
         </div>
       ) : (

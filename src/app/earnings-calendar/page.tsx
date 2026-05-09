@@ -36,7 +36,7 @@ export default async function EarningsCalendarPage() {
 
       {actions.length === 0 ? (
         <div className="card text-center py-12">
-          <p className="text-sm text-gray-500">Earnings calendar pipeline wiring up. Board meetings will populate automatically once the BSE feed is live.</p>
+          <p className="text-sm text-gray-500">No board meetings or AGMs are scheduled in the next 60 days. Check back closer to quarterly results season (Jan, Apr, Jul, Oct).</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

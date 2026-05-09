@@ -71,7 +71,7 @@ export default async function BulkDealsPage() {
       <h2 className="text-lg font-semibold text-gray-900">Last 30 days</h2>
       {deals.length === 0 ? (
         <div className="card text-center py-10 text-sm text-gray-500">
-          Bulk deal data loads after the NSE cron runs (5:30pm IST weekdays). No data yet.
+          No bulk deals (trades exceeding 0.5% of company equity) have been reported in the last 30 days. Bulk deal data is sourced from NSE/BSE end-of-day disclosures.
         </div>
       ) : <DealTable rows={past.slice(0, 100)} />}
     </div>

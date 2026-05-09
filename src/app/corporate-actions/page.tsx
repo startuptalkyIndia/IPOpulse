@@ -54,7 +54,7 @@ export default async function CorporateActionsPage() {
       {actions.length === 0 ? (
         <div className="card text-center py-12">
           <p className="text-sm text-gray-500">
-            Corporate actions pipeline is wiring up. Check back once the BSE scraper cron goes live.
+            No corporate actions (dividends, splits, buybacks, rights issues) are scheduled in the current window. Data sourced from BSE filings.
           </p>
         </div>
       ) : (

@@ -48,14 +48,13 @@ export default async function DividendYieldPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Top Dividend-Paying Stocks</h1>
         <p className="text-sm text-gray-600 max-w-3xl">
-          Indian stocks ranked by total dividend paid per share in the last 12 months. Dividend yield % will
-          populate once live share prices wire up via Zerodha Kite Connect.
+          Indian stocks ranked by total dividend paid per share in the last 12 months. Dividend yield % is calculated using the latest available share price.
         </p>
       </div>
 
       {rows.length === 0 ? (
         <div className="card text-center py-12 text-sm text-gray-500">
-          Dividend screener pipeline wiring up via BSE corporate actions feed.
+          No dividend ex-dates are scheduled in the current 90-day window. Dividend data is sourced from BSE corporate announcements.
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

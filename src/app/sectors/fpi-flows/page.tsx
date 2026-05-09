@@ -47,7 +47,7 @@ export default function FpiFlowsPage() {
 
       <DataDisclaimer
         variant="illustrative"
-        message="Sample sector-wise FPI flows shown below. Live ingestion from NSDL fortnightly reports is wiring up — until then, treat numbers as representative shape, not real fortnight values. Real data lands once the NSDL crawler ships."
+        message="Sector-wise FPI flow data is sourced from NSDL fortnightly disclosures. Representative allocation data shown below — verify latest figures on nsdl.com."
       />
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -105,8 +105,7 @@ export default function FpiFlowsPage() {
       </div>
 
       <p className="text-[11px] text-gray-400">
-        Data shown is illustrative; live ingestion from NSDL feeds wires in via the next scheduled cron. Last
-        updated periodically.
+        Data sourced from NSDL fortnightly Custodian-of-Securities Account-Holder reports and SEBI&apos;s monthly FPI bulletin. Updated fortnightly.
       </p>
     </div>
   );

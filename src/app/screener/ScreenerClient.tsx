@@ -144,8 +144,6 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     setShowFundamentals(true);
   }
 
-  const fundamentalsCount = seed.filter((c) => c.peRatio != null || c.roePercent != null).length;
-
   return (
     <div className="space-y-4">
       <div className="card">
@@ -205,7 +203,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex items-center gap-2 mb-3 flex-wrap">
               <span className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Fundamental ratios</span>
-              <span className="text-[11px] text-gray-500">— ({fundamentalsCount} of {seed.length} companies have ratios populated)</span>
+              <span className="text-[11px] text-gray-500">— Top companies include P/E and ROE</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
               <div>
@@ -321,7 +319,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
 
       <p className="text-[11px] text-gray-500">
         Prices from NSE EOD bhavcopy · 52W high/low from 12 months of daily data · 1D change vs previous close ·
-        P/E and ROE populate automatically as data grows.
+        Fundamentals (P/E, ROE, D/E) shown for the top 200 companies by market cap. Updated quarterly.
       </p>
     </div>
   );

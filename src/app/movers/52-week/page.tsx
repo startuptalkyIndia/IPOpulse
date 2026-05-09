@@ -73,7 +73,7 @@ function Table({ title, rows, accent }: { title: string; rows: Row[]; accent: "h
       <h2 className="text-lg font-semibold text-gray-900 mb-3">{title}</h2>
       {rows.length === 0 ? (
         <div className="card text-center py-8 text-sm text-gray-500">
-          Pipeline wiring up. Once daily bhavcopy ingestion has 1+ year of history, this populates automatically.
+          52-week high/low data requires 12 months of price history. Daily prices are being collected — this page will populate fully by November 2026.
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
