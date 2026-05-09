@@ -23,6 +23,12 @@ import {
   Calculator,
   Globe,
   Award,
+  TrendingDown,
+  Landmark,
+  BarChart,
+  Calendar,
+  Coins,
+  Shield,
 } from "lucide-react";
 import { articles } from "@/lib/learn-articles";
 
@@ -58,6 +64,15 @@ const iconMap: Record<string, React.ElementType> = {
   "how-to-read-annual-report": FileText,
   "what-are-futures-options": ArrowUpDown,
   "what-is-roe-roce": Scale,
+  "what-is-sensex": BarChart,
+  "what-is-stop-loss": TrendingDown,
+  "what-is-ebitda": BarChart2,
+  "what-is-book-value": Landmark,
+  "what-is-nps": Shield,
+  "what-is-index-fund": Globe,
+  "debt-to-equity-ratio": Scale,
+  "how-to-invest-in-gold": Coins,
+  "market-holidays-2026": Calendar,
 };
 
 const categoryMap: Record<string, string[]> = {
@@ -76,20 +91,30 @@ const categoryMap: Record<string, string[]> = {
     "fii-dii-guide",
     "bulk-block-deals",
     "nifty-50-explained",
+    "what-is-sensex",
     "52-week-high-low",
+    "what-is-stop-loss",
+    "market-holidays-2026",
   ],
   "Investing Fundamentals": [
     "pe-ratio",
+    "what-is-ebitda",
+    "what-is-book-value",
+    "debt-to-equity-ratio",
     "sip-guide",
     "what-is-demat-account",
     "what-is-market-cap",
     "what-is-dividend",
     "cagr-meaning",
     "what-is-mutual-fund",
+    "what-is-index-fund",
     "rights-issue-bonus-share",
     "how-to-read-annual-report",
     "what-are-futures-options",
     "what-is-roe-roce",
+    "what-is-nps",
+    "what-is-reit",
+    "how-to-invest-in-gold",
   ],
 };
 

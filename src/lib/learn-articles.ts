@@ -1403,6 +1403,594 @@ export const articles: Article[] = [
       },
     ],
   },
+
+  // ─── Round 2 articles ─────────────────────────────────────────────────────
+  {
+    slug: "what-is-sensex",
+    title: "What is Sensex? BSE Sensex Explained for Beginners",
+    description:
+      "Sensex is India's oldest stock market index. Learn what the Sensex measures, how it is calculated, which 30 companies are in it, and how it differs from Nifty 50.",
+    readingTime: 4,
+    publishedAt: "2026-04-25",
+    relatedSlugs: ["nifty-50-explained", "pe-ratio", "what-is-market-cap"],
+    content: `
+<h2>What is Sensex?</h2>
+<p>The <strong>Sensex</strong> (Sensitive Index) is India's oldest and most widely followed stock market index. It tracks 30 large, financially sound, and actively traded companies listed on the <strong>Bombay Stock Exchange (BSE)</strong>. The Sensex was launched on 1 January 1986 with a base value of 100 (base year 1978–79), making it one of the oldest indices in Asia.</p>
+<p>When you hear news anchors say "the market rose 500 points today," they are almost always referring to the Sensex. It is the single most popular barometer of Indian stock market health.</p>
+
+<h2>How is Sensex Calculated?</h2>
+<p>The Sensex uses a <strong>free-float market capitalisation-weighted</strong> methodology:</p>
+<ul>
+  <li>Only shares available for public trading (not held by promoters, government, or strategic holders) are counted in the free-float market cap</li>
+  <li>Companies with larger free-float market caps have higher index weightage</li>
+  <li>The index value = (Sum of free-float market caps of 30 companies) / Base market cap × 100</li>
+</ul>
+<p>Reliance Industries, HDFC Bank, and Infosys typically have the highest weights (5–12% each) due to their large free-float market caps.</p>
+
+<h2>Which 30 Companies are in Sensex?</h2>
+<p>The BSE Index Committee selects Sensex constituents based on free-float market cap, trading frequency, and sector representation. As of 2026, Sensex includes companies like Reliance Industries, TCS, HDFC Bank, Infosys, ICICI Bank, HUL, Bharti Airtel, ITC, L&T, Kotak Mahindra Bank, Bajaj Finance, Sun Pharma, Maruti Suzuki, Titan, Wipro, and others across banking, IT, energy, FMCG, and auto sectors.</p>
+<p>The list is reviewed semi-annually. Companies are replaced if they no longer meet criteria.</p>
+
+<h2>Sensex vs Nifty 50 — Key Differences</h2>
+<ul>
+  <li><strong>Exchange:</strong> Sensex = BSE. Nifty 50 = NSE</li>
+  <li><strong>Number of stocks:</strong> Sensex = 30. Nifty 50 = 50</li>
+  <li><strong>Base year:</strong> Sensex = 1978–79. Nifty = 3 November 1995</li>
+  <li><strong>Methodology:</strong> Both use free-float market cap weighting</li>
+  <li><strong>Correlation:</strong> Very high (>0.99). They move almost identically on most trading days</li>
+  <li><strong>Derivatives:</strong> Sensex futures/options trade on BSE. Nifty futures/options trade on NSE (far more liquid)</li>
+</ul>
+
+<h2>What is a "Sensex Point"?</h2>
+<p>One Sensex point represents a change in the aggregate free-float market capitalisation of the 30 companies. At Sensex levels of 80,000–90,000, a 1% move equals approximately 800–900 points. In earlier years (Sensex at 5,000), a 1% move was only 50 points — so raw point movements are meaningless without context. Always use percentage change.</p>
+
+<h2>Sensex Milestones</h2>
+<ul>
+  <li>1,000 — July 1990</li>
+  <li>10,000 — February 2006</li>
+  <li>30,000 — February 2015</li>
+  <li>50,000 — January 2021</li>
+  <li>80,000 — June 2024</li>
+</ul>
+<p>The journey from 0 to 10,000 took 30 years. The journey from 50,000 to 80,000 took just 3.5 years — reflecting India's economic acceleration and increased retail participation post-COVID.</p>
+    `,
+    faq: [
+      { q: "Is Sensex or Nifty more important?", a: "Both are important but Nifty 50 is more commonly used by institutional investors and F&O traders due to NSE's higher liquidity. Sensex remains more popular in media and among retail investors who use BSE." },
+      { q: "Can I invest in Sensex directly?", a: "Yes, via Sensex ETFs (like Sensex BeES on BSE) or Sensex index funds from AMCs like HDFC, SBI, or Mirae Asset. These track the Sensex performance with very low expense ratios." },
+      { q: "What causes the Sensex to fall?", a: "Global risk-off sentiment, FII selling, rising interest rates (RBI hike), poor corporate earnings, geopolitical events, or domestic economic data misses can cause the Sensex to fall." },
+    ],
+  },
+  {
+    slug: "what-is-stop-loss",
+    title: "What is Stop Loss in Stock Market? Types and How to Set It",
+    description:
+      "A stop loss is a risk management tool that automatically sells your shares at a predetermined price to limit losses. Learn the types of stop losses, how to set them, and common mistakes to avoid.",
+    readingTime: 5,
+    publishedAt: "2026-04-27",
+    relatedSlugs: ["52-week-high-low", "what-are-futures-options", "pe-ratio"],
+    content: `
+<h2>What is a Stop Loss?</h2>
+<p>A <strong>stop loss</strong> is a pre-set instruction to your broker to sell a stock automatically when its price falls to a specific level — your "stop price." It limits your loss on a trade to a defined amount, removing the need to monitor positions constantly.</p>
+<p>Example: You buy a stock at ₹500. You set a stop loss at ₹450 (10% below purchase price). If the stock falls to ₹450, your broker automatically sells it — capping your loss at ₹50 per share regardless of further declines.</p>
+
+<h2>Types of Stop Loss Orders in India</h2>
+<p><strong>1. Stop Loss Market (SL-M) Order:</strong> When the trigger price is hit, the order executes at the best available market price. Guarantees execution but not the exact price — in fast-moving markets, you may get a worse price (slippage).</p>
+<p><strong>2. Stop Loss Limit (SL) Order:</strong> When the trigger price is hit, a limit order is placed at your specified limit price. You control the execution price but risk non-execution if the stock gaps past your limit.</p>
+<p><strong>3. Trailing Stop Loss:</strong> The stop price moves up automatically as the stock rises — maintaining a fixed distance (₹ or %). If the stock goes from ₹500 to ₹600 with a trailing stop of ₹50, the stop moves from ₹450 to ₹550. Protects gains while allowing the stock to run.</p>
+
+<h2>How to Place a Stop Loss on NSE/BSE</h2>
+<p>On most Indian brokers (Zerodha Kite, Groww, Upstox):</p>
+<ul>
+  <li>Select your stock → click Sell</li>
+  <li>Choose order type: SL or SL-M</li>
+  <li>Enter <strong>Trigger Price</strong> (when the stop activates) and <strong>Limit Price</strong> (for SL orders)</li>
+  <li>For SL: Limit price is slightly below trigger (e.g., Trigger ₹450, Limit ₹448) to ensure execution</li>
+</ul>
+
+<h2>How to Determine Stop Loss Levels</h2>
+<p>Several methods:</p>
+<ul>
+  <li><strong>Percentage-based:</strong> Set stop at 5–15% below entry. Simple but ignores stock volatility.</li>
+  <li><strong>Support level-based:</strong> Place stop just below a key support level (previous low, 52-week low). More technical but more meaningful.</li>
+  <li><strong>ATR-based (Average True Range):</strong> Set stop at 1.5–2× ATR below entry. Accounts for normal volatility — avoids being stopped out by routine price fluctuations.</li>
+  <li><strong>Risk-based:</strong> Risk no more than 1–2% of your portfolio on any single trade. If risk per share is ₹50 (stop at ₹450 for ₹500 entry), and portfolio is ₹10 lakh with 1% risk = ₹10,000 max loss → buy only 200 shares.</li>
+</ul>
+
+<h2>Common Stop Loss Mistakes</h2>
+<ul>
+  <li><strong>Moving stop loss wider after being triggered:</strong> "I'll just wait a bit more" — defeats the purpose entirely</li>
+  <li><strong>Placing stop too tight:</strong> Normal intraday volatility hits your stop before the trade can work</li>
+  <li><strong>Not using stop loss:</strong> The most expensive mistake retail traders make. "I'll sell manually" rarely works under emotional pressure</li>
+  <li><strong>Assuming stop loss = guaranteed price:</strong> Gap-down openings can breach your stop and execute at much lower prices</li>
+</ul>
+
+<h2>Stop Loss for Long-Term Investors</h2>
+<p>Stop losses are primarily for traders. Long-term investors (3–10 year horizon) typically do not use stop losses — a 15% correction in a fundamentally sound company may be a buying opportunity, not a sell signal. For long-term portfolios, the "stop loss" is a fundamental review process — sell when the investment thesis breaks, not when the price dips.</p>
+    `,
+    faq: [
+      { q: "Does a stop loss guarantee no loss?", a: "No. In gap-down scenarios (stock opens much lower than previous close), your stop loss triggers but executes at the opening price, which could be far below your stop price." },
+      { q: "Should I use stop loss for mutual funds?", a: "No. Mutual funds are priced at end-of-day NAV, and stop loss orders don't apply. For mutual fund risk management, use asset allocation and rebalancing instead." },
+      { q: "What is a mental stop loss?", a: "A mental stop loss is a pre-decided price in your head (not entered on the system) at which you commit to selling. It requires strict discipline since the system won't enforce it." },
+    ],
+  },
+  {
+    slug: "what-is-ebitda",
+    title: "What is EBITDA? Why It Matters and Its Limitations",
+    description:
+      "EBITDA measures operating profitability before financing and accounting decisions. Learn how to calculate EBITDA, what EBITDA margin means, and when to use EV/EBITDA vs P/E.",
+    readingTime: 5,
+    publishedAt: "2026-04-29",
+    relatedSlugs: ["pe-ratio", "what-is-roe-roce", "how-to-read-annual-report"],
+    content: `
+<h2>What is EBITDA?</h2>
+<p><strong>EBITDA</strong> stands for <strong>Earnings Before Interest, Taxes, Depreciation, and Amortisation</strong>. It measures a company's core operating profitability — how much profit is generated from operations before accounting for how the business is financed (interest), tax jurisdiction (taxes), or accounting for asset wear-and-tear (depreciation/amortisation).</p>
+<p>Formula:</p>
+<ul>
+  <li><strong>EBITDA = Net Profit + Interest + Taxes + Depreciation + Amortisation</strong></li>
+  <li>Or alternatively: EBITDA = Revenue − Operating Expenses (excluding D&amp;A)</li>
+</ul>
+
+<h2>Why Strip Out Interest, Tax, D&A?</h2>
+<ul>
+  <li><strong>Interest:</strong> Depends on how much debt the company has — a capital structure choice, not an operating performance indicator</li>
+  <li><strong>Taxes:</strong> Vary by jurisdiction and tax strategy — two identical businesses in different states may have different tax rates</li>
+  <li><strong>Depreciation &amp; Amortisation:</strong> Non-cash charges — reflect historical spending on assets, not current cash generation</li>
+</ul>
+<p>By stripping these out, EBITDA allows better comparison of operating performance across companies with different capital structures, tax situations, or depreciation policies.</p>
+
+<h2>EBITDA Margin</h2>
+<p>EBITDA Margin = EBITDA / Revenue × 100. This shows what percentage of revenue becomes operating profit.</p>
+<ul>
+  <li>IT Services: 20–30% EBITDA margin (asset-light, high billing rates)</li>
+  <li>FMCG: 15–25%</li>
+  <li>Pharma: 18–28%</li>
+  <li>Cement: 20–30%</li>
+  <li>Retail / E-commerce: 5–15%</li>
+  <li>Telecom: 40–50% (high D&amp;A from network assets)</li>
+</ul>
+<p>Compare EBITDA margins within the same sector — cross-sector comparison is often meaningless.</p>
+
+<h2>EV/EBITDA — The Most Common EBITDA Valuation Ratio</h2>
+<p>EV/EBITDA (Enterprise Value to EBITDA) is the primary valuation multiple for M&amp;A and capital-intensive sectors. It avoids the capital structure distortion of P/E:</p>
+<ul>
+  <li><strong>EV/EBITDA &lt; 10×:</strong> Typically undervalued for quality businesses</li>
+  <li><strong>EV/EBITDA 10–20×:</strong> Fair to slightly expensive</li>
+  <li><strong>EV/EBITDA &gt; 20×:</strong> Premium valuation — requires strong growth justification</li>
+</ul>
+<p>Indian consumer companies (HUL, Nestlé) often trade at 30–50× EV/EBITDA due to their premium brand strength and predictable cash flows.</p>
+
+<h2>Limitations of EBITDA</h2>
+<p>Warren Buffett famously called EBITDA a "fraudulent metric" in capital-intensive industries:</p>
+<ul>
+  <li><strong>Ignores capital expenditure (capex):</strong> A company spending ₹500 crore on machinery every year must replace that machinery — depreciation reflects this real cost. Stripping D&amp;A pretends capex doesn't happen.</li>
+  <li><strong>Ignores working capital:</strong> EBITDA says nothing about how much cash is tied up in inventory and receivables</li>
+  <li><strong>Not a cash flow measure:</strong> Free Cash Flow (FCF) = Operating Cash Flow − Capex is a better measure of actual cash generation than EBITDA</li>
+  <li><strong>Easy to manipulate:</strong> Accounting choices on what constitutes "exceptional items" can shift EBITDA numbers</li>
+</ul>
+<p>For asset-light businesses (IT, consumer internet), EBITDA is more meaningful. For manufacturing, infrastructure, or telecom companies, always check Free Cash Flow and return on capital alongside EBITDA.</p>
+    `,
+    faq: [
+      { q: "Is EBITDA the same as operating profit?", a: "Not exactly. Operating profit (EBIT) includes depreciation and amortisation. EBITDA adds those back. Operating profit = EBITDA − D&A. Both exclude interest and tax." },
+      { q: "Where do I find EBITDA in Indian company filings?", a: "Indian companies typically report PBDIT (Profit Before Depreciation, Interest, and Tax) in their P&L — this is essentially EBITDA. You can also calculate it: PAT + Tax + Interest + D&A." },
+      { q: "Why do startups always quote EBITDA profitability?", a: "Because EBITDA excludes depreciation on large asset investments (like server infrastructure) and stock-based compensation (amortisation of ESOPs). It presents a more flattering picture of operational efficiency. Always check actual net profit and free cash flow." },
+    ],
+  },
+  {
+    slug: "what-is-book-value",
+    title: "What is Book Value of a Share? P/B Ratio Explained",
+    description:
+      "Book value per share is the net worth of a company divided by its shares. Learn how to calculate book value, what P/B ratio means, and when book value matters (and when it doesn't) in stock valuation.",
+    readingTime: 4,
+    publishedAt: "2026-05-01",
+    relatedSlugs: ["pe-ratio", "what-is-roe-roce", "what-is-market-cap"],
+    content: `
+<h2>What is Book Value?</h2>
+<p><strong>Book value</strong> is the accounting value of a company — what shareholders would theoretically receive if the company were liquidated today and all assets sold and liabilities paid. It equals:</p>
+<ul>
+  <li><strong>Book Value = Total Assets − Total Liabilities</strong></li>
+  <li><strong>Book Value Per Share (BVPS) = Book Value / Shares Outstanding</strong></li>
+</ul>
+<p>Example: If a company has ₹1,000 crore in assets, ₹400 crore in liabilities, and 10 crore shares outstanding — Book Value = ₹600 crore; BVPS = ₹60 per share.</p>
+<p>Book value is essentially the shareholders' equity on the balance sheet, also called <strong>Net Worth</strong> in Indian accounting terminology.</p>
+
+<h2>Price-to-Book Ratio (P/B)</h2>
+<p><strong>P/B = Market Price Per Share / Book Value Per Share</strong></p>
+<ul>
+  <li><strong>P/B &lt; 1:</strong> Stock trades below book value — implies market expects losses, or assets are overstated, or the business is deeply undervalued. Common in PSU banks, steel companies during downturns.</li>
+  <li><strong>P/B = 1:</strong> Stock trades at book value — market values the company exactly at its net assets.</li>
+  <li><strong>P/B &gt; 1:</strong> Market assigns a premium for brand value, earnings power, or growth — the normal state for quality businesses.</li>
+  <li><strong>P/B 5–30×:</strong> Normal for quality consumer companies, IT firms with intangible assets (software, brands) not fully captured on balance sheet.</li>
+</ul>
+
+<h2>When P/B is Most Useful</h2>
+<p>P/B is most relevant for <strong>asset-heavy, balance-sheet-driven businesses</strong>:</p>
+<ul>
+  <li><strong>Banks and NBFCs:</strong> Book value represents loan portfolio net of NPAs. ROE/P/B framework is the standard bank valuation methodology. Price / Adjusted Book = Price / (Equity − Gross NPA × (1 − provision coverage))</li>
+  <li><strong>Manufacturing companies:</strong> Large fixed assets (plant, machinery, land) are central to the business</li>
+  <li><strong>Real estate companies:</strong> Land bank and property inventory are key assets</li>
+</ul>
+
+<h2>When P/B is Less Useful</h2>
+<p>For <strong>asset-light businesses</strong>, book value is a poor indicator of true value:</p>
+<ul>
+  <li>IT companies (TCS, Infosys): Their main asset is human capital — not on the balance sheet</li>
+  <li>Consumer brands (HUL, Asian Paints): Brand value worth thousands of crores doesn't appear on the balance sheet</li>
+  <li>Platform businesses: Network effects and user bases have immense value not captured in book value</li>
+</ul>
+<p>These companies routinely trade at P/B of 10–50× because earnings power far exceeds tangible asset value.</p>
+
+<h2>Tangible Book Value</h2>
+<p>Tangible Book Value = Book Value − Goodwill − Intangible Assets. Goodwill arises from acquisitions (you paid ₹500 crore for a business worth ₹200 crore on books → ₹300 crore goodwill). If goodwill needs to be written off (impaired), book value falls sharply. Always check goodwill as a percentage of total book value — very high goodwill means the acquisition premium may be at risk.</p>
+    `,
+    faq: [
+      { q: "Can a stock be overvalued if P/B is less than 1?", a: "Yes. Low P/B could mean the company is genuinely undervalued, or it could reflect a value trap — the business is earning below its cost of capital and book value is deteriorating. Always check ROE alongside P/B." },
+      { q: "What is 'adjusted book value' for banks?", a: "Adjusted book value subtracts unprovisioned NPAs (bad loans) from reported book value. It's a more conservative measure of a bank's real net worth after potential loan losses." },
+      { q: "Where can I find book value data on IPOpulse?", a: "The stock screener and individual ticker pages on IPOpulse show P/B ratio and other fundamental ratios where available." },
+    ],
+  },
+  {
+    slug: "what-is-nps",
+    title: "What is NPS (National Pension System)? Returns, Tax Benefits Explained",
+    description:
+      "NPS is India's government-backed pension scheme offering market-linked returns and strong tax benefits under Section 80C and 80CCD. Learn how NPS works, Tier 1 vs Tier 2, and whether it suits you.",
+    readingTime: 5,
+    publishedAt: "2026-05-03",
+    relatedSlugs: ["sip-guide", "cagr-meaning", "what-is-mutual-fund"],
+    content: `
+<h2>What is the National Pension System (NPS)?</h2>
+<p>The <strong>National Pension System (NPS)</strong> is a government-sponsored, market-linked retirement savings scheme regulated by the <strong>Pension Fund Regulatory and Development Authority (PFRDA)</strong>. It was initially launched for government employees in 2004 and opened to all citizens in 2009. NPS is one of India's lowest-cost investment options and offers significant tax advantages.</p>
+
+<h2>How NPS Works</h2>
+<p>You contribute to NPS regularly. Your money is invested by professional pension fund managers (SBI, LIC, HDFC, ICICI, Kotak, UTI, and others) in a mix of equities, government bonds, corporate bonds, and alternative assets. Returns are market-linked — not guaranteed. At retirement (age 60):</p>
+<ul>
+  <li>You can withdraw up to <strong>60% of the corpus as a lump sum</strong> — tax-free</li>
+  <li>The remaining <strong>40% must be used to purchase an annuity</strong> (monthly pension) — annuity income is taxable</li>
+</ul>
+
+<h2>Tier 1 vs Tier 2 Account</h2>
+<ul>
+  <li><strong>Tier 1 (Pension Account):</strong> Mandatory for NPS enrollment. Strict lock-in until age 60 (partial withdrawals allowed after 3 years for specific needs: medical, education, house purchase). Tax benefits apply here.</li>
+  <li><strong>Tier 2 (Savings Account):</strong> Optional, voluntary savings with no lock-in. Withdraw anytime. No special tax benefit (except for government employees). Useful as a liquid investment account with slightly lower costs than mutual funds.</li>
+</ul>
+
+<h2>NPS Asset Classes</h2>
+<ul>
+  <li><strong>Class E (Equity):</strong> Index funds replicating Nifty 50 and Nifty Next 50. Maximum 75% allocation in active choice, reduces to 50% after age 50.</li>
+  <li><strong>Class C (Corporate Bonds):</strong> AA+ and above rated bonds. Moderate risk.</li>
+  <li><strong>Class G (Government Bonds):</strong> Sovereign securities. Lowest risk.</li>
+  <li><strong>Class A (Alternative Assets):</strong> REITs, InvITs. Maximum 5% allowed.</li>
+</ul>
+
+<h2>NPS Tax Benefits — Significant and Unique</h2>
+<ul>
+  <li><strong>Section 80C:</strong> Up to ₹1.5 lakh deduction per year (combined with PPF, ELSS, etc.)</li>
+  <li><strong>Section 80CCD(1B):</strong> Additional ₹50,000 deduction exclusively for NPS — over and above Section 80C. This is a unique NPS benefit no other instrument offers.</li>
+  <li><strong>Total deduction possible:</strong> ₹2 lakh per year (₹1.5 lakh under 80C + ₹50,000 under 80CCD(1B))</li>
+  <li><strong>Employer contribution:</strong> If your employer contributes to NPS, up to 10% of salary (14% for central government) is exempt under 80CCD(2) — no monetary limit. This is the most powerful NPS benefit.</li>
+</ul>
+
+<h2>Historical NPS Returns (Approximate)</h2>
+<ul>
+  <li>Tier 1 Equity (Class E): 12–14% CAGR over 10 years</li>
+  <li>Corporate Bond (Class C): 7–8% CAGR</li>
+  <li>Government Bond (Class G): 6–7.5% CAGR</li>
+</ul>
+<p>NPS equity funds track Nifty 50/Next 50 passively — returns closely mirror Nifty 50 CAGR minus a very small expense ratio (0.01–0.09%, among the lowest in the world).</p>
+
+<h2>NPS vs PPF vs ELSS</h2>
+<ul>
+  <li><strong>PPF:</strong> Guaranteed 7.1% return, tax-free, 15-year lock-in. No market risk. Best for very conservative investors.</li>
+  <li><strong>ELSS:</strong> Market-linked, 3-year lock-in, no restriction on withdrawal after lock-in. Better liquidity than NPS.</li>
+  <li><strong>NPS:</strong> Market-linked, longest lock-in (until 60), but highest tax benefit. Best for investors who want a structured retirement corpus with tax efficiency.</li>
+</ul>
+    `,
+    faq: [
+      { q: "Can I withdraw from NPS before 60?", a: "Partial withdrawals (up to 25% of your contribution) are allowed after 3 years for specified purposes: education, marriage, house purchase, or medical treatment. Premature exit before 60 requires 80% to go into annuity (only 20% lump sum)." },
+      { q: "Is NPS good for high-income earners?", a: "Yes. The ₹50,000 exclusive deduction under 80CCD(1B) is very valuable for those in 30% bracket — it saves ₹15,000 in tax per year. Employer contributions under 80CCD(2) with no limit make corporate NPS extremely tax-efficient." },
+      { q: "Where do I open an NPS account?", a: "Via eNPS portal (enps.nsdl.com), your bank's internet banking, or any POP (Point of Presence) registered with PFRDA. Aadhaar-based eNPS takes 10–15 minutes." },
+    ],
+  },
+  {
+    slug: "what-is-reit",
+    title: "What is a REIT? Real Estate Investment Trust in India Explained",
+    description:
+      "REITs allow retail investors to invest in commercial real estate and earn rental income without buying property. Learn about India's listed REITs, minimum investment, dividend yield, and tax treatment.",
+    readingTime: 5,
+    publishedAt: "2026-05-05",
+    relatedSlugs: ["what-is-dividend", "what-is-mutual-fund", "pe-ratio"],
+    content: `
+<h2>What is a REIT?</h2>
+<p>A <strong>Real Estate Investment Trust (REIT)</strong> is a company that owns, operates, or finances income-producing commercial real estate — offices, retail malls, warehouses, or data centres. REITs pool money from investors and distribute at least 90% of their rental income as dividends to unitholders. They trade on stock exchanges like regular stocks.</p>
+<p>REITs allow retail investors to earn regular rental income from commercial real estate — an asset class previously accessible only to institutions or ultra-high-net-worth individuals.</p>
+
+<h2>REITs Listed in India (as of 2026)</h2>
+<ul>
+  <li><strong>Embassy Office Parks REIT:</strong> India's first REIT (2019). 45+ million sq ft of office space across Bengaluru, Mumbai, Pune, and NCR. Tenants include Microsoft, JPMorgan, Google.</li>
+  <li><strong>Mindspace Business Parks REIT:</strong> 32+ million sq ft office. Properties in Mumbai, Hyderabad, Pune, Chennai.</li>
+  <li><strong>Brookfield India REIT:</strong> 14+ million sq ft of Grade A offices in Mumbai, Gurugram, Noida, Kolkata.</li>
+  <li><strong>Nexus Select Trust REIT:</strong> India's first retail REIT (2023). 17 retail malls across 14 cities.</li>
+</ul>
+
+<h2>Minimum Investment in Indian REITs</h2>
+<p>SEBI reduced the minimum lot for REITs from 200 units to 1 unit in 2022, making REITs accessible to retail investors. At a unit price of ₹300–₹400 (typical range), you can invest for as little as ₹300–₹400 — equivalent to any other NSE/BSE listed stock.</p>
+
+<h2>How REITs Generate Returns</h2>
+<ul>
+  <li><strong>Distributions (like dividends):</strong> Quarterly rental income distributions — typically 5–8% distribution yield on cost</li>
+  <li><strong>Capital appreciation:</strong> If property values and rentals grow over time, REIT unit prices appreciate</li>
+  <li><strong>Total return:</strong> Embassy REIT has delivered approximately 8–12% total return annually since listing (distributions + price appreciation)</li>
+</ul>
+
+<h2>REIT Distributions — Tax Treatment</h2>
+<p>REIT distributions have multiple components with different tax treatment:</p>
+<ul>
+  <li><strong>Interest income component:</strong> Taxed at slab rate</li>
+  <li><strong>Dividend component:</strong> Taxed at slab rate</li>
+  <li><strong>Repayment of SPV loan component:</strong> Tax-free</li>
+  <li><strong>Return of capital:</strong> Reduces cost basis, taxed on final sale</li>
+</ul>
+<p>Overall, approximately 30–50% of REIT distributions are typically tax-free or tax-efficient, making the effective yield higher than stated.</p>
+
+<h2>InvIT — Infrastructure Investment Trust</h2>
+<p>InvITs are similar to REITs but invest in infrastructure assets: toll roads, power transmission lines, gas pipelines, renewable energy. Listed InvITs in India include IRB InvIT Fund, Powergrid InvIT, Indigrid, and National Highways Infra Trust. They offer higher yields (8–12%) but also higher risk than REITs.</p>
+
+<h2>REIT vs Real Estate Direct Investment</h2>
+<ul>
+  <li><strong>Liquidity:</strong> REITs trade on exchange (sell in seconds); property takes months to sell</li>
+  <li><strong>Entry amount:</strong> REITs from ₹300; property requires ₹50 lakh+</li>
+  <li><strong>Maintenance:</strong> REITs are passive; property requires active management</li>
+  <li><strong>Returns:</strong> Grade A commercial REITs often outperform residential property on rental yield</li>
+  <li><strong>Diversification:</strong> One REIT gives exposure to 30–50 properties across cities</li>
+</ul>
+    `,
+    faq: [
+      { q: "Are REITs safe investments?", a: "REITs carry risk — unit prices fluctuate with property market conditions and interest rates. Rising interest rates typically compress REIT valuations (higher rates = lower property values + higher borrowing costs). They are safer than individual stocks but riskier than debt funds." },
+      { q: "Do REITs pay monthly income?", a: "Indian REITs typically distribute quarterly (every 3 months), not monthly. The distribution amount varies each quarter based on rental collections." },
+      { q: "How do I buy REITs in India?", a: "REITs trade on NSE and BSE like regular stocks. You can buy through any stock broker using your existing demat account. Search for 'EMBASSY', 'MINDSPACE', 'BIRET', or 'NEXUS' on your broker's platform." },
+    ],
+  },
+  {
+    slug: "what-is-index-fund",
+    title: "What is an Index Fund? Why Low-Cost Index Investing Works in India",
+    description:
+      "Index funds passively track market indices like Nifty 50 with very low cost. Learn why index funds beat most active funds over the long run, how to choose one, and the best Nifty 50 index funds in India.",
+    readingTime: 5,
+    publishedAt: "2026-05-06",
+    relatedSlugs: ["what-is-mutual-fund", "nifty-50-explained", "sip-guide"],
+    content: `
+<h2>What is an Index Fund?</h2>
+<p>An <strong>index fund</strong> is a mutual fund or ETF that tracks the performance of a market index — like Nifty 50, Sensex, Nifty Next 50, or Nifty Midcap 150. The fund simply buys the same stocks in the same proportions as the index. No fund manager makes stock-picking decisions — it is <strong>passive investing</strong>.</p>
+<p>Because there is no active research or frequent trading, index funds have dramatically lower expense ratios (0.1–0.2%) compared to actively managed funds (1–2%). This seemingly small difference compounds into lakhs of rupees over 20–30 years.</p>
+
+<h2>Why Do Index Funds Beat Most Active Funds?</h2>
+<p>SEBI data and SPIVA (S&P Indices vs Active) reports consistently show that 70–85% of actively managed large-cap funds underperform their benchmark index over 10-year periods, especially after expenses. Reasons:</p>
+<ul>
+  <li><strong>Expense ratio drag:</strong> A 1.5% annual fee is a massive headwind to beat in efficient markets</li>
+  <li><strong>Market efficiency:</strong> Large-cap Indian stocks are extensively covered — it's very hard to consistently find mispriced stocks</li>
+  <li><strong>Manager risk:</strong> Fund managers can retire, leave, or have bad years — index funds have no manager dependency</li>
+  <li><strong>Tax efficiency:</strong> Low turnover = fewer capital gains events = lower tax drag</li>
+</ul>
+
+<h2>Best Nifty 50 Index Funds in India (2026)</h2>
+<ul>
+  <li>UTI Nifty 50 Index Fund — Expense ratio: ~0.18% (regular), ~0.10% (direct)</li>
+  <li>HDFC Nifty 50 Index Fund — Low tracking error</li>
+  <li>SBI Nifty Index Fund — Largest AUM</li>
+  <li>Nippon India Nifty 50 Index Fund</li>
+  <li>Mirae Asset Nifty 50 Index Fund</li>
+</ul>
+<p>For ETFs: Nifty BeES (Nippon), UTI Nifty 50 ETF, HDFC Nifty 50 ETF. ETFs have the lowest expense ratios (0.04–0.07%) but require a demat account and brokerage commissions per trade.</p>
+
+<h2>Index Fund vs ETF — Which to Choose?</h2>
+<ul>
+  <li><strong>Index Fund (MF):</strong> Invest in any amount (even ₹100/month via SIP). No demat needed. NAV-based execution (end of day price). Direct plan available at very low cost.</li>
+  <li><strong>ETF:</strong> Slightly cheaper expense ratio. Real-time pricing. Need demat + broker. Must buy whole units. Can have liquidity issues in smaller ETFs. Better for large lumpsum investors.</li>
+</ul>
+<p>For most retail investors doing monthly SIPs, <strong>Direct plan index mutual fund</strong> (not ETF) is the better choice due to convenience and SIP capability.</p>
+
+<h2>Key Indices Available for Index Funds in India</h2>
+<ul>
+  <li><strong>Nifty 50:</strong> Top 50 large-cap companies. Best starting point for beginners.</li>
+  <li><strong>Nifty Next 50:</strong> Companies ranked 51–100 by free-float market cap. More volatile but higher long-term return potential.</li>
+  <li><strong>Nifty Midcap 150:</strong> Mid-cap index fund. Higher risk/return than Nifty 50.</li>
+  <li><strong>Nifty Total Market:</strong> Covers large, mid, and small cap in one fund. True market-cap-weighted exposure to all of India.</li>
+  <li><strong>Nasdaq 100:</strong> US tech giants (Apple, Microsoft, Nvidia). Available via Indian AMCs for international diversification.</li>
+</ul>
+
+<h2>The Boring Advantage of Index Funds</h2>
+<p>Index funds never have explosive 50%+ single-year returns like some small-cap funds do — but they never have catastrophic manager-induced failures either. The boring consistency of tracking the market beats most alternatives. Warren Buffett's famous bet: he wagered that a Vanguard S&P 500 index fund would beat any actively managed hedge fund basket over 10 years. He won decisively.</p>
+    `,
+    faq: [
+      { q: "Will an index fund lose money?", a: "Yes, in market downturns. Nifty 50 fell 38% in 2008, 26% in 2020. But it recovered and made new highs within 1–2 years. Over any 10-year SIP period in Indian markets, the probability of negative returns has historically been very low." },
+      { q: "Is Nifty 50 index fund safe?", a: "It is market-risk safe — no fund manager risk, no concentration risk, no credit risk. It is not capital-guarantee safe — prices fluctuate daily. For capital protection, use FDs or PPF instead." },
+      { q: "Should I only invest in index funds?", a: "Many experienced investors (including Sebi-registered advisors) recommend a core index fund portfolio (70–80%) with a small satellite allocation to select active funds or direct stocks. Beginners are often advised to start with 100% index funds." },
+    ],
+  },
+  {
+    slug: "debt-to-equity-ratio",
+    title: "What is Debt-to-Equity Ratio? How to Analyse Company Debt",
+    description:
+      "Debt-to-equity ratio (D/E) measures how much debt a company uses relative to shareholder equity. Learn what a good D/E ratio is for Indian companies, sector benchmarks, and red flags to watch for.",
+    readingTime: 5,
+    publishedAt: "2026-05-07",
+    relatedSlugs: ["what-is-roe-roce", "pe-ratio", "how-to-read-annual-report"],
+    content: `
+<h2>What is Debt-to-Equity Ratio?</h2>
+<p>The <strong>Debt-to-Equity (D/E) ratio</strong> measures how much of a company's financing comes from debt relative to shareholders' equity (net worth). It shows how leveraged the company is:</p>
+<ul>
+  <li><strong>D/E Ratio = Total Debt / Shareholders' Equity</strong></li>
+  <li>Total Debt = Short-term borrowings + Long-term borrowings (from balance sheet)</li>
+</ul>
+<p>Example: A company with ₹500 crore debt and ₹1,000 crore equity has D/E = 0.5×. For every ₹1 of equity, the company has ₹0.50 of debt.</p>
+
+<h2>Interpreting D/E Ratio</h2>
+<ul>
+  <li><strong>D/E = 0:</strong> Debt-free company. No financial risk from borrowing. Common in IT companies (TCS, Infosys, HCL Tech).</li>
+  <li><strong>D/E 0–0.5×:</strong> Very low leverage. Conservative, low financial risk.</li>
+  <li><strong>D/E 0.5–1.5×:</strong> Moderate leverage. Acceptable for most sectors.</li>
+  <li><strong>D/E 1.5–3×:</strong> High leverage. Acceptable for capital-intensive sectors (infra, power, telecom). Risky for consumer or technology companies.</li>
+  <li><strong>D/E &gt; 3×:</strong> Very high leverage. Interest payments can strain profitability. Risk of default in downturns.</li>
+</ul>
+
+<h2>Sector-Specific D/E Benchmarks (India)</h2>
+<p>D/E ratios must be compared within the same sector — what's normal in one industry is dangerous in another:</p>
+<ul>
+  <li><strong>IT Services:</strong> 0–0.1× (nearly debt-free)</li>
+  <li><strong>FMCG:</strong> 0–0.5×</li>
+  <li><strong>Pharma:</strong> 0.2–0.8×</li>
+  <li><strong>Automobile:</strong> 0.5–1.5×</li>
+  <li><strong>Cement:</strong> 0.3–1.5×</li>
+  <li><strong>Power/Infrastructure:</strong> 2–5× (high but normal — long-duration assets funded by long-term debt)</li>
+  <li><strong>Banks/NBFCs:</strong> D/E is not meaningful (their "debt" is customer deposits — their product). Use leverage ratio and Capital Adequacy Ratio (CAR) instead.</li>
+</ul>
+
+<h2>Interest Coverage Ratio — The Partner Metric</h2>
+<p>D/E alone doesn't tell you if the company can afford its debt. Use the <strong>Interest Coverage Ratio</strong> alongside:</p>
+<ul>
+  <li><strong>Interest Coverage = EBIT / Interest Expense</strong></li>
+  <li>Above 3×: Comfortable — earnings cover interest 3 times over</li>
+  <li>Below 1.5×: Dangerous — small earnings decline could trigger default</li>
+</ul>
+<p>A company can have high D/E but strong interest coverage (infrastructure companies with predictable cash flows). Conversely, low D/E with poor coverage is also risky (if EBIT is volatile).</p>
+
+<h2>Net Debt vs Gross Debt</h2>
+<p>Always check <strong>Net Debt = Total Debt − Cash &amp; Cash Equivalents</strong>. A company with ₹1,000 crore debt but ₹800 crore cash has Net Debt of only ₹200 crore — effectively low leverage. Many cash-rich companies appear highly indebted on gross D/E but are actually conservatively financed. Net D/E gives a truer picture.</p>
+
+<h2>D/E Red Flags to Watch</h2>
+<ul>
+  <li><strong>Rapidly increasing D/E:</strong> Company borrowing faster than growing equity — investigate why</li>
+  <li><strong>Short-term debt funding long-term assets:</strong> Refinancing risk — company must keep rolling over loans</li>
+  <li><strong>Pledged promoter shares:</strong> If promoters have pledged shares to raise personal loans, corporate D/E may understate true leverage</li>
+  <li><strong>Off-balance sheet debt:</strong> Lease obligations (now on balance sheet post Ind AS 116) and guarantees for subsidiaries</li>
+</ul>
+    `,
+    faq: [
+      { q: "Is zero debt always good?", a: "Not necessarily. Conservative use of debt (at interest rates below return on capital) actually enhances equity returns — this is called financial leverage. Completely debt-free companies may be leaving value on the table if they have stable cash flows." },
+      { q: "How do I find D/E ratio on IPOpulse?", a: "The stock screener on IPOpulse shows D/E ratio as a filter and display column. Individual company ticker pages also show key ratios." },
+      { q: "Should I avoid all high-D/E companies?", a: "Not automatically. Infrastructure, power, and telecom companies inherently carry high debt. Evaluate whether the interest coverage is strong and cash flows are stable enough to service debt comfortably." },
+    ],
+  },
+  {
+    slug: "how-to-invest-in-gold",
+    title: "How to Invest in Gold in India — Digital vs Physical vs ETF vs SGB",
+    description:
+      "Comparing all ways to invest in gold in India: physical gold, digital gold, gold ETFs, gold mutual funds, and Sovereign Gold Bonds (SGB). Tax treatment, costs, and which option suits different investors.",
+    readingTime: 5,
+    publishedAt: "2026-05-08",
+    relatedSlugs: ["sip-guide", "what-is-mutual-fund", "cagr-meaning"],
+    content: `
+<h2>Why Invest in Gold?</h2>
+<p>Gold has three roles in an Indian investment portfolio: inflation hedge, currency depreciation protection, and crisis insurance. When equity markets crash and the Indian rupee weakens, gold typically rises — providing a natural portfolio buffer. Most financial planners recommend 5–15% of portfolio in gold as a strategic allocation, not a primary wealth builder.</p>
+<p>Over the long term (20 years), gold in India has delivered approximately 10–12% CAGR (including rupee depreciation against USD). This is comparable to Nifty 50 returns but with very different risk patterns.</p>
+
+<h2>Option 1: Physical Gold (Jewellery / Coins / Bars)</h2>
+<ul>
+  <li><strong>Pros:</strong> Tangible, cultural comfort, no counterparty risk</li>
+  <li><strong>Cons:</strong> Making charges (8–25% for jewellery — a massive drag on returns), storage/insurance cost, impurity risk, not easily liquidated at spot price</li>
+  <li><strong>Best for:</strong> Purchase for consumption (weddings, ceremonies), not investment</li>
+</ul>
+
+<h2>Option 2: Digital Gold</h2>
+<p>Offered by PhonePe, Paytm, Google Pay via MMTC-PAMP or SafeGold. You buy fractional gold digitally; physical gold stored in vault on your behalf.</p>
+<ul>
+  <li><strong>Pros:</strong> Small amounts (₹1), convenient, instant</li>
+  <li><strong>Cons:</strong> Not regulated by SEBI or RBI (regulatory grey area), storage fees vary, maximum 5-year holding on some platforms, counterparty risk</li>
+  <li><strong>Best for:</strong> Small gift purchases. Not ideal as long-term investment due to regulatory uncertainty.</li>
+</ul>
+
+<h2>Option 3: Gold ETFs</h2>
+<p>Gold ETFs track domestic gold prices and trade on NSE/BSE like stocks. Each unit = 1 gram of gold (approximately). Backed by physical gold held by custodian.</p>
+<ul>
+  <li><strong>Pros:</strong> SEBI regulated, transparent pricing, high liquidity, no physical storage</li>
+  <li><strong>Cons:</strong> Need demat account, brokerage costs, expense ratio 0.5–0.8%</li>
+  <li><strong>Tax:</strong> LTCG (held 24+ months): 12.5%. STCG: slab rate. (Post July 2024 budget)</li>
+  <li><strong>Best for:</strong> Investors with demat account wanting gold exposure</li>
+</ul>
+
+<h2>Option 4: Gold Mutual Funds (Fund of Funds)</h2>
+<p>Invest in Gold ETFs through a mutual fund structure. Allows SIP without needing a demat account.</p>
+<ul>
+  <li><strong>Pros:</strong> SIP capability from ₹100, no demat needed</li>
+  <li><strong>Cons:</strong> Higher expense ratio (0.1–0.2% fund + underlying ETF 0.5–0.8% = total 0.6–1%)</li>
+  <li><strong>Tax:</strong> Same as Gold ETF</li>
+  <li><strong>Best for:</strong> Investors wanting monthly SIP into gold without demat account</li>
+</ul>
+
+<h2>Option 5: Sovereign Gold Bonds (SGB) — Usually the Best Option</h2>
+<p>Issued by the Reserve Bank of India on behalf of the Government of India. Denominated in grams of gold.</p>
+<ul>
+  <li><strong>Pros:</strong> 2.5% annual interest (taxable) PLUS gold price appreciation</li>
+  <li><strong>Capital gains completely exempt if held to maturity (8 years)</strong> — the biggest advantage</li>
+  <li>No storage risk, no making charges, government-guaranteed</li>
+  <li>Can be sold on exchange before maturity (but capital gains apply)</li>
+  <li><strong>Cons:</strong> 8-year maturity (5-year lock-in with early exit every 6 months from 5th year), limited issuance windows, secondary market liquidity is poor</li>
+</ul>
+<p>For long-term investors (5–8 year horizon), SGB is almost always the best gold investment in India — it offers gold returns + 2.5% extra interest + zero tax on maturity proceeds.</p>
+
+<h2>Note on SGB availability:</h2>
+<p>The Government of India paused fresh SGB issuance in 2024–25 due to high interest cost. Existing SGBs trade on NSE/BSE. Check with your broker for availability and whether new tranches are announced.</p>
+    `,
+    faq: [
+      { q: "Is gold a good investment for wealth building?", a: "Gold is a store of value and hedge, not a wealth builder. Over very long periods, equities dramatically outperform gold. Use gold for portfolio protection (5–15% allocation), not as your primary wealth-building asset." },
+      { q: "Can I convert SGB to physical gold at maturity?", a: "No. SGBs are redeemed in cash at prevailing gold price on maturity date. You receive the rupee equivalent of your gold holding." },
+      { q: "Are gold ETFs better than digital gold?", a: "Yes, for investment purposes. Gold ETFs are SEBI-regulated, have clear tax treatment, and physical gold backing is audited. Digital gold's regulatory framework is less clear." },
+    ],
+  },
+  {
+    slug: "market-holidays-2026",
+    title: "NSE BSE Market Holidays 2026 — Complete List of Stock Market Holidays",
+    description:
+      "Complete list of NSE and BSE trading holidays for 2026. Know which dates the Indian stock market will be closed for settlement and trading, including Saturday and Sunday market sessions.",
+    readingTime: 3,
+    publishedAt: "2026-01-01",
+    relatedSlugs: ["what-is-sensex", "nifty-50-explained", "fii-dii-guide"],
+    content: `
+<h2>NSE/BSE Market Holidays 2026</h2>
+<p>The <strong>National Stock Exchange (NSE)</strong> and <strong>Bombay Stock Exchange (BSE)</strong> follow the same holiday calendar, issued annually by the exchanges. The Indian stock market is typically closed on 10–14 trading days per year, in addition to all Saturdays and Sundays.</p>
+<p>Below is the official list of NSE/BSE market holidays for 2026. On these days, no equity trading, F&O trading, or settlement takes place on the main cash and derivatives segments.</p>
+
+<h2>2026 NSE/BSE Market Holidays (Equity Segment)</h2>
+<ul>
+  <li><strong>26 Jan (Mon) — Republic Day</strong></li>
+  <li><strong>19 Feb (Thu) — Chhatrapati Shivaji Maharaj Jayanti</strong></li>
+  <li><strong>26 Feb (Thu) — Mahashivratri</strong></li>
+  <li><strong>20 Mar (Fri) — Holi</strong></li>
+  <li><strong>2 Apr (Thu) — Ram Navami</strong></li>
+  <li><strong>3 Apr (Fri) — Good Friday</strong></li>
+  <li><strong>14 Apr (Tue) — Dr. Baba Saheb Ambedkar Jayanti / Mahavir Jayanti</strong></li>
+  <li><strong>1 May (Fri) — Maharashtra Day / May Day</strong></li>
+  <li><strong>15 Aug (Sat) — Independence Day</strong> (Saturday — exchange closed)</li>
+  <li><strong>27 Aug (Thu) — Ganesh Chaturthi</strong></li>
+  <li><strong>2 Oct (Fri) — Gandhi Jayanti / Dussehra</strong></li>
+  <li><strong>22 Oct (Thu) — Diwali Laxmi Puja (Muhurat Trading)</strong> — special 60-minute muhurat session in the evening</li>
+  <li><strong>23 Oct (Fri) — Diwali Balipratipada</strong></li>
+  <li><strong>25 Nov (Wed) — Gurunanak Jayanti</strong></li>
+  <li><strong>25 Dec (Fri) — Christmas</strong></li>
+</ul>
+<p>Note: The exact holiday list is issued by NSE/BSE each year and subject to change. Always verify with the exchange website (nseindia.com or bseindia.com) for the official notification before important trading decisions.</p>
+
+<h2>Special Market Sessions</h2>
+<p><strong>Muhurat Trading (Diwali):</strong> NSE and BSE conduct a special 60-minute evening trading session on Diwali (Laxmi Puja day) — typically 6:00–7:00 PM IST. Despite the market holiday, this symbolic session celebrates the new financial year in the Hindu calendar. Volume is low but sentiment-rich. Many investors make small equity purchases during Muhurat for auspicious reasons.</p>
+
+<h2>Commodity and Currency Market Holidays</h2>
+<p>MCX (commodity futures) and forex segments may have different trading windows and holiday calendars from equity markets. MCX typically trades Monday–Saturday with extended evening hours (up to 11:30 PM for metals and energy). Check MCX website for their specific holiday list.</p>
+
+<h2>Pre-Market and Post-Market Sessions</h2>
+<ul>
+  <li><strong>Pre-open session:</strong> 9:00 AM – 9:15 AM (order collection and price discovery)</li>
+  <li><strong>Normal market:</strong> 9:15 AM – 3:30 PM</li>
+  <li><strong>Post-close session:</strong> 3:40 PM – 4:00 PM (closing price orders for delivery)</li>
+</ul>
+
+<h2>Settlement Calendar</h2>
+<p>Under T+1 settlement (since January 2023), shares bought on a trading day are credited to your demat account the next business day. If you buy on a Friday before a Monday holiday, shares arrive in your demat on Tuesday (skipping the Monday holiday). SEBI may review moving to T+0 or instantaneous settlement in 2026–27.</p>
+    `,
+    faq: [
+      { q: "Do all exchanges follow the same market holiday list?", a: "NSE and BSE equity segments follow the same holiday list. MCX (commodity) and BSE/NSE currency segments may have slightly different schedules — especially for commodity-specific festivals. Always verify on the respective exchange website." },
+      { q: "What happens to pending SIP deductions on market holidays?", a: "Most AMCs process SIPs on the next trading day if the SIP date falls on a market holiday. Your investment is processed at the NAV of the next business day." },
+      { q: "Can I place orders on market holidays?", a: "Some brokers accept after-market orders (AMO) even on holidays — these orders go into the system but execute on the next trading day when the market opens." },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {
