@@ -62,6 +62,8 @@ const columns = [
   {
     title: "About",
     links: [
+      { href: "/learn", label: "Learning Hub" },
+      { href: "/ipo/stats", label: "IPO Statistics" },
       { href: "/about", label: "About IPOpulse" },
       { href: "/contact", label: "Contact" },
       { href: "/signup", label: "Create account" },
