@@ -40,6 +40,24 @@ export default async function CompanyPage({ params }: Props) {
       })
     : [];
 
+  // Fetch latest bhavcopy for real price data + 52W range
+  const cutoff52w = new Date(); cutoff52w.setFullYear(cutoff52w.getFullYear() - 1);
+  const [latestPrice, yearStats] = await Promise.all([
+    prisma.bhavcopyDaily.findFirst({
+      where: { companyId: company.id },
+      orderBy: { date: "desc" },
+      select: { close: true, open: true, high: true, low: true, volume: true, deliveryPct: true, date: true },
+    }),
+    prisma.bhavcopyDaily.aggregate({
+      where: { companyId: company.id, date: { gte: cutoff52w } },
+      _max: { high: true },
+      _min: { low: true },
+    }),
+  ]);
+  const ltp = latestPrice ? Number(latestPrice.close) : null;
+  const high52w = yearStats._max.high ? Number(yearStats._max.high) : null;
+  const low52w = yearStats._min.low ? Number(yearStats._min.low) : null;
+
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
   let inWatchlist = false;
@@ -78,34 +96,50 @@ export default async function CompanyPage({ params }: Props) {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <div className="bg-gray-50 rounded-lg p-3">
+            <div className="text-xs text-gray-500">LTP (EOD)</div>
+            <div className={`text-sm font-semibold tabular-nums mt-0.5 ${ltp ? "text-gray-900" : "text-gray-400"}`}>
+              {ltp ? `₹${ltp.toLocaleString("en-IN")}` : "—"}
+            </div>
+            {latestPrice?.date && <div className="text-[10px] text-gray-400 mt-0.5">{new Date(latestPrice.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</div>}
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3">
             <div className="text-xs text-gray-500">Market cap</div>
             <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
               {company.marketCap ? formatCurrency(Number(company.marketCap) * 10000000) : "—"}
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">LTP</div>
-            <div className="text-sm font-semibold text-gray-400 tabular-nums mt-0.5 text-[11px]">See chart below</div>
+            <div className="text-xs text-gray-500">52W High / Low</div>
+            <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
+              {high52w && low52w ? `₹${high52w.toFixed(0)} / ₹${low52w.toFixed(0)}` : "—"}
+            </div>
+            {ltp && high52w && low52w && (
+              <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-indigo-500 rounded-full"
+                  style={{ width: `${Math.min(100, Math.max(0, ((ltp - low52w) / (high52w - low52w)) * 100))}%` }}
+                />
+              </div>
+            )}
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">P/E</div>
-            <div className="text-sm font-semibold text-gray-400 mt-0.5">—</div>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Listed</div>
-            <div className="text-sm font-semibold text-gray-900 mt-0.5">{company.listedOn ? new Date(company.listedOn).getFullYear() : "—"}</div>
+            <div className="text-xs text-gray-500">Volume · Delivery</div>
+            <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
+              {latestPrice?.volume ? (Number(latestPrice.volume) / 1000).toFixed(0) + "K" : "—"}
+            </div>
+            {latestPrice?.deliveryPct && <div className="text-[10px] text-gray-500 mt-0.5">{Number(latestPrice.deliveryPct).toFixed(1)}% delivery</div>}
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {["Financials (10-yr)", "Shareholding", "Concall AI notes"].map((t) => (
-          <div key={t} className="card">
-            <h3 className="text-sm font-semibold text-gray-900 mb-1">{t}</h3>
-            <p className="text-xs text-gray-500 mb-2">Wiring up once live data pipeline is connected via BSE/NSE filings.</p>
-            <span className="badge badge-warning">Coming soon</span>
+        {/* P/E and other fundamentals if available */}
+        {(company.peRatio || company.roePercent || company.debtToEquity) && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+            {company.peRatio && <div className="bg-indigo-50 rounded-lg p-3"><div className="text-xs text-gray-500">P/E</div><div className="text-sm font-semibold text-indigo-700">{Number(company.peRatio).toFixed(1)}</div></div>}
+            {company.pbRatio && <div className="bg-indigo-50 rounded-lg p-3"><div className="text-xs text-gray-500">P/B</div><div className="text-sm font-semibold text-indigo-700">{Number(company.pbRatio).toFixed(1)}</div></div>}
+            {company.roePercent && <div className="bg-emerald-50 rounded-lg p-3"><div className="text-xs text-gray-500">ROE %</div><div className="text-sm font-semibold text-emerald-700">{Number(company.roePercent).toFixed(1)}%</div></div>}
+            {company.debtToEquity && <div className="bg-gray-50 rounded-lg p-3"><div className="text-xs text-gray-500">D/E</div><div className="text-sm font-semibold text-gray-700">{Number(company.debtToEquity).toFixed(2)}</div></div>}
           </div>
-        ))}
+        )}
       </div>
 
       {peers.length > 0 ? (
