@@ -809,8 +809,6 @@ export const articles: Article[] = [
       { q: "Can retail subscription exceed QIB?", a: "Yes, retail can be 10× subscribed while QIB is 0.5×. This is usually a warning sign — institutions not participating despite retail FOMO. Proceed with caution." },
     ],
   },
-];
-
   // ─── New articles ─────────────────────────────────────────────────────────
   {
     slug: "what-is-demat-account",
