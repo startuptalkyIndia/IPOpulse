@@ -13,8 +13,8 @@ interface NavItem {
 
 interface NavGroup {
   label: string;
-  href?: string; // if set, the label itself is also a link
-  items: NavItem[][];  // array of columns
+  href?: string;
+  items: NavItem[][];
 }
 
 const navGroups: NavGroup[] = [
@@ -23,25 +23,20 @@ const navGroups: NavGroup[] = [
     href: "/ipo",
     items: [
       [
-        { href: "/ipo/live",      label: "Live IPOs",         badge: "🔴" },
+        { href: "/ipo/live",      label: "Live IPOs",    badge: "🔴" },
         { href: "/ipo/upcoming",  label: "Upcoming IPOs" },
         { href: "/ipo/closed",    label: "Closed IPOs" },
         { href: "/ipo/listed",    label: "Listed IPOs" },
         { href: "/ipo/sme",       label: "SME IPOs" },
+        { href: "/ipo/this-week", label: "This Week" },
       ],
       [
-        { href: "/ipo/this-week",    label: "This Week" },
         { href: "/ipo/calendar",     label: "IPO Calendar" },
         { href: "/ipo/allotment",    label: "Allotment Status" },
         { href: "/ipo/stats",        label: "IPO Statistics" },
         { href: "/ipo/process",      label: "IPO Process Guide" },
-      ],
-      [
         { href: "/ipo/gmp-accuracy", label: "GMP Accuracy" },
         { href: "/ipo/drhp",         label: "DRHP AI Search" },
-        { href: "/ipo/allotment-probability", label: "Allotment Probability" },
-        { href: "/ipo/year/2026",    label: "IPOs of 2026" },
-        { href: "/ipo/compare",      label: "Compare IPOs" },
       ],
     ],
   },
@@ -49,25 +44,28 @@ const navGroups: NavGroup[] = [
     label: "Markets",
     items: [
       [
-        { href: "/ticker",          label: "Stock Ticker" },
-        { href: "/screener",        label: "Stock Screener" },
-        { href: "/movers",          label: "Gainers / Losers" },
-        { href: "/sectors",         label: "Sectors" },
-        { href: "/indices",         label: "Nifty Indices" },
+        { href: "/ticker",         label: "Stock Ticker" },
+        { href: "/screener",       label: "Stock Screener" },
+        { href: "/movers",         label: "Gainers / Losers" },
+        { href: "/indices",        label: "Nifty Indices" },
+        { href: "/sectors",        label: "Sectors" },
+        { href: "/market/breadth", label: "Market Breadth" },
       ],
       [
-        { href: "/fii-dii",           label: "FII / DII Activity" },
-        { href: "/super-investor",    label: "Super Investors" },
-        { href: "/market/breadth",    label: "Market Breadth" },
-        { href: "/market/holidays",   label: "Market Holidays 2026" },
-        { href: "/daily-summary",     label: "Daily Market Wrap" },
+        { href: "/fii-dii",            label: "FII / DII Activity" },
+        { href: "/super-investor",     label: "Super Investors" },
+        { href: "/deals/bulk",         label: "Bulk Deals" },
+        { href: "/deals/block",        label: "Block Deals" },
+        { href: "/insider-trading",    label: "Insider Trading" },
+        { href: "/market/holidays",    label: "Market Holidays" },
       ],
       [
-        { href: "/mutual-funds",          label: "Mutual Funds" },
-        { href: "/earnings-calendar",     label: "Earnings Calendar" },
-        { href: "/dividend-yield",        label: "Dividend Yield" },
-        { href: "/unlisted-shares",       label: "Unlisted Shares" },
-        { href: "/corporate-actions",     label: "Corporate Actions" },
+        { href: "/mutual-funds",       label: "Mutual Funds" },
+        { href: "/dividend-yield",     label: "Dividend Yield" },
+        { href: "/corporate-actions",  label: "Corporate Actions" },
+        { href: "/earnings-calendar",  label: "Earnings Calendar" },
+        { href: "/unlisted-shares",    label: "Unlisted Shares" },
+        { href: "/daily-summary",      label: "Daily Market Wrap" },
       ],
     ],
   },
@@ -75,40 +73,55 @@ const navGroups: NavGroup[] = [
     label: "Research",
     items: [
       [
-        { href: "/research",            label: "Research Hub" },
-        { href: "/research/next-day",   label: "Tomorrow's Watch List" },
-        { href: "/sectors/momentum",    label: "Sector Momentum" },
-        { href: "/sectors/fpi-flows",   label: "FPI Sector Flows" },
+        { href: "/research",                label: "Research Hub" },
+        { href: "/research/next-day",       label: "Tomorrow's Watch List" },
+        { href: "/sectors/momentum",        label: "Sector Momentum" },
+        { href: "/sectors/fpi-flows",       label: "FPI Sector Flows" },
+        { href: "/tools/concall-summary",   label: "Concall AI" },
+        { href: "/tools/promoter-check",    label: "Promoter Check" },
+      ],
+    ],
+  },
+  {
+    label: "Compare",
+    items: [
+      [
+        { href: "/compare/brokers",       label: "Stock Brokers",        badge: "Top 6" },
+        { href: "/compare/credit-cards",  label: "Credit Cards",         badge: "Top 6" },
+        { href: "/compare/insurance",     label: "Insurance Plans" },
       ],
       [
-        { href: "/deals/bulk",          label: "Bulk Deals" },
-        { href: "/deals/block",         label: "Block Deals" },
-        { href: "/insider-trading",     label: "Insider Trading" },
-        { href: "/tools/concall-summary", label: "Concall AI" },
+        { href: "/calculators",           label: "All Calculators" },
+        { href: "/calculators/sip",       label: "SIP Calculator" },
+        { href: "/calculators/emi",       label: "EMI Calculator" },
+        { href: "/calculators/tax",       label: "Income Tax Calculator" },
+        { href: "/calculators/lrs-tcs",   label: "LRS / TCS Calculator" },
+        { href: "/calculators/usd-returns", label: "USD Returns" },
+      ],
+      [
+        { href: "/us-ipo",                          label: "US IPO Tracker" },
+        { href: "/us-listing",                      label: "Indian ADRs" },
+        { href: "/mutual-funds/international",      label: "International Funds" },
       ],
     ],
   },
   {
     label: "Learn",
+    href: "/learn",
     items: [
       [
-        { href: "/learn",       label: "Learning Hub", badge: "35 guides" },
-        { href: "/glossary",    label: "Financial Glossary" },
-        { href: "/ipo/process", label: "How IPO Works" },
-        { href: "/market/holidays", label: "Market Holidays" },
+        { href: "/learn",     label: "Learning Hub", badge: "35 guides" },
+        { href: "/glossary",  label: "Financial Glossary", badge: "90+ terms" },
+        { href: "/ipo/process",     label: "How IPO Works" },
+        { href: "/market/holidays", label: "Market Holidays 2026" },
       ],
       [
-        { href: "/calculators",        label: "All Calculators" },
-        { href: "/calculators/sip",    label: "SIP Calculator" },
-        { href: "/calculators/emi",    label: "EMI Calculator" },
-        { href: "/calculators/tax",    label: "Income Tax" },
-      ],
-      [
-        { href: "/compare/brokers",       label: "Compare Brokers" },
-        { href: "/compare/credit-cards",  label: "Credit Cards" },
-        { href: "/compare/insurance",     label: "Insurance Plans" },
-        { href: "/us-ipo",                label: "US IPO Tracker" },
-        { href: "/us-listing",            label: "Indian ADRs" },
+        { href: "/learn/what-is-demat-account",  label: "What is Demat Account?" },
+        { href: "/learn/what-is-mutual-fund",    label: "What is Mutual Fund?" },
+        { href: "/learn/pe-ratio",               label: "What is P/E Ratio?" },
+        { href: "/learn/ipo-gmp",                label: "What is IPO GMP?" },
+        { href: "/learn/cagr-meaning",           label: "What is CAGR?" },
+        { href: "/learn/what-are-futures-options", label: "What is F&O?" },
       ],
     ],
   },
@@ -132,8 +145,8 @@ export async function Nav() {
           </span>
         </Link>
 
-        {/* Desktop nav — dropdown groups */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-0.5">
           {navGroups.map((group) => (
             <div key={group.label} className="group relative">
               {/* Trigger */}
@@ -143,27 +156,39 @@ export async function Nav() {
                 ) : (
                   <span className="font-medium">{group.label}</span>
                 )}
-                <ChevronDown className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-600 transition-transform group-hover:rotate-180" />
+                <ChevronDown className="w-3.5 h-3.5 mt-0.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-150 group-hover:rotate-180" />
               </div>
 
-              {/* Dropdown panel */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-1 hidden group-hover:block">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 min-w-max">
-                  <div className={`flex gap-6 ${group.items.length === 2 ? "min-w-[340px]" : "min-w-[540px]"}`}>
+              {/* Dropdown panel — positioned to avoid going off-screen */}
+              <div className="absolute top-full pt-1 hidden group-hover:block z-50"
+                style={{ left: group.label === "Learn" ? "auto" : "50%", right: group.label === "Learn" ? 0 : "auto",
+                         transform: group.label === "Learn" ? "none" : "translateX(-50%)" }}>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-xl p-4">
+                  <div className={`flex gap-5 ${group.items.length === 1 ? "min-w-[200px]" : group.items.length === 2 ? "min-w-[380px]" : "min-w-[540px]"}`}>
                     {group.items.map((column, ci) => (
-                      <div key={ci} className="space-y-0.5 flex-1 min-w-[140px]">
+                      <div key={ci} className="space-y-0.5 flex-1">
+                        {/* Column header for Compare */}
+                        {group.label === "Compare" && ci === 0 && (
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 pb-1">Compare</div>
+                        )}
+                        {group.label === "Compare" && ci === 1 && (
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 pb-1">Calculators</div>
+                        )}
+                        {group.label === "Compare" && ci === 2 && (
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 pb-1">US & Global</div>
+                        )}
                         {column.map((item) => (
                           <Link
                             key={item.href}
                             href={item.href}
                             className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors whitespace-nowrap"
                           >
+                            {item.label}
                             {item.badge && (
-                              <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded font-semibold">
+                              <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded font-semibold ml-auto">
                                 {item.badge}
                               </span>
                             )}
-                            {item.label}
                           </Link>
                         ))}
                       </div>
