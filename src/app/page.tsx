@@ -219,6 +219,36 @@ export default async function HomePage() {
   const fiiNet = todayFiiDii?.fiiNet ? Number(todayFiiDii.fiiNet) : null;
   const diiNet = todayFiiDii?.diiNet ? Number(todayFiiDii.diiNet) : null;
 
+  // Sector performance from today's bhavcopy
+  const sectorPerf = await (async () => {
+    try {
+      const latest = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
+      const prev = await prisma.bhavcopyDaily.findFirst({ where: { date: { lt: latest!.date } }, orderBy: { date: "desc" }, select: { date: true } });
+      if (!latest || !prev) return [];
+      const [todayRows, prevRows] = await Promise.all([
+        prisma.bhavcopyDaily.findMany({ where: { date: latest.date }, select: { companyId: true, close: true, company: { select: { sector: true } } } }),
+        prisma.bhavcopyDaily.findMany({ where: { date: prev.date }, select: { companyId: true, close: true } }),
+      ]);
+      const prevMap = new Map(prevRows.map(r => [r.companyId, Number(r.close)]));
+      const sectorMap = new Map<string, number[]>();
+      for (const r of todayRows) {
+        const sec = r.company.sector;
+        if (!sec) continue;
+        const p = prevMap.get(r.companyId);
+        if (!p) continue;
+        const pct = ((Number(r.close) - p) / p) * 100;
+        if (!Number.isFinite(pct)) continue;
+        const arr = sectorMap.get(sec) ?? [];
+        arr.push(pct);
+        sectorMap.set(sec, arr);
+      }
+      return Array.from(sectorMap.entries())
+        .map(([sector, pcts]) => ({ sector, avg: pcts.reduce((a, b) => a + b, 0) / pcts.length }))
+        .filter(s => s.avg !== 0)
+        .sort((a, b) => b.avg - a.avg);
+    } catch { return []; }
+  })();
+
   return (
     <div>
       {/* Hero — dark gradient */}
@@ -289,6 +319,35 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Sector performance strip */}
+      {sectorPerf.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 pt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-sm font-semibold text-gray-700">Today&apos;s sectors</h2>
+            <Link href="/sectors/momentum" className="text-xs text-indigo-600 hover:text-indigo-800 ml-auto">
+              Full breakdown →
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sectorPerf.map(({ sector, avg }) => (
+              <Link
+                key={sector}
+                href={`/sectors/${sector.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+                  avg >= 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" :
+                  avg >= 0 ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" :
+                  avg >= -1 ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100" :
+                  "bg-red-100 text-red-700 border-red-300 hover:bg-red-200"
+                }`}
+              >
+                {sector}
+                <span className="tabular-nums">{avg >= 0 ? "+" : ""}{avg.toFixed(1)}%</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Module grid */}
       <section className="max-w-7xl mx-auto px-4 py-12">
