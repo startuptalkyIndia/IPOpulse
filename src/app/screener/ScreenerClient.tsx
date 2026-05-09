@@ -101,13 +101,13 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     // Sort
     const compare = (a: ScreenerCompany, b: ScreenerCompany) => {
       const get = (c: ScreenerCompany) => {
-        if (sortBy === "marketCap") return c.marketCapCr ?? -Infinity;
-        if (sortBy === "pe") return c.peRatio ?? Infinity;
-        if (sortBy === "roe") return c.roePercent ?? -Infinity;
-        if (sortBy === "divYield") return c.dividendYield ?? -Infinity;
-        if (sortBy === "chg1d") return c.chg1d ?? -Infinity;
-        if (sortBy === "chg1d_asc") return c.chg1d ?? Infinity;
-        if (sortBy === "vol") return c.volume ?? -Infinity;
+        if (sortBy === "marketCap") return c.marketCapCr ?? -1;
+        if (sortBy === "pe") return c.peRatio ?? 99999;
+        if (sortBy === "roe") return c.roePercent ?? -1;
+        if (sortBy === "divYield") return c.dividendYield ?? -1;
+        if (sortBy === "chg1d") return c.chg1d ?? -999;
+        if (sortBy === "chg1d_asc") return c.chg1d ?? 999;
+        if (sortBy === "vol") return c.volume ?? -1;
         return 0;
       };
       const av = get(a);
