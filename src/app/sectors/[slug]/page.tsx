@@ -16,40 +16,51 @@ export async function generateStaticParams() {
   return sectors.map((s) => ({ slug: s.slug }));
 }
 
+// Convert slug to sector name: "consumer-services" → "Consumer Services"
+function slugToSectorName(slug: string): string {
+  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const s = getSectorBySlug(slug);
-  if (!s) return { title: "Sector not found" };
+  const name = s?.name ?? slugToSectorName(slug);
   return {
-    title: `${s.name} Sector — companies, ${s.niftyIndex ?? "index"}, FII flows`,
-    description: `${s.name} sector in India. ${s.description} Constituent companies, market cap rankings.`,
+    title: `${name} Sector — listed companies, market cap, P/E`,
+    description: `${name} sector companies listed on NSE/BSE. Market cap, price, sector performance.`,
     alternates: { canonical: `/sectors/${slug}` },
   };
 }
 
 export default async function SectorPage({ params }: Props) {
   const { slug } = await params;
+  // Try predefined sector first; fall back to dynamic DB lookup
   const sector = getSectorBySlug(slug);
-  if (!sector) notFound();
+  const sectorName = sector?.name ?? slugToSectorName(slug);
 
-  const [allCompanies, indexData] = await Promise.all([
+  const [allCompanies, indexData, dbCount] = await Promise.all([
     prisma.company.findMany({
       where: {
         active: true,
         OR: [
-          { sector: { equals: sector.name } },
-          { sector: { contains: sector.name.split(" ")[0], mode: "insensitive" } },
+          { sector: { equals: sectorName } },
+          { sector: { contains: sectorName.split(" ")[0], mode: "insensitive" } },
         ],
       },
       orderBy: { marketCap: "desc" },
     }),
-    sector.niftyIndex
+    sector?.niftyIndex
       ? prisma.niftyIndex.findFirst({
           where: { indexName: sector.niftyIndex },
           orderBy: { date: "desc" },
         }).catch(() => null)
       : Promise.resolve(null),
+    // Verify the sector actually exists in DB before showing page
+    prisma.company.count({ where: { sector: sectorName, active: true } }),
   ]);
+
+  // 404 only if sector doesn't exist in sectors.ts AND has no DB companies
+  if (!sector && dbCount === 0) notFound();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -60,11 +71,11 @@ export default async function SectorPage({ params }: Props) {
       <div className="card">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{sector.name}</h1>
-            {sector.niftyIndex ? (
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{sectorName}</h1>
+            {sector?.niftyIndex ? (
               <div className="text-xs text-indigo-600 font-medium mt-1">{sector.niftyIndex}</div>
             ) : null}
-            <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>
+            {sector?.description && <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>}
           </div>
           {indexData && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 min-w-fit">
@@ -103,7 +114,7 @@ export default async function SectorPage({ params }: Props) {
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Top companies in {sector.name}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Top companies in {sectorName}</h2>
         {allCompanies.length === 0 ? (
           <div className="card text-center py-8 text-sm text-gray-500">
             Company master for this sector is still being populated.
