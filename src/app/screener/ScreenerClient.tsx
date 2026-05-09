@@ -15,6 +15,9 @@ export interface ScreenerCompany {
   isSme: boolean;
   ltp: number | null;
   volume: number | null;
+  chg1d?: number | null;
+  high52w?: number | null;
+  low52w?: number | null;
   peRatio?: number | null;
   pbRatio?: number | null;
   roePercent?: number | null;
@@ -37,7 +40,7 @@ const TYPE_OPTIONS = [
   { key: "sme", label: "SME only" },
 ];
 
-type SortKey = "marketCap" | "pe" | "roe" | "divYield";
+type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol";
 
 export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sectors: string[] }) {
   const [search, setSearch] = useState("");
@@ -102,12 +105,14 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         if (sortBy === "pe") return c.peRatio ?? Infinity;
         if (sortBy === "roe") return c.roePercent ?? -Infinity;
         if (sortBy === "divYield") return c.dividendYield ?? -Infinity;
+        if (sortBy === "chg1d") return c.chg1d ?? -Infinity;
+        if (sortBy === "chg1d_asc") return c.chg1d ?? Infinity;
+        if (sortBy === "vol") return c.volume ?? -Infinity;
         return 0;
       };
       const av = get(a);
       const bv = get(b);
-      // P/E ascending (cheaper is better); others descending
-      return sortBy === "pe" ? av - bv : bv - av;
+      return (sortBy === "pe" || sortBy === "chg1d_asc") ? av - bv : bv - av;
     };
     return result.sort(compare).slice(0, 200);
   }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, sortBy]);
@@ -244,10 +249,13 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         <div className="text-xs text-gray-500 inline-flex items-center gap-2">
           Sort by:
           <select className="input text-xs py-1" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
-            <option value="marketCap">Market cap (high→low)</option>
-            <option value="pe">P/E (low→high)</option>
-            <option value="roe">ROE % (high→low)</option>
-            <option value="divYield">Dividend yield (high→low)</option>
+            <option value="marketCap">Market cap ↓</option>
+            <option value="chg1d">Top gainers (1D) ↓</option>
+            <option value="chg1d_asc">Top losers (1D) ↑</option>
+            <option value="vol">Volume ↓</option>
+            <option value="pe">P/E low→high</option>
+            <option value="roe">ROE % ↓</option>
+            <option value="divYield">Dividend yield ↓</option>
           </select>
         </div>
       </div>
@@ -261,10 +269,11 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                 <th className="px-3 py-3">Sector</th>
                 <th className="px-3 py-3 text-right">Market cap</th>
                 <th className="px-3 py-3 text-right">LTP</th>
+                <th className="px-3 py-3 text-right">1D %</th>
+                <th className="px-3 py-3 text-right">52W H</th>
+                <th className="px-3 py-3 text-right">52W L</th>
                 <th className="px-3 py-3 text-right">P/E</th>
                 <th className="px-3 py-3 text-right">ROE %</th>
-                <th className="px-3 py-3 text-right">D/E</th>
-                <th className="px-3 py-3 text-right">Div %</th>
               </tr>
             </thead>
             <tbody>
@@ -283,15 +292,24 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                   <td className="px-3 py-2.5 text-sm text-right tabular-nums text-gray-700">
                     {c.ltp != null ? `₹${c.ltp.toLocaleString("en-IN")}` : "—"}
                   </td>
+                  <td className={`px-3 py-2.5 text-xs text-right tabular-nums font-medium ${
+                    c.chg1d == null ? "text-gray-400" : c.chg1d >= 0 ? "text-emerald-600" : "text-red-500"
+                  }`}>
+                    {c.chg1d != null ? `${c.chg1d >= 0 ? "+" : ""}${c.chg1d.toFixed(2)}%` : "—"}
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
+                    {c.high52w != null ? `₹${c.high52w.toFixed(0)}` : "—"}
+                  </td>
+                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
+                    {c.low52w != null ? `₹${c.low52w.toFixed(0)}` : "—"}
+                  </td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.peRatio != null ? c.peRatio.toFixed(1) : "—"}</td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.roePercent != null ? c.roePercent.toFixed(1) : "—"}</td>
-                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.debtToEquity != null ? c.debtToEquity.toFixed(2) : "—"}</td>
-                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.dividendYield != null ? c.dividendYield.toFixed(2) : "—"}</td>
                 </tr>
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-3 py-12 text-center text-sm text-gray-500">
                     No companies match these filters. Reset to see all.
                   </td>
                 </tr>
@@ -302,9 +320,8 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
       </div>
 
       <p className="text-[11px] text-gray-500">
-        Fundamental ratios are populated from BSE/NSE filings; coverage is currently sparse and grows with each
-        ingestion run. P/E uses TTM earnings; ROE is annual. Sort and preset combinations help find specific
-        styles (value, growth, dividend, low-debt).
+        Prices from NSE EOD bhavcopy · 52W high/low from 12 months of daily data · 1D change vs previous close ·
+        P/E and ROE populate automatically as data grows.
       </p>
     </div>
   );
