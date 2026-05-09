@@ -11,6 +11,7 @@ import { WatchlistButton } from "@/components/WatchlistButton";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { PriceChart } from "@/components/PriceChart";
 import { StockNews } from "@/components/StockNews";
+import { getCompanyDescription } from "@/lib/company-descriptions";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -58,6 +59,12 @@ export default async function CompanyPage({ params }: Props) {
   const high52w = yearStats._max.high ? Number(yearStats._max.high) : null;
   const low52w = yearStats._min.low ? Number(yearStats._min.low) : null;
 
+  const description = getCompanyDescription(company.slug, {
+    sector: company.sector,
+    industry: company.industry,
+    name: company.name,
+  });
+
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
   let inWatchlist = false;
@@ -93,6 +100,12 @@ export default async function CompanyPage({ params }: Props) {
           </div>
           <WatchlistButton type="stock" targetSlug={company.slug} initial={inWatchlist} authed={!!userId} />
         </div>
+
+        {description && (
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed border-l-2 border-indigo-200 pl-3">
+            {description}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <div className="bg-gray-50 rounded-lg p-3">

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp, AlertTriangle, BookOpen } from "lucide-react";
 import { sectors, getSectorBySlug } from "@/lib/sectors";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
@@ -75,7 +75,12 @@ export default async function SectorPage({ params }: Props) {
             {sector?.niftyIndex ? (
               <div className="text-xs text-indigo-600 font-medium mt-1">{sector.niftyIndex}</div>
             ) : null}
-            {sector?.description && <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>}
+            {sector?.longDescription && (
+            <p className="text-sm text-gray-700 mt-3 leading-relaxed max-w-2xl">{sector.longDescription}</p>
+          )}
+          {!sector?.longDescription && sector?.description && (
+            <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>
+          )}
           </div>
           {indexData && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 min-w-fit">
@@ -112,6 +117,49 @@ export default async function SectorPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* Themes + Risks */}
+      {sector && (sector.themes?.length || sector.risks?.length) ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {sector.themes?.length ? (
+            <div className="card">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                Key Investment Themes
+              </h2>
+              <ul className="space-y-2">
+                {sector.themes.map((t, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="text-emerald-400 mt-0.5 flex-shrink-0">✓</span>
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              {sector.learnLink && (
+                <Link href={sector.learnLink} className="mt-3 text-xs text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                  <BookOpen className="w-3 h-3" /> Learn more about valuation →
+                </Link>
+              )}
+            </div>
+          ) : null}
+          {sector.risks?.length ? (
+            <div className="card">
+              <h2 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                Key Risks to Watch
+              </h2>
+              <ul className="space-y-2">
+                {sector.risks.map((r, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="text-amber-400 mt-0.5 flex-shrink-0">⚠</span>
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <section>
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Top companies in {sectorName}</h2>
