@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { TrendingUp, FileText, Database, Mail, LogOut, Users } from "lucide-react";
 
 const tiles = [
-  { href: "/sup-min/ipos", icon: TrendingUp, title: "IPO Data", desc: "Manage IPO records, listing details, anchors" },
+  { href: "/sup-min/ipos", icon: TrendingUp, title: "IPO Manager", desc: "Add/edit IPOs manually" },
   { href: "/sup-min/gmp", icon: Database, title: "Daily GMP Entry", desc: "Record today's grey market premium" },
   { href: "/sup-min/announcements", icon: FileText, title: "Announcements", desc: "Manual announcement overrides" },
   { href: "/sup-min/ingestion", icon: Database, title: "Ingestion Runs", desc: "Cron logs, manual triggers" },

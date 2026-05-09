@@ -60,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/registrar/maashitla`, lastModified: now, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/screener`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/daily-summary`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
+    { url: `${BASE}/research`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/research/next-day`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/ipo/sme-risk`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/ipo/anchor-lock-in`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
