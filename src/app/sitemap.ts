@@ -58,6 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/registrar/cameo`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/registrar/integrated`, lastModified: now, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/registrar/maashitla`, lastModified: now, priority: 0.6, changeFrequency: "weekly" },
+    { url: `${BASE}/indices`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/screener`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/daily-summary`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/research`, lastModified: now, priority: 0.8, changeFrequency: "daily" },

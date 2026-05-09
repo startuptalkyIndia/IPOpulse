@@ -26,6 +26,7 @@ const columns = [
       { href: "/daily-summary", label: "Daily Market Wrap" },
       { href: "/research", label: "Research Hub" },
       { href: "/research/next-day", label: "Tomorrow's Watch List" },
+      { href: "/indices", label: "Nifty Indices" },
       { href: "/sectors", label: "Sectors" },
       { href: "/sectors/momentum", label: "Sector Momentum" },
       { href: "/fii-dii", label: "FII/DII Activity" },

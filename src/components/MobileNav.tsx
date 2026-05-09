@@ -29,6 +29,7 @@ const sections = [
       { href: "/research", label: "Research Hub" },
       { href: "/research/next-day", label: "Tomorrow's Watch List" },
       { href: "/sectors", label: "Sectors" },
+      { href: "/indices", label: "Nifty Indices" },
       { href: "/fii-dii", label: "FII / DII" },
       { href: "/market/breadth", label: "Market Breadth" },
       { href: "/super-investor", label: "Super Investor" },

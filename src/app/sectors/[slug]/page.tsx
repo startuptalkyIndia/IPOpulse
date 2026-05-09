@@ -32,17 +32,24 @@ export default async function SectorPage({ params }: Props) {
   const sector = getSectorBySlug(slug);
   if (!sector) notFound();
 
-  // Map sector slug to Company.sector column via matching on "name contains"
-  const allCompanies = await prisma.company.findMany({
-    where: {
-      active: true,
-      OR: [
-        { sector: { equals: sector.name } },
-        { sector: { contains: sector.name.split(" ")[0], mode: "insensitive" } },
-      ],
-    },
-    orderBy: { marketCap: "desc" },
-  });
+  const [allCompanies, indexData] = await Promise.all([
+    prisma.company.findMany({
+      where: {
+        active: true,
+        OR: [
+          { sector: { equals: sector.name } },
+          { sector: { contains: sector.name.split(" ")[0], mode: "insensitive" } },
+        ],
+      },
+      orderBy: { marketCap: "desc" },
+    }),
+    sector.niftyIndex
+      ? prisma.niftyIndex.findFirst({
+          where: { indexName: sector.niftyIndex },
+          orderBy: { date: "desc" },
+        }).catch(() => null)
+      : Promise.resolve(null),
+  ]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -51,11 +58,48 @@ export default async function SectorPage({ params }: Props) {
       </Link>
 
       <div className="card">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{sector.name}</h1>
-        {sector.niftyIndex ? (
-          <div className="text-xs text-indigo-600 font-medium mt-1">Index: {sector.niftyIndex}</div>
-        ) : null}
-        <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{sector.name}</h1>
+            {sector.niftyIndex ? (
+              <div className="text-xs text-indigo-600 font-medium mt-1">{sector.niftyIndex}</div>
+            ) : null}
+            <p className="text-sm text-gray-700 mt-3 leading-relaxed">{sector.description}</p>
+          </div>
+          {indexData && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 min-w-fit">
+              <div className="bg-gray-50 rounded-lg p-3 text-center">
+                <div className="text-xs text-gray-500 mb-1">Close</div>
+                <div className="text-base font-bold text-gray-900 tabular-nums">
+                  {Number(indexData.close).toLocaleString("en-IN")}
+                </div>
+                {indexData.changePct != null && (
+                  <div className={`text-xs font-medium ${Number(indexData.changePct) >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                    {Number(indexData.changePct) >= 0 ? "▲" : "▼"} {Math.abs(Number(indexData.changePct)).toFixed(2)}%
+                  </div>
+                )}
+              </div>
+              {indexData.pe != null && (
+                <div className="bg-indigo-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-500 mb-1">P/E</div>
+                  <div className="text-base font-bold text-indigo-700">{Number(indexData.pe).toFixed(2)}</div>
+                </div>
+              )}
+              {indexData.pb != null && (
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-500 mb-1">P/B</div>
+                  <div className="text-base font-bold text-gray-700">{Number(indexData.pb).toFixed(2)}</div>
+                </div>
+              )}
+              {indexData.divYield != null && (
+                <div className="bg-emerald-50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-gray-500 mb-1">Div Yield</div>
+                  <div className="text-base font-bold text-emerald-700">{Number(indexData.divYield).toFixed(2)}%</div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <section>

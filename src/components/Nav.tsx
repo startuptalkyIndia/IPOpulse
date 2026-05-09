@@ -9,8 +9,9 @@ const links = [
   { href: "/ipo", label: "IPO" },
   { href: "/ticker", label: "Ticker" },
   { href: "/screener", label: "Screener" },
+  { href: "/indices", label: "Indices" },
   { href: "/fii-dii", label: "FII/DII" },
-  { href: "/market/breadth", label: "Breadth" },
+  
   { href: "/calculators", label: "Calculators" },
   { href: "/us-ipo", label: "US" },
 ];
