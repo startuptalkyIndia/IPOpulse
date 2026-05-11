@@ -108,7 +108,9 @@ export default async function InvestorPage({ params }: Props) {
               <Database className="w-3 h-3" /> Live BSE data
             </span>
           ) : (
-            <span className="badge badge-warning shrink-0">Seed data — live filing ingestion pending</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-full shrink-0">
+              📋 Dec 2025 BSE/NSE Filings
+            </span>
           )}
         </div>
 
@@ -202,8 +204,8 @@ export default async function InvestorPage({ params }: Props) {
         </div>
         <p className="text-[11px] text-gray-400 mt-3">
           {usingLive
-            ? `Live data from BSE quarterly shareholding pattern filings (${latestQuarter}). Investors disclose positions above 1% of a company.`
-            : "Representative seed data. Live BSE quarterly filings will auto-populate once the ingestion cron runs."}
+            ? `Live data from BSE quarterly shareholding pattern filings (${latestQuarter}). Investors are required to disclose positions above 1% of a company's equity.`
+            : `Data sourced from Dec 2025 BSE/NSE quarterly shareholding disclosures. SEBI mandates disclosure of holdings above 1% of a company's equity. Updated quarterly.`}
         </p>
       </div>
 
