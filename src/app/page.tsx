@@ -371,8 +371,8 @@ export default async function HomePage() {
                 className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
                   avg >= 1 ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" :
                   avg >= 0 ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100" :
-                  avg >= -1 ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100" :
-                  "bg-red-100 text-red-700 border-red-300 hover:bg-red-200"
+                  avg >= -1 ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-100" :
+                  "bg-red-100 text-red-800 border-red-300 hover:bg-red-200"
                 }`}
               >
                 {sector}

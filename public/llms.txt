@@ -1,0 +1,50 @@
+# IPOpulse — India's IPO, Stock & Market Data Hub
+> Free structured data platform for Indian equity markets — IPOs, stocks, sectors, FII/DII flows, super investors, and financial education.
+
+## About
+IPOpulse (https://ipopulse.talkytools.com) is a comprehensive financial data platform for Indian retail investors. It covers IPOs, stock research, market data, and financial education — structured in tables and dashboards, not blogs.
+
+## Key Sections
+
+### IPO Hub
+- Live, upcoming, closed, and listed IPOs across NSE/BSE mainboard and SME segments
+- GMP (Grey Market Premium) tracker and accuracy scorecard
+- Allotment status checker (multi-registrar: KFintech, Linkintime, Bigshare)
+- DRHP AI search and IPO process guide
+
+### Stock Research
+- 2,300+ companies with daily EOD prices from NSE bhavcopy
+- Stock screener with sector, market cap, 52W high/low, and fundamental filters
+- Company ticker pages with P/E, ROE, D/E, market cap, description, and 1Y price chart
+- Stock comparison tool (side-by-side fundamental comparison of any two companies)
+
+### Market Data
+- 134 Nifty indices with daily close, P/E, P/B, and dividend yield
+- FII/DII daily flows (30-day history from NSE provisional data)
+- Sector performance and sector-wise momentum
+- Super investor portfolios (27 tracked investors, Dec 2025 BSE/NSE quarterly filings)
+- Market holidays, F&O expiry calendar, economic calendar
+
+### Financial Education
+- 35+ articles on IPO, investing, and market concepts (Indian context)
+- A–Z financial glossary (90+ terms)
+- IPO process step-by-step guide
+
+### Financial Tools
+- 20+ calculators: SIP, EMI, capital gains tax, income tax, LRS/TCS, USD returns
+- Broker comparison (Zerodha, Groww, Upstox, Angel One, Dhan, ICICI Direct)
+- Credit card comparison (top 6 Indian cards with feature matrix)
+- REIT, SGB, and NCD trackers
+
+## Data Sources
+- NSE bhavcopy archives (daily EOD prices)
+- NSE FII/DII provisional data
+- NSE index close files (134 indices, P/E, P/B, dividend yield)
+- BSE/NSE quarterly shareholding disclosures (super investor data)
+- AMFI NAV data (mutual fund NAVs)
+- Curated fundamentals: P/E, ROE, market cap for top 200 Indian companies
+
+## Contact
+Website: https://ipopulse.talkytools.com
+Admin: admin@ipopulse.in
+Not investment advice. Data sourced from BSE, NSE, SEBI, NSDL, AMFI.
