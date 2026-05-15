@@ -1991,6 +1991,459 @@ export const articles: Article[] = [
       { q: "Can I place orders on market holidays?", a: "Some brokers accept after-market orders (AMO) even on holidays — these orders go into the system but execute on the next trading day when the market opens." },
     ],
   },
+  // ─── Round 3 articles ─────────────────────────────────────────────────────
+  {
+    slug: "how-to-invest-in-stocks-beginners",
+    title: "How to Invest in Stocks in India — Complete Beginner's Guide 2026",
+    description: "A step-by-step guide for first-time stock market investors in India. Open a demat account, choose a broker, understand order types, and build your first portfolio.",
+    readingTime: 7,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["what-is-demat-account", "pe-ratio", "what-is-mutual-fund"],
+    content: `
+<h2>Why Invest in Stocks?</h2>
+<p>Over any 15–20 year period, Indian equities (as measured by Nifty 50) have delivered approximately 12–14% CAGR — significantly outpacing fixed deposits (6–7%), PPF (7.1%), and inflation (5–6%). Investing in stocks is not speculation — it is buying ownership in real businesses that grow over time.</p>
+<p>However, the stock market carries real risk. Prices fall — sometimes sharply. The Nifty 50 fell 38% in 2008 and 26% in March 2020. Understanding this before you invest is essential.</p>
+
+<h2>Step 1: Open a Demat + Trading Account</h2>
+<p>You need two linked accounts — a demat account (holds your shares) and a trading account (places buy/sell orders). Most brokers open both simultaneously. Paperless process via Aadhaar OTP takes 15–30 minutes.</p>
+<p>Choose a broker based on your needs:</p>
+<ul>
+  <li><strong>Beginners:</strong> Groww — zero AMC, simple app, ₹20/order</li>
+  <li><strong>Active investors:</strong> Zerodha — best platform (Kite), ₹0 for delivery equity</li>
+  <li><strong>F&O traders:</strong> Dhan or Upstox — TradingView integrated, free API</li>
+</ul>
+<p>Documents needed: PAN card, Aadhaar, bank account details, photo, signature.</p>
+
+<h2>Step 2: Start With Mutual Funds, Not Direct Stocks</h2>
+<p>Most financial planners recommend that beginners start with a Nifty 50 index fund via SIP before buying individual stocks. Why? Because picking individual stocks requires deep research, time, and experience. A Nifty 50 index fund gives you instant diversification across 50 large companies at a cost of 0.1–0.2% per year.</p>
+<p>Once you have 6–12 months of market experience (watching how prices move, understanding news impact), graduate to individual stocks.</p>
+
+<h2>Step 3: Understand Order Types Before Trading</h2>
+<ul>
+  <li><strong>Market Order:</strong> Buy/sell at the best available price right now. Fast execution, but price not guaranteed during volatile sessions.</li>
+  <li><strong>Limit Order:</strong> Buy only if price falls to ₹X, sell only if price rises to ₹Y. You control the price but not the execution timing.</li>
+  <li><strong>Stop Loss Order (SL-M):</strong> Automatically sell if price falls to your stop price. Essential for risk management.</li>
+  <li><strong>After Market Order (AMO):</strong> Place orders outside trading hours (9:15 AM – 3:30 PM) — executes at next session's open.</li>
+</ul>
+
+<h2>Step 4: Pick Your First Stocks</h2>
+<p>For beginners, the safest starting stocks are blue-chip, well-understood businesses in Nifty 50 with:</p>
+<ul>
+  <li>Market cap &gt; ₹50,000 crore (large, liquid, less volatile)</li>
+  <li>Consistent profits for 5+ years</li>
+  <li>Low debt (D/E ratio below 1 for non-financial companies)</li>
+  <li>ROE above 15% consistently</li>
+  <li>Business you understand and use daily</li>
+</ul>
+<p>Examples: HDFC Bank (banking), TCS (IT), HUL (consumer goods), Reliance (conglomerate), Sun Pharma (pharma). These are not recommendations — research each before investing.</p>
+
+<h2>Step 5: Apply the Core Investing Rules</h2>
+<ul>
+  <li><strong>Diversify:</strong> Never put more than 10% of your equity portfolio in one stock. Own 15–25 companies across at least 5 sectors.</li>
+  <li><strong>Never invest money you need in 1–3 years:</strong> Keep emergency fund in FD/liquid funds. Only invest long-term money in equities.</li>
+  <li><strong>Don't check prices daily:</strong> Checking portfolio every day increases anxiety and leads to impulsive selling. Review quarterly.</li>
+  <li><strong>Ignore tips:</strong> WhatsApp tips, YouTube recommendations, and Twitter stock calls are dangerous. Do your own research.</li>
+  <li><strong>Start small:</strong> Begin with ₹5,000–₹10,000. Learn by doing. Increase as you gain confidence.</li>
+</ul>
+
+<h2>Step 6: Tax on Stock Profits</h2>
+<ul>
+  <li><strong>Short-Term Capital Gains (STCG):</strong> Sold within 1 year → taxed at 20%</li>
+  <li><strong>Long-Term Capital Gains (LTCG):</strong> Held 1+ year → taxed at 12.5% on gains above ₹1.25 lakh per year</li>
+  <li><strong>Dividends:</strong> Taxed at your income slab rate. TDS of 10% deducted by company.</li>
+</ul>
+<p>Use IPOpulse's Capital Gains calculator at /calculators/capital-gains to estimate tax on your investments.</p>
+    `,
+    faq: [
+      { q: "How much money do I need to start investing in stocks?", a: "You can start with as little as ₹100 in mutual funds (SIP) or the cost of 1 share of any stock (which can be as low as ₹10 for penny stocks or ₹50,000 for MRF). Practically, starting with ₹5,000–₹10,000 gives you enough to buy 1–2 shares of decent companies." },
+      { q: "Is it safe to invest in stocks in India?", a: "Stock markets are regulated by SEBI. Your shares are held in demat accounts with CDSL/NSDL — not at risk of broker fraud. However, stock prices can and do fall. The 'safety' depends on which stocks you buy, diversification, and your investment horizon." },
+      { q: "Should I use a full-service broker or discount broker?", a: "For most retail investors, discount brokers (Zerodha, Groww, Upstox) offer everything needed at lower cost. Full-service brokers (ICICI Direct, HDFC Securities) make sense only if you need research reports, relationship manager support, or a 3-in-1 linked account." },
+    ],
+  },
+  {
+    slug: "what-is-circuit-limit",
+    title: "What is Circuit Limit in Stock Market? Upper & Lower Circuit Explained",
+    description: "Circuit limits prevent extreme stock price moves in a single day. Learn what upper circuit, lower circuit, and market-wide circuit breakers mean for Indian stocks on NSE/BSE.",
+    readingTime: 4,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["what-is-stop-loss", "52-week-high-low", "how-to-invest-in-stocks-beginners"],
+    content: `
+<h2>What is a Circuit Limit?</h2>
+<p>A <strong>circuit limit</strong> (also called price band or circuit breaker) is the maximum percentage a stock's price can move — up or down — in a single trading session. Once a stock hits its upper or lower circuit, trading is either halted or restricted to prevent panic buying or selling.</p>
+<p>Circuit limits are set by SEBI and enforced by NSE and BSE. They exist to protect retail investors from extreme price manipulation and to give the market time to absorb new information rationally.</p>
+
+<h2>Price Bands for Individual Stocks</h2>
+<p>SEBI assigns individual stocks to different circuit filter categories based on trading activity, liquidity, and governance quality:</p>
+<ul>
+  <li><strong>No circuit (for derivatives-eligible stocks):</strong> Nifty 50 and most F&O stocks have no daily circuit limit — but still have market-wide circuit breakers (see below)</li>
+  <li><strong>20% circuit:</strong> Most liquid non-F&O stocks on NSE/BSE</li>
+  <li><strong>10% circuit:</strong> Mid-cap stocks with moderate liquidity</li>
+  <li><strong>5% circuit:</strong> Less liquid stocks</li>
+  <li><strong>2% circuit:</strong> Highly illiquid penny stocks or stocks under surveillance (ASM/GSM list)</li>
+</ul>
+
+<h2>Upper Circuit vs Lower Circuit</h2>
+<ul>
+  <li><strong>Upper Circuit:</strong> Stock has gained the maximum allowed percentage. There are only buyers at or above this price — sellers have disappeared. Trading continues but only buy orders are accepted. Example: Stock opens at ₹100 with 20% circuit. Upper circuit = ₹120. If it reaches ₹120, only buyers can place orders.</li>
+  <li><strong>Lower Circuit:</strong> Stock has fallen the maximum allowed percentage. There are only sellers — buyers have disappeared. Example: Lower circuit = ₹80. Only sell orders accepted.</li>
+</ul>
+<p>A stock hitting consecutive upper circuits (several days in a row) is called a "multibagger momentum" scenario. Hitting consecutive lower circuits signals a crisis — promoter selling, fraud, or severe business deterioration.</p>
+
+<h2>Market-Wide Circuit Breakers (Index Halt)</h2>
+<p>SEBI also has index-level circuit breakers that halt ALL trading across NSE and BSE if Sensex or Nifty 50 moves by large percentages:</p>
+<ul>
+  <li><strong>10% move:</strong> 45-minute trading halt (if before 1 PM); 15 minutes (if between 1–2:30 PM); no halt if after 2:30 PM</li>
+  <li><strong>15% move:</strong> 1 hour 45 minutes halt (if before 1 PM); 45 minutes (if between 1–2 PM); rest of day if after 2 PM</li>
+  <li><strong>20% move:</strong> Trading halted for the rest of the day regardless of time</li>
+</ul>
+<p>Market-wide circuit breakers have triggered only a few times in Indian history — during the 2008 financial crisis and briefly in March 2020 COVID crash.</p>
+
+<h2>ASM and GSM — Enhanced Surveillance</h2>
+<p>Stocks showing unusual price or volume activity get placed under <strong>ASM (Additional Surveillance Measure)</strong> or <strong>GSM (Graded Surveillance Measure)</strong>. This reduces the circuit to 5% or 2% and may require enhanced margins (50–100% upfront margin). Check the NSE/BSE website for the current ASM/GSM list before trading small-cap stocks.</p>
+    `,
+    faq: [
+      { q: "Can I buy a stock that's hitting upper circuit?", a: "Yes, but you may not get your order executed — only buyers exist, so you're in a queue. The stock opens the next day fresh, and if demand continues, it may hit the upper circuit again." },
+      { q: "What happens after a stock is in lower circuit for days?", a: "Trading becomes very difficult — only sellers exist, no buyers. This often signals serious trouble. The stock may get suspended by SEBI if the circuit is triggered repeatedly or if fraud is suspected." },
+      { q: "How do I know a stock's circuit limit?", a: "On NSE's website, search the stock and check 'Market Depth' — it shows the circuit limits. On most broker apps, the circuit filter appears in the stock's trade window." },
+    ],
+  },
+  {
+    slug: "what-is-eps",
+    title: "What is EPS (Earnings Per Share)? How to Use It for Stock Valuation",
+    description: "EPS (Earnings Per Share) is the profit allocated to each share. Learn basic vs diluted EPS, trailing vs forward EPS, and how EPS drives the P/E ratio used for stock valuation in India.",
+    readingTime: 4,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["pe-ratio", "what-is-roe-roce", "what-is-market-cap"],
+    content: `
+<h2>What is EPS?</h2>
+<p><strong>Earnings Per Share (EPS)</strong> measures how much net profit a company generates for each share outstanding. It is the fundamental building block for the P/E ratio — the most widely used stock valuation metric.</p>
+<ul>
+  <li><strong>EPS = Net Profit (PAT) / Total Shares Outstanding</strong></li>
+</ul>
+<p>Example: Reliance Industries has a net profit of ₹79,000 crore and 1,353 crore shares outstanding → EPS = ₹79,000 / 1,353 = ₹58.4 per share.</p>
+<p>A higher EPS means the company is generating more profit per share — generally a positive indicator of financial health.</p>
+
+<h2>Basic EPS vs Diluted EPS</h2>
+<ul>
+  <li><strong>Basic EPS:</strong> Uses the current shares outstanding. Simpler to calculate.</li>
+  <li><strong>Diluted EPS:</strong> Accounts for all potential shares that could be created from ESOPs (Employee Stock Options), convertible bonds, and warrants. Diluted EPS is always ≤ Basic EPS, because more shares mean less profit per share. Always use diluted EPS for a conservative valuation.</li>
+</ul>
+<p>For companies with large ESOP programs (tech startups, new-age companies), the gap between basic and diluted EPS can be significant. Zomato, Paytm, and other new-age companies have large outstanding ESOPs that dilute per-share earnings.</p>
+
+<h2>Trailing EPS vs Forward EPS</h2>
+<ul>
+  <li><strong>Trailing EPS (TTM):</strong> Based on the last 12 months of actual reported profits. Fact-based. Used to compute the trailing P/E ratio.</li>
+  <li><strong>Forward EPS:</strong> Analysts' consensus estimate of EPS for the next 12 months. Used to compute the forward P/E. More relevant for growth stocks but involves estimation risk.</li>
+</ul>
+<p>When IPOpulse shows a P/E ratio, it is typically the trailing P/E (market price ÷ trailing 12-month EPS).</p>
+
+<h2>How EPS Drives P/E</h2>
+<p>P/E Ratio = Market Price / EPS. So:</p>
+<ul>
+  <li>If a stock trades at ₹500 and EPS is ₹25, P/E = 20x</li>
+  <li>If EPS grows from ₹25 to ₹35 but the stock stays at ₹500, P/E compresses to 14.3x — the stock appears cheaper without moving</li>
+  <li>If EPS falls from ₹25 to ₹15, P/E expands to 33x — stock looks more expensive even though price didn't change</li>
+</ul>
+<p>Strong EPS growth is what drives sustainable stock price appreciation over time. Companies that consistently grow EPS at 15–20% CAGR tend to be excellent long-term investments.</p>
+
+<h2>EPS Red Flags</h2>
+<ul>
+  <li><strong>EPS boosted by exceptional items:</strong> If a company sold a factory or subsidiary, the one-time profit inflates EPS. Always check "adjusted EPS" excluding exceptionals.</li>
+  <li><strong>EPS growing but cash flow declining:</strong> EPS can be manipulated via aggressive revenue recognition. If operating cash flow doesn't match EPS growth, investigate the accounts.</li>
+  <li><strong>Negative EPS (losses):</strong> P/E ratio becomes meaningless. Use EV/Sales or Price/Book instead for loss-making companies.</li>
+</ul>
+    `,
+    faq: [
+      { q: "Is higher EPS always better?", a: "Higher EPS means more profit per share, which is generally good. But context matters — a company with ₹100 EPS growing at 5% per year is less attractive than one with ₹20 EPS growing at 30% per year." },
+      { q: "Where can I find a company's EPS in India?", a: "EPS is disclosed in quarterly and annual results published on BSE/NSE. The IPOpulse stock screener and ticker pages show EPS where available for major companies." },
+      { q: "What is a good EPS for Indian stocks?", a: "There's no universal benchmark — EPS depends on face value, sector, and market cap. What matters more is EPS growth rate (ideally 15%+ CAGR) and consistency (no sudden falls)." },
+    ],
+  },
+  {
+    slug: "what-is-smallcase",
+    title: "What is Smallcase? How Thematic Investing Works in India",
+    description: "Smallcase is a platform that bundles stocks into themed portfolios managed by SEBI-registered advisors. Learn how smallcases work, costs, returns, and how they compare to mutual funds.",
+    readingTime: 5,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["what-is-mutual-fund", "what-is-index-fund", "how-to-invest-in-stocks-beginners"],
+    content: `
+<h2>What is Smallcase?</h2>
+<p><strong>Smallcase</strong> is an investment platform (smallcase.com) that offers thematic portfolios of stocks and ETFs — curated and managed by SEBI-registered investment advisors or research analysts. Unlike mutual funds (which pool your money with others), smallcases hold actual shares and ETFs directly in YOUR demat account.</p>
+<p>Examples of smallcase themes: "EV & New Energy," "Rural Revival," "Dividend Aristocrats," "All Weather Investing," "Top 100 Stocks," "Dividend Yield & Low Debt."</p>
+
+<h2>How Smallcase Works</h2>
+<ol>
+  <li>Browse smallcases on smallcase.com or through broker app (Zerodha Kite, Groww, etc.)</li>
+  <li>Choose a smallcase — see its constituent stocks, rationale, past returns, and minimum investment</li>
+  <li>Invest (minimum ₹500–₹50,000 depending on smallcase)</li>
+  <li>Shares of all constituent stocks are purchased in your demat account in the correct weights</li>
+  <li>The manager rebalances periodically (monthly, quarterly) — you get rebalance notifications and can approve or decline</li>
+</ol>
+
+<h2>Smallcase vs Mutual Fund — Key Differences</h2>
+<ul>
+  <li><strong>Ownership:</strong> Smallcase → you own actual shares. Mutual fund → you own fund units (fund owns the shares).</li>
+  <li><strong>Tax:</strong> Smallcase → each stock sale is a separate capital gains event (STCG/LTCG calculated stock-by-stock). Mutual fund → single capital gain on unit redemption.</li>
+  <li><strong>Transparency:</strong> Smallcase → you see exact stocks. MF → disclosures monthly with 1-month lag.</li>
+  <li><strong>Cost:</strong> Smallcase → subscription fee (₹99–₹999/month or ₹500–₹2,500/quarter) + brokerage per trade during rebalance. Mutual fund → expense ratio (deducted from NAV daily, no direct payment).</li>
+  <li><strong>Flexibility:</strong> Smallcase → you can modify, add, or remove individual stocks. MF → no control over underlying stocks.</li>
+</ul>
+
+<h2>Types of Smallcases</h2>
+<ul>
+  <li><strong>Passive/Index-based:</strong> Tracks Nifty 50, equal-weight Nifty, etc. Low cost.</li>
+  <li><strong>Factor-based:</strong> Quality, value, momentum, low volatility. Rules-based rebalancing.</li>
+  <li><strong>Thematic:</strong> EV, rural, defence, financialization of savings. Higher risk, concentrated.</li>
+  <li><strong>Managed by advisors:</strong> Run by SEBI-registered RAs or investment advisors. Requires subscription fee. Quality varies significantly.</li>
+</ul>
+
+<h2>Costs and What to Watch</h2>
+<ul>
+  <li>Subscription fees range from free (basic) to ₹2,000+/quarter for premium smallcases</li>
+  <li>Every rebalance triggers brokerage charges — frequent rebalancers are expensive</li>
+  <li>Past returns advertised are backtested or point-to-point — not guaranteed</li>
+  <li>SEBI requires smallcase managers to be registered investment advisors or research analysts — verify registration before investing</li>
+</ul>
+
+<h2>Is Smallcase Right for You?</h2>
+<p>Smallcase suits investors who: want stock-level ownership (not fund units), understand basic investing, can handle individual tax complexity at year-end, and want thematic exposure that mutual funds don't offer. For absolute beginners, a Nifty 50 index fund via SIP is simpler and cheaper than most smallcases.</p>
+    `,
+    faq: [
+      { q: "Are smallcases safe?", a: "The platform is regulated and your stocks are in your own demat account — no counterparty risk. But the constituent stocks carry market risk. Concentrated thematic smallcases can lose 40–60% in sector downturns." },
+      { q: "What is the minimum investment in smallcase?", a: "Varies by smallcase. Some start at ₹500, others require ₹50,000+. The minimum is determined by the price of all constituent stocks × their weight." },
+      { q: "Can I exit a smallcase anytime?", a: "Yes. You can sell all constituent stocks (exit the smallcase) at any time during market hours. The sale is treated as individual stock sales in your demat account." },
+    ],
+  },
+  {
+    slug: "what-is-pledging-shares",
+    title: "What is Pledging of Shares? Why High Promoter Pledge is Risky",
+    description: "Share pledging happens when promoters borrow money using their own company shares as collateral. Learn how pledging works, what high promoter pledge means for investors, and famous pledge-related crashes in India.",
+    readingTime: 5,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["how-to-read-annual-report", "what-is-roe-roce", "what-is-market-cap"],
+    content: `
+<h2>What is Share Pledging?</h2>
+<p><strong>Share pledging</strong> occurs when a promoter (founder/controlling shareholder) of a company borrows money from banks or NBFCs by pledging (mortgaging) their own company shares as collateral. The lender (bank/NBFC) holds the shares as security and can sell them if the promoter defaults on the loan.</p>
+<p>Example: Promoter of XYZ Ltd owns 60% stake worth ₹600 crore. They pledge 30% (worth ₹300 crore) to raise a ₹150 crore personal loan at 50% LTV (Loan-to-Value). The pledged shares remain in the promoter's name and count toward their shareholding — but they've been hypothecated to the lender.</p>
+
+<h2>Why Do Promoters Pledge Shares?</h2>
+<ul>
+  <li>Fund personal expenses without selling shares (avoiding downward price pressure)</li>
+  <li>Invest in group companies or start new ventures</li>
+  <li>Meet margin calls or debt repayment obligations in other businesses</li>
+  <li>Promoters with high-pledge situations often have personal financial stress or group-level debt problems</li>
+</ul>
+
+<h2>The Pledge-Default-Cascade Risk</h2>
+<p>High pledging creates a dangerous feedback loop:</p>
+<ol>
+  <li>Stock price falls for any reason</li>
+  <li>Pledged shares' collateral value falls below the required LTV threshold</li>
+  <li>Lender issues a margin call — promoter must provide more shares or cash</li>
+  <li>If promoter can't meet margin call, lender sells the pledged shares in the open market</li>
+  <li>Selling pushes price down further → triggers more margin calls → more selling</li>
+  <li>Spiral continues until promoter's stake is liquidated or company goes bankrupt</li>
+</ol>
+<p>Famous Indian examples: ADAG Group (Reliance Capital, Reliance Infrastructure), IL&FS, Yes Bank promoters, Dish TV, and many mid-cap/SME companies saw catastrophic pledge-driven crashes.</p>
+
+<h2>How to Find Promoter Pledge Data</h2>
+<p>SEBI mandates quarterly disclosure of pledged shares in the shareholding pattern. Find it:</p>
+<ul>
+  <li>BSE/NSE → Company filings → Shareholding Pattern (look for "Pledge/Encumbrance" column)</li>
+  <li>IPOpulse's Shareholding tracker shows promoter pledge % for top companies</li>
+  <li>Most screener tools allow filtering by max promoter pledge %</li>
+</ul>
+
+<h2>Red Flag Thresholds</h2>
+<ul>
+  <li><strong>0% pledge:</strong> Green flag — promoters have no debt against their shares</li>
+  <li><strong>Below 20%:</strong> Acceptable — moderate, manageable</li>
+  <li><strong>20–50%:</strong> Caution — understand why before investing</li>
+  <li><strong>Above 50%:</strong> High risk — any stock price decline can trigger forced selling</li>
+  <li><strong>Above 75%:</strong> Danger zone — promoter essentially has minimal real equity cushion</li>
+</ul>
+
+<h2>Pledging vs Margin Trading by Retail Investors</h2>
+<p>Retail investors also "pledge" their own shares to get margin funding for intraday trading. This is a separate (but related) concept — you can pledge your portfolio stocks to Zerodha/Groww to get up to 50% margin for equity or F&O trading. If the pledged stock falls and you can't meet the margin requirement, your broker sells the pledged shares. Always understand the risk before pledging your own portfolio.</p>
+    `,
+    faq: [
+      { q: "Is promoter pledging always bad?", a: "Not always. Short-term pledging for a specific purpose (business acquisition, capex) that is being repaid is manageable. Chronic high pledging (50%+ sustained over years) is a structural red flag." },
+      { q: "What happens if a company's promoter pledge reaches 100%?", a: "The promoter has effectively lost control of those shares as collateral. Any default means the lender sells shares in the market, potentially causing a collapse in the promoter's stake and triggering SEBI open offer obligations if stake falls below 25%." },
+      { q: "Where can I see pledge data quickly?", a: "IPOpulse's Shareholding page shows promoter pledge %. Screener.in and Trendlyne also track this. NSE/BSE shareholding pattern filings are the primary source — published quarterly within 21 days of quarter end." },
+    ],
+  },
+  {
+    slug: "what-is-sebi",
+    title: "What is SEBI? India's Stock Market Regulator Explained",
+    description: "SEBI (Securities and Exchange Board of India) regulates India's stock markets. Learn what SEBI does, its powers, how it protects investors, and major regulations that affect stock market participants.",
+    readingTime: 5,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["how-to-invest-in-stocks-beginners", "what-is-demat-account", "ipo-gmp"],
+    content: `
+<h2>What is SEBI?</h2>
+<p><strong>SEBI</strong> — the <strong>Securities and Exchange Board of India</strong> — is India's capital markets regulator, established in 1988 and granted statutory powers under the SEBI Act in 1992. It functions under the Ministry of Finance, Government of India, and is headquartered in Mumbai's Bandra-Kurla Complex (BKC).</p>
+<p>SEBI's mission: <em>"To protect the interests of investors in securities and to promote the development of, and to regulate, the securities market."</em></p>
+
+<h2>What Does SEBI Regulate?</h2>
+<p>SEBI has authority over virtually every participant in India's capital markets:</p>
+<ul>
+  <li><strong>Stock exchanges:</strong> NSE, BSE, MCX, NCDEX — their rules, systems, and listing standards</li>
+  <li><strong>Listed companies:</strong> Disclosure requirements, insider trading rules, corporate governance</li>
+  <li><strong>Brokers and sub-brokers:</strong> Registration, compliance, client fund handling</li>
+  <li><strong>Mutual funds:</strong> Fund registration, AMC regulations, NAV disclosure, expense ratio caps</li>
+  <li><strong>Foreign Portfolio Investors (FPIs):</strong> Registration, investment limits, reporting</li>
+  <li><strong>Investment advisers and research analysts:</strong> Registration, code of conduct, conflict of interest rules</li>
+  <li><strong>Depositories:</strong> CDSL and NSDL are regulated by SEBI</li>
+  <li><strong>IPOs:</strong> Prospectus requirements, pricing, allotment, listing timelines</li>
+</ul>
+
+<h2>Key SEBI Powers</h2>
+<ul>
+  <li><strong>Investigation:</strong> SEBI can investigate any entity for market manipulation, insider trading, or fraud</li>
+  <li><strong>Penalty:</strong> Issue fines up to ₹25 crore or 3x the profits from violations</li>
+  <li><strong>Ban:</strong> Bar individuals and companies from accessing securities markets</li>
+  <li><strong>Disgorgement:</strong> Force bad actors to return ill-gotten gains to a fund for investor compensation</li>
+  <li><strong>Search and seizure:</strong> With court approval, search premises and seize records</li>
+</ul>
+
+<h2>Major SEBI Regulations That Affect You</h2>
+<ul>
+  <li><strong>ASBA for IPOs:</strong> SEBI mandated ASBA (blocked amount) for all IPO applications — your money stays in your bank until allotment</li>
+  <li><strong>T+1 settlement:</strong> SEBI moved India to T+1 (next-day) settlement — one of the fastest globally</li>
+  <li><strong>F&O retail loss disclosure:</strong> SEBI requires brokers to show that 89% of F&O retail traders lose money — you see this warning before activating F&O</li>
+  <li><strong>Mutual fund categorisation:</strong> SEBI's 2018 circular forced all MFs to have clearly defined, distinct categories — no more "flexi" fund names to mislead investors</li>
+  <li><strong>Research analyst registration:</strong> Anyone providing stock tips publicly must register with SEBI as RA or face action</li>
+  <li><strong>SME IPO tightening (2023–24):</strong> SEBI raised minimum application lots and required more diligence for SME IPO listings after manipulation concerns</li>
+</ul>
+
+<h2>How to Complain to SEBI</h2>
+<p>If you face fraud by a broker, AMC, or listed company:</p>
+<ol>
+  <li>File a complaint on <strong>SEBI SCORES</strong> (scores.gov.in) — the official complaint portal</li>
+  <li>SEBI forwards it to the relevant entity for resolution within 30 days</li>
+  <li>If unresolved, SEBI takes direct action</li>
+  <li>For broker disputes, also use your exchange's Investor Grievance Cell or IGRC</li>
+</ol>
+<p>SEBI SCORES has resolved over 7 lakh complaints since launch. Average resolution time is 30–45 days.</p>
+    `,
+    faq: [
+      { q: "Is SEBI like the RBI for stock markets?", a: "Similar concept, different domain. RBI (Reserve Bank of India) regulates banks, NBFCs, and monetary policy. SEBI regulates capital markets — stocks, mutual funds, derivatives, and related intermediaries. Both are independent regulators under the Government of India." },
+      { q: "Can SEBI cancel a listed company?", a: "SEBI can order suspension of trading in a stock. Actual delisting of a company requires exchange approval and compliance with delisting regulations. SEBI has suspended trading in companies found guilty of manipulation." },
+      { q: "How does SEBI protect retail investors from pump-and-dump?", a: "SEBI monitors unusual price/volume patterns and investigates suspected pump-and-dump schemes. It also maintains ASM (Additional Surveillance Measure) and GSM (Graded Surveillance Measure) lists to restrict trading in suspicious stocks." },
+    ],
+  },
+  {
+    slug: "how-to-read-candlestick-charts",
+    title: "How to Read Candlestick Charts — Beginner's Guide for Indian Traders",
+    description: "Candlestick charts show open, high, low, and close prices visually. Learn to read basic candlestick patterns used by Indian traders — Doji, Hammer, Engulfing, and more.",
+    readingTime: 6,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["what-is-stop-loss", "52-week-high-low", "what-is-circuit-limit"],
+    content: `
+<h2>What is a Candlestick Chart?</h2>
+<p>A <strong>candlestick chart</strong> shows a stock's price movement over a given period (1 minute, 1 hour, 1 day, 1 week) using candle-shaped bars. Each candle shows four prices: <strong>Open, High, Low, Close (OHLC)</strong>.</p>
+<p>Candlestick charts were invented by Japanese rice traders in the 18th century and became the global standard for price chart analysis. Every broker platform (Zerodha Kite, Groww, Upstox) displays them by default.</p>
+
+<h2>Anatomy of a Candle</h2>
+<ul>
+  <li><strong>Body:</strong> The thick rectangular section between Open and Close prices</li>
+  <li><strong>Upper shadow (wick):</strong> Thin line above the body — shows the Intraday High</li>
+  <li><strong>Lower shadow (wick):</strong> Thin line below the body — shows the Intraday Low</li>
+  <li><strong>Green/White candle:</strong> Close > Open — buyers were stronger (bullish session)</li>
+  <li><strong>Red/Black candle:</strong> Close < Open — sellers were stronger (bearish session)</li>
+</ul>
+<p>A candle with a long green body and short wicks means the stock opened near its low and closed near its high — strong bullish session. A red candle with a long body means sellers dominated all day.</p>
+
+<h2>Key Single-Candle Patterns</h2>
+<p><strong>Doji:</strong> Open ≈ Close — body is very thin/absent. Represents indecision between buyers and sellers. A Doji after a trend suggests potential reversal.</p>
+<p><strong>Hammer:</strong> Small body at the top, long lower shadow (2× body size). Appears after a downtrend. Means sellers pushed price down intraday but buyers recovered. Bullish reversal signal.</p>
+<p><strong>Shooting Star:</strong> Small body at the bottom, long upper shadow. Appears after an uptrend. Means buyers pushed price up but sellers reversed it. Bearish reversal signal.</p>
+<p><strong>Marubozu:</strong> Long body, no shadows at all. Strong momentum in one direction — bullish Marubozu (green, no wicks) means buyers controlled the entire session.</p>
+<p><strong>Spinning Top:</strong> Small body, equal-length shadows above and below. Indecision — neither buyers nor sellers won decisively.</p>
+
+<h2>Key Two-Candle Patterns</h2>
+<p><strong>Bullish Engulfing:</strong> A large green candle completely covers the previous red candle. Bullish reversal — buyers overwhelmed previous day's sellers.</p>
+<p><strong>Bearish Engulfing:</strong> A large red candle completely covers the previous green candle. Bearish reversal signal.</p>
+<p><strong>Piercing Line:</strong> After a downtrend — red candle followed by green candle that opens below previous close but closes above the midpoint of the red candle. Moderate bullish reversal.</p>
+
+<h2>Three-Candle Patterns</h2>
+<p><strong>Morning Star:</strong> Three candles — long red, small candle (doji or spinning top), long green. Bullish reversal after downtrend — one of the strongest reversal signals.</p>
+<p><strong>Evening Star:</strong> Opposite — long green, small candle, long red. Bearish reversal after uptrend.</p>
+<p><strong>Three White Soldiers:</strong> Three consecutive green candles, each closing higher than the previous. Strong bullish momentum.</p>
+
+<h2>Important Caveats for Indian Markets</h2>
+<ul>
+  <li>Candlestick patterns are probabilistic signals, not guarantees. Studies show even the best patterns succeed only 55–65% of the time.</li>
+  <li>Always confirm patterns with volume — a Hammer on low volume is less reliable than on high volume</li>
+  <li>Use patterns as one input alongside fundamentals and market context — not as standalone trading signals</li>
+  <li>Over 89% of retail F&O traders in India lose money per SEBI data. Technical analysis alone does not consistently beat markets.</li>
+</ul>
+    `,
+    faq: [
+      { q: "What timeframe should I use for candlestick charts?", a: "For swing trading (holding days to weeks): daily charts. For positional trading (weeks to months): weekly charts. For intraday: 5-minute or 15-minute charts. Long-term investors should focus on weekly/monthly charts and fundamentals." },
+      { q: "Which Indian brokers show candlestick charts?", a: "All major Indian brokers — Zerodha Kite, Groww, Upstox, Angel One, Dhan — show candlestick charts. Dhan has TradingView integrated (most advanced charting). Zerodha Kite also has TradingView charts for subscribers." },
+      { q: "Are candlestick patterns reliable for Nifty 50 trading?", a: "Somewhat. Nifty 50 is highly liquid and efficient — simple patterns are often already priced in by institutions. Retail traders using textbook patterns often trade against well-capitalised institutions. Use patterns as context, not as primary entry signals." },
+    ],
+  },
+  {
+    slug: "what-is-portfolio-diversification",
+    title: "What is Portfolio Diversification? Asset Allocation for Indian Investors",
+    description: "Diversification reduces risk by spreading investments across asset classes, sectors, and geographies. Learn the right diversification strategy for Indian investors across equity, debt, gold, and international funds.",
+    readingTime: 5,
+    publishedAt: "2026-05-10",
+    relatedSlugs: ["sip-guide", "what-is-mutual-fund", "how-to-invest-in-gold"],
+    content: `
+<h2>What is Diversification?</h2>
+<p><strong>Portfolio diversification</strong> is the strategy of spreading investments across multiple assets, sectors, and geographies so that a loss in one area doesn't devastate your entire portfolio. The core idea: different assets often don't move together — when one falls, another may hold steady or rise.</p>
+<p>Nobel laureate Harry Markowitz proved mathematically in 1952 that a diversified portfolio can achieve the same expected return with lower risk. This is the only "free lunch" in investing.</p>
+
+<h2>Why Diversification Matters in India</h2>
+<ul>
+  <li>In 2008, Nifty 50 fell 52% but gold rose 30% — a diversified portfolio fell much less</li>
+  <li>IT sector stocks fell 40%+ in 2022–23 while PSU banking stocks rose 50%+ — sector diversification protects</li>
+  <li>INR depreciation hurts domestic assets but boosts international/USD investments</li>
+  <li>Single-stock concentration is the most common wealth-destroyer — Satyam (2009 fraud), Yes Bank (2020 crisis), DHFL (2019 collapse) wiped out portfolios that were concentrated</li>
+</ul>
+
+<h2>Level 1 — Asset Class Diversification</h2>
+<p>The most important layer. Spread across uncorrelated asset classes:</p>
+<ul>
+  <li><strong>Equity:</strong> Highest long-term returns, highest volatility. Nifty 50 CAGR ~12–14% over 20 years.</li>
+  <li><strong>Debt/Fixed income:</strong> Lower returns (6–8%), stability. Government bonds, corporate bonds, liquid funds.</li>
+  <li><strong>Gold:</strong> Crisis hedge. Performs well when equity and INR decline. 10–12% CAGR in INR over 20 years.</li>
+  <li><strong>International equity:</strong> US, global markets. Provides USD hedge and global growth exposure.</li>
+  <li><strong>Real estate (REITs):</strong> Commercial real estate income via listed REITs — liquid, dividend-paying.</li>
+</ul>
+
+<h2>Typical Asset Allocation by Age and Risk</h2>
+<p>The "100 minus age" rule is a starting point — subtract your age from 100 to get equity allocation %:</p>
+<ul>
+  <li><strong>Age 25–35 (aggressive):</strong> 70–80% equity, 10% gold, 10–20% debt. High risk capacity, long time horizon.</li>
+  <li><strong>Age 36–50 (moderate):</strong> 50–60% equity, 10–15% gold, 25–35% debt. Balancing growth and stability.</li>
+  <li><strong>Age 51–60 (conservative):</strong> 30–40% equity, 10% gold, 50–60% debt. Capital preservation becomes priority.</li>
+  <li><strong>Retired (60+):</strong> 20–30% equity (dividend stocks, balanced advantage funds), 15% gold, 55–65% debt/annuity.</li>
+</ul>
+
+<h2>Level 2 — Within Equity: Sector & Cap Diversification</h2>
+<p>Don't put all equity in one sector or market cap segment:</p>
+<ul>
+  <li>Own stocks across at least 5–6 sectors (banking, IT, FMCG, healthcare, auto, infra)</li>
+  <li>Mix large-cap (stability), mid-cap (growth), and optionally small-cap (high potential)</li>
+  <li>For mutual fund portfolios: 1 large-cap index fund + 1 flexicap/multicap + 1 mid-cap fund covers most bases</li>
+</ul>
+
+<h2>Level 3 — Geographic Diversification</h2>
+<p>Indian equities are 100% INR-denominated. As the rupee depreciates (long-term trend vs USD), your purchasing power for international goods declines. Allocating 10–20% to international funds (Nifty 50 equivalent in the US = S&P 500 or Nasdaq 100 via Indian mutual funds) provides natural currency hedge.</p>
+
+<h2>The Diversification Paradox</h2>
+<p>Over-diversification ("di-worse-ification") can actually hurt returns. Owning 100 stocks means you're essentially paying stock-picking costs for index-like returns. Most financial research suggests 15–25 well-chosen individual stocks provide 90%+ of diversification benefits. Beyond that, you're adding complexity without meaningful risk reduction.</p>
+    `,
+    faq: [
+      { q: "Is a Nifty 50 index fund considered diversified?", a: "Yes — a single Nifty 50 index fund gives exposure to 50 companies across 13 sectors, which is very well diversified for equity. But it's still 100% Indian equity — add gold and international exposure for fuller diversification." },
+      { q: "How often should I rebalance my portfolio?", a: "Annual rebalancing is sufficient for most long-term investors. If any asset class deviates more than 10–15% from target allocation (e.g., equity grew from 60% to 75% target), rebalance by selling the outperformer and buying underperformers." },
+      { q: "Can mutual funds alone provide sufficient diversification?", a: "Yes. A simple 3-fund portfolio — Nifty 50 index fund + international fund (Nasdaq 100 or global) + short-duration debt fund — provides adequate diversification for most Indian retail investors with minimal cost and complexity." },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {
