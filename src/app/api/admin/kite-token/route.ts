@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+
+// Store Kite token in DB settings table (key-value)
+// Falls back to KITE_ACCESS_TOKEN env var if no DB entry
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json();
+  const token = (body.token as string)?.trim();
+
+  if (!token || token.length < 10) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+  }
+
+  // Store in DB as a simple setting
+  await prisma.$executeRaw`
+    INSERT INTO settings (key, value, updated_at)
+    VALUES ('kite_access_token', ${token}, NOW())
+    ON CONFLICT (key) DO UPDATE SET value = ${token}, updated_at = NOW()
+  `;
+
+  return NextResponse.json({ ok: true, message: "Kite token updated. Live prices active until midnight IST." });
+}
+
+export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const rows = await prisma.$queryRaw<Array<{ value: string; updated_at: Date }>>`
+      SELECT value, updated_at FROM settings WHERE key = 'kite_access_token' LIMIT 1
+    `;
+    if (!rows.length) {
+      return NextResponse.json({ token: null, source: "none", active: false });
+    }
+    const row = rows[0];
+    const updatedAt = new Date(row.updated_at);
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const isToday = updatedAt.toDateString() === nowIST.toDateString();
+    return NextResponse.json({
+      token: row.value.substring(0, 6) + "..." + row.value.slice(-4),
+      updatedAt: updatedAt.toISOString(),
+      active: isToday,
+      source: "database",
+    });
+  } catch {
+    return NextResponse.json({ token: null, source: "none", active: false });
+  }
+}

@@ -22,6 +22,7 @@ import { ingestHistoricalBhavcopy } from "./jobs/nse-bhavcopy-historical";
 import { ingestHistoricalFiiDii } from "./jobs/nse-fii-dii-historical";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
+import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
 
 let started = false;
 
@@ -57,14 +58,20 @@ export function startScheduler() {
     console.log(`[cron amfi_navs] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // NSE EOD Bhavcopy — daily at 7:00 PM IST after market close
-  cron.schedule("0 19 * * 1-5", async () => {
-    const result = await runIngestion("nse_bhavcopy", ingestNseBhavcopy);
-    console.log(`[cron nse_bhavcopy] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-  }, { timezone: "Asia/Kolkata" });
+  // NSE EOD Bhavcopy — 4:15 PM (post-close, early) + 7:00 PM IST (full EOD with delivery data)
+  for (const sch of ["15 16 * * 1-5", "0 19 * * 1-5"]) {
+    cron.schedule(sch, async () => {
+      const result = await runIngestion("nse_bhavcopy", ingestNseBhavcopy);
+      console.log(`[cron nse_bhavcopy] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    }, { timezone: "Asia/Kolkata" });
+  }
 
-  // BSE corporate announcements — every 2 hours during business hours (9-21 IST)
-  cron.schedule("0 9-21/2 * * *", async () => {
+  // BSE corporate announcements — every 30 min during market hours, hourly outside
+  cron.schedule("*/30 9-16 * * 1-5", async () => {
+    const result = await runIngestion("bse_announcements", ingestBseAnnouncements);
+    console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+  cron.schedule("0 17-21 * * *", async () => {
     const result = await runIngestion("bse_announcements", ingestBseAnnouncements);
     console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
@@ -126,11 +133,13 @@ export function startScheduler() {
     console.log(`[cron screener_fundamentals] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // NSE Index daily data — Nifty 50 + 70 indices with P/E, P/B — 4 PM IST (after market close)
-  cron.schedule("0 16 * * 1-5", async () => {
-    const result = await runIngestion("nse_indices", ingestNseIndices);
-    console.log(`[cron nse_indices] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-  }, { timezone: "Asia/Kolkata" });
+  // NSE Index data — 4:00 PM (post-close) + 8:00 AM (pre-market, yesterday's close for reference)
+  for (const sch of ["0 8 * * 1-5", "0 16 * * 1-5"]) {
+    cron.schedule(sch, async () => {
+      const result = await runIngestion("nse_indices", ingestNseIndices);
+      console.log(`[cron nse_indices] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    }, { timezone: "Asia/Kolkata" });
+  }
 
   // Next-day market preview — AI "stocks to watch" at 8:30 PM IST (after bhavcopy + FII/DII + listing sync)
   cron.schedule("30 20 * * 1-5", async () => {
@@ -144,16 +153,25 @@ export function startScheduler() {
     console.log(`[cron bse_listing_sync] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // Indian stock live prices via Yahoo Finance — every 15 min during market hours
-  // Free, no auth, ~15 min delayed. Replaces Kite Connect (₹500/mo) for screener data.
-  cron.schedule("*/15 * * * *", async () => {
+  // Kite Connect real-time prices — every 5 min during market hours (requires daily token)
+  // When token is active: updates 1000+ stocks with 0-delay live prices
+  // When no token: skips (Yahoo v8 runs every 15 min as fallback)
+  cron.schedule("*/5 9-15 * * 1-5", async () => {
+    const result = await runIngestion("kite_live", ingestKiteLivePrices);
+    if (result.rowsIn && result.rowsIn > 0) {
+      console.log(`[cron kite_live] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    }
+  }, { timezone: "Asia/Kolkata" });
+
+  // Yahoo Finance v8 prices — every 15 min during market hours (free, 15-min delayed fallback)
+  cron.schedule("*/15 9-15 * * 1-5", async () => {
     const result = await runIngestion("yahoo_prices", ingestYahooPrices);
     if (result.rowsIn && result.rowsIn > 0) {
       console.log(`[cron yahoo_prices] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: nse_fii_dii, bse_ipos, amfi_navs, nse_bhavcopy, bse_announcements, daily_digest, daily_market_summary, drhp_analyze, us_ipos, us_adrs, yahoo_prices");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -168,6 +186,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   us_ipos: ingestUsIpos,
   us_adrs: updateUsAdrs,
   yahoo_prices: ingestYahooPrices,
+  kite_live: ingestKiteLivePrices,
   nse_bulk_block: ingestBulkBlockDeals,
   nse_insider: ingestInsiderTrades,
   super_investor: ingestSuperInvestorHoldings,

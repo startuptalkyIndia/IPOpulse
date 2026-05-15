@@ -842,3 +842,12 @@ model FeatureFlag {
 
   @@map("feature_flags")
 }
+
+// Key-value store for admin settings (Kite token, etc.)
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
