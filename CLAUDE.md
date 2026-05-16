@@ -116,3 +116,20 @@ India's comprehensive IPO + stock + market data website — structured data only
 - UI style guide: Indigo Theme from `ui-reference-style.md` memory is mandatory
 - Never deploy directly from local — push to GitHub, deploy from GitHub
 - No blogs — everything structured in tables/cards/dashboards
+
+---
+
+## 🔄 AUTOSAVE — MANDATORY IMPLEMENTATION
+
+Every multi-field form in this project MUST have autosave. Read the full spec:
+`/Users/shubhamkumar/Desktop/Claude Code/_shared/AUTOSAVE_SPEC.md`
+
+**Quick summary:**
+1. Create `src/hooks/useAutosave.ts` — debounced autosave hook (delay: 1500ms)
+2. Create `src/components/AutosaveIndicator.tsx` — shows Saving.../Saved ✓/error
+3. Add to ALL multi-field edit forms, article writers, template editors, notes fields
+4. Show AutosaveIndicator near form title
+5. Use localKey for draft recovery on page refresh
+
+This is a platform-wide standard. Do not skip it.
+
