@@ -133,3 +133,19 @@ Every multi-field form in this project MUST have autosave. Read the full spec:
 
 This is a platform-wide standard. Do not skip it.
 
+
+
+---
+
+## 🕷️ APIFY — Use for Web Scraping
+
+When you need to scrape data (LinkedIn, Google, Instagram, G2, contacts, news), use Apify instead of building custom scrapers. Read the full spec:
+`/Users/shubhamkumar/Desktop/Claude Code/_shared/APIFY_SPEC.md`
+
+**Quick summary:**
+- Store token in `.env` as `APIFY_API_TOKEN`
+- Key actors: google-search-scraper, linkedin-companies-scraper, contact-info-scraper, web-scraper
+- Always cache results in DB — do not re-scrape same URL within 24h
+- Max 3 concurrent actors
+- Free $5/month credits — use sparingly
+
