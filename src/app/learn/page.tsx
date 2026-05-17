@@ -73,6 +73,16 @@ const iconMap: Record<string, React.ElementType> = {
   "debt-to-equity-ratio": Scale,
   "how-to-invest-in-gold": Coins,
   "market-holidays-2026": Calendar,
+  "what-is-cibil-score": Shield,
+  "what-is-swp": ArrowUpDown,
+  "how-to-file-itr-capital-gains": FileText,
+  "what-is-nfo": BadgePlus,
+  "what-is-arbitrage-fund": BarChart2,
+  "elss-vs-ppf-vs-nps": Scale,
+  "what-is-t-bill": Landmark,
+  "what-is-contra-fund": TrendingDown,
+  "how-to-read-quarterly-results": BarChart,
+  "what-is-international-mutual-fund": Globe,
 };
 
 const categoryMap: Record<string, string[]> = {
@@ -123,6 +133,16 @@ const categoryMap: Record<string, string[]> = {
     "what-is-reit",
     "how-to-invest-in-gold",
     "what-is-sebi",
+    "what-is-cibil-score",
+    "what-is-swp",
+    "how-to-file-itr-capital-gains",
+    "what-is-nfo",
+    "what-is-arbitrage-fund",
+    "elss-vs-ppf-vs-nps",
+    "what-is-t-bill",
+    "what-is-contra-fund",
+    "how-to-read-quarterly-results",
+    "what-is-international-mutual-fund",
   ],
 };
 

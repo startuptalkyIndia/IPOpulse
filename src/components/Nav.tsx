@@ -124,7 +124,7 @@ const navGroups: NavGroup[] = [
     href: "/learn",
     items: [
       [
-        { href: "/learn",     label: "Learning Hub", badge: "45 guides" },
+        { href: "/learn",     label: "Learning Hub", badge: "55 guides" },
         { href: "/glossary",  label: "Financial Glossary", badge: "90+ terms" },
         { href: "/ipo/process",     label: "How IPO Works" },
         { href: "/market/holidays", label: "Market Holidays 2026" },

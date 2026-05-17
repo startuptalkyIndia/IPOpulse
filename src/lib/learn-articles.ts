@@ -2444,6 +2444,756 @@ export const articles: Article[] = [
       { q: "Can mutual funds alone provide sufficient diversification?", a: "Yes. A simple 3-fund portfolio — Nifty 50 index fund + international fund (Nasdaq 100 or global) + short-duration debt fund — provides adequate diversification for most Indian retail investors with minimal cost and complexity." },
     ],
   },
+  {
+    slug: "what-is-cibil-score",
+    title: "What is CIBIL Score? How to Check and Improve Your Credit Score in India",
+    description:
+      "CIBIL score ranges from 300 to 900. Learn what affects your score, how to check it free, how to improve it, and why it matters before applying for any loan or credit card in India.",
+    readingTime: 6,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-demat-account", "debt-to-equity-ratio", "how-to-invest-in-stocks-beginners"],
+    content: `
+<h2>What is a CIBIL Score?</h2>
+<p>A CIBIL score is a three-digit number ranging from <strong>300 to 900</strong> that represents your creditworthiness — how likely you are to repay borrowed money. It is calculated by TransUnion CIBIL, India's oldest and most widely used credit bureau. Banks and NBFCs check your CIBIL score every time you apply for a home loan, car loan, personal loan, or credit card.</p>
+<p>A score of <strong>750 or above</strong> is considered excellent. Most lenders prefer 700+. Scores below 650 make loan approval difficult, and below 600, most banks will outright reject your application.</p>
+<ul>
+  <li><strong>300–549:</strong> Poor — high chance of rejection</li>
+  <li><strong>550–649:</strong> Fair — limited options, higher interest rates</li>
+  <li><strong>650–749:</strong> Good — most loans approved with standard terms</li>
+  <li><strong>750–900:</strong> Excellent — best rates, instant approvals</li>
+</ul>
+
+<h2>What Affects Your CIBIL Score?</h2>
+<p>Five key factors determine your score:</p>
+<ul>
+  <li><strong>Payment history (35%):</strong> Single most important factor. Even one 30-day late payment can drop your score by 50–100 points. EMI bounce, missed credit card minimum payment — all show up here.</li>
+  <li><strong>Credit utilisation (30%):</strong> The percentage of your credit limit you are using. If your credit card limit is ₹1 lakh and you regularly spend ₹80,000, your utilisation is 80% — which is bad. Keep it under 30%.</li>
+  <li><strong>Credit history length (15%):</strong> Older accounts are better. Closing your oldest credit card hurts your score. Keep old cards active, even with zero balance.</li>
+  <li><strong>Credit mix (10%):</strong> Having both secured loans (home loan, car loan) and unsecured credit (credit card, personal loan) is better than only one type.</li>
+  <li><strong>New credit inquiries (10%):</strong> Every time a bank pulls your credit report (called a hard inquiry), it temporarily lowers your score. Applying to 5 banks in one week signals desperation and hurts your score.</li>
+</ul>
+
+<h2>How to Check Your CIBIL Score for Free</h2>
+<p>You are entitled to one free credit report per year from each bureau. Here is how to get it:</p>
+<ul>
+  <li><strong>CIBIL website:</strong> Go to cibil.com → "Get Free Credit Score" → verify with OTP → view your score and full report</li>
+  <li><strong>Bank apps:</strong> HDFC, SBI, Axis, ICICI — most major bank apps now show your CIBIL score in the app for free, updated monthly</li>
+  <li><strong>Third-party apps:</strong> Paytm, BankBazaar, Bajaj Finserv — these pull your score and show it for free (they earn referral fees when you apply for products)</li>
+  <li><strong>Other bureaus:</strong> India has 4 credit bureaus — CIBIL, Equifax, Experian, and CRIF. You can check all four, but CIBIL is most widely used by lenders</li>
+</ul>
+<p>Important: checking your own score is a <strong>soft inquiry</strong> and does NOT lower your score. Check it freely.</p>
+
+<h2>How to Improve Your CIBIL Score</h2>
+<p>There are no shortcuts. Score improvement takes 6–24 months of disciplined behavior:</p>
+<ul>
+  <li><strong>Pay all EMIs and credit card bills on time:</strong> Set auto-debit mandates so you never miss a payment. Even the minimum due on your credit card — pay it.</li>
+  <li><strong>Reduce credit card utilisation:</strong> If you are over 30%, either request a credit limit increase or reduce spending. Paying the bill twice a month (mid-cycle + due date) also helps.</li>
+  <li><strong>Do not close old credit cards:</strong> Closing an old card reduces your available credit limit and credit history length — both hurt your score.</li>
+  <li><strong>Avoid applying for multiple loans simultaneously:</strong> Space applications at least 3 months apart.</li>
+  <li><strong>Dispute errors on your credit report:</strong> Go to cibil.com → Dispute Resolution → raise a dispute if any account on your report is not yours or shows incorrect late payments.</li>
+</ul>
+
+<h2>The Thin File Problem</h2>
+<p>If you have never taken a loan or credit card, you have what is called a <strong>"thin file"</strong> — no credit history at all. This can be as problematic as a bad score because lenders cannot assess your risk. The fastest way to build credit from zero: get a <strong>secured credit card</strong> (backed by a fixed deposit at your bank) or a small personal loan, use it responsibly for 6–12 months, and you will start building a positive history.</p>
+
+<h2>Why Your CIBIL Score Matters Beyond Loans</h2>
+<p>A good CIBIL score means: lower home loan interest rates (even 0.5% difference on ₹50L loan saves ₹3–5L over tenure), faster loan approval, higher loan amounts, and some employers in financial sectors now check credit scores as part of background verification.</p>
+    `,
+    faq: [
+      {
+        q: "How long does it take to improve a bad CIBIL score?",
+        a: "Consistent on-time payments for 12–24 months typically add 100–150 points to a bad score. Quick wins: pay off overdue accounts, reduce credit card utilisation below 30%, and dispute any errors on your report.",
+      },
+      {
+        q: "Does checking my own CIBIL score hurt it?",
+        a: "No. Checking your own score is a soft inquiry and has zero impact on your score. Only hard inquiries (when a lender checks your score before approving a loan) affect it — and only by 5–10 points temporarily.",
+      },
+      {
+        q: "My CIBIL score is -1 or NA. What does that mean?",
+        a: "A score of -1 or NA means you have no credit history at all. You have never taken any loan or credit card. Get a secured credit card against a fixed deposit to start building your credit profile.",
+      },
+      {
+        q: "Can a settled loan hurt my CIBIL score?",
+        a: "Yes. When a loan is 'settled' (you paid less than the full amount after negotiating with the bank), it is reported as 'Settled' on your credit report — which is different from 'Closed.' Settled accounts are viewed negatively by lenders for 7 years. Always try to pay the full amount and get the account marked 'Closed.'",
+      },
+    ],
+  },
+  {
+    slug: "what-is-swp",
+    title: "What is SWP (Systematic Withdrawal Plan)? How to Generate Regular Income from Mutual Funds",
+    description:
+      "SWP lets you withdraw a fixed amount from mutual funds every month. Learn how it works, its tax advantages over dividend plans, and why it is ideal for retirement income in India.",
+    readingTime: 5,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["sip-guide", "what-is-mutual-fund", "cagr-meaning"],
+    content: `
+<h2>What is SWP?</h2>
+<p>A Systematic Withdrawal Plan (SWP) is the reverse of a SIP. Instead of investing a fixed amount every month into a mutual fund, you <strong>withdraw a fixed amount every month</strong> from a mutual fund corpus. The remaining corpus continues to stay invested and grows.</p>
+<p>Example: You have ₹50 lakhs in an equity mutual fund. You set up an SWP of ₹25,000 per month. Every month, units worth ₹25,000 are redeemed from your fund and credited to your bank account, while the remaining corpus continues compounding.</p>
+
+<h2>SWP vs Dividend Plan — Why SWP Wins</h2>
+<p>Many investors use the "dividend option" of mutual funds for regular income. This is suboptimal for several reasons:</p>
+<ul>
+  <li><strong>Dividends are not guaranteed:</strong> AMCs declare dividends at their discretion. They can reduce or stop dividends anytime (as many did during COVID). SWP withdrawals are entirely in your control.</li>
+  <li><strong>Dividend taxation is unfavorable:</strong> Since 2020, mutual fund dividends are taxed at your income tax slab rate (up to 30%). For someone in the 30% slab, ₹25,000 dividend income loses ₹7,500 to tax immediately.</li>
+  <li><strong>SWP is more tax-efficient:</strong> Each SWP withdrawal is treated as a redemption. Only the <strong>gain component</strong> of each unit is taxed, not the full withdrawal amount. If most of your ₹25,000 withdrawal is return of original capital, the taxable gain may be only ₹2,000–3,000.</li>
+</ul>
+
+<h2>How SWP Taxation Works</h2>
+<p>Each SWP triggers a capital gains event on the units redeemed:</p>
+<ul>
+  <li><strong>Equity funds held &gt;1 year:</strong> LTCG at 10% above ₹1.25 lakh per year (very tax-efficient)</li>
+  <li><strong>Equity funds held &lt;1 year:</strong> STCG at 20%</li>
+  <li><strong>Debt funds:</strong> Taxed at income slab rate regardless of holding period (post-April 2023 rule change)</li>
+</ul>
+<p>For maximum tax efficiency, set up SWP from an equity fund after 1 year of investment. Your ₹3 lakh/year (₹25,000/month) withdrawal from equity is subject to only the gain portion at 10% — effective tax is often less than 2–3% of total withdrawal.</p>
+
+<h2>SWP for Retirement — The 4% Rule Analogy</h2>
+<p>The famous "4% rule" from US retirement research suggests that withdrawing 4% of your corpus annually gives a high probability of the money lasting 30+ years. The same logic applies to SWP:</p>
+<ul>
+  <li>Corpus of ₹1 crore at 4% withdrawal rate = ₹4 lakh/year = ₹33,333/month</li>
+  <li>If your fund grows at 10–12% CAGR and you withdraw at 4%, the corpus actually grows over time</li>
+  <li>For Indian equity funds with historical CAGR of 12–14%, even a 6–7% withdrawal rate can be sustainable for 20–25 years</li>
+</ul>
+
+<h2>SWP from Equity vs Debt Funds</h2>
+<p><strong>Equity fund SWP:</strong> Higher growth potential, more tax-efficient (LTCG at 10%), but NAV fluctuates — in a bear market, you sell more units to meet the same withdrawal amount, depleting corpus faster. Best for long-term retirement (10+ years horizon).</p>
+<p><strong>Debt fund SWP:</strong> Stable NAV, predictable returns (6–7%), but taxed at slab rate post-2023. Suitable for short-term income needs (2–5 years). Liquid funds and short-duration funds work well here.</p>
+<p><strong>Best approach:</strong> Keep 1–2 years of withdrawal amount in a liquid/debt fund (buffer), and draw the SWP from there. Let the main equity corpus stay untouched and compounding. Refill the buffer annually from the equity fund when markets are up.</p>
+
+<h2>How to Set Up an SWP</h2>
+<p>Log into your mutual fund app (Zerodha Coin, Groww, MF Central, or AMC website) → go to your fund → select "SWP" → set amount, frequency (monthly/quarterly), and start date. You can modify or cancel SWP anytime. Minimum SWP amount varies by AMC but is usually ₹500–₹1,000.</p>
+    `,
+    faq: [
+      {
+        q: "Can I run an SWP and SIP simultaneously in the same fund?",
+        a: "Yes, but it is unusual. You would be investing and withdrawing from the same fund. More common is running a SIP in a growth fund and SWP from a separate accumulated corpus fund.",
+      },
+      {
+        q: "What happens to my SWP if the market crashes and NAV falls sharply?",
+        a: "You sell more units to generate the same withdrawal amount. This accelerates corpus depletion during bear markets — the biggest risk of equity SWP. Mitigation: maintain a 1–2 year expense buffer in a debt/liquid fund so you don't need to sell equity units during down markets.",
+      },
+      {
+        q: "Is SWP available in ELSS funds?",
+        a: "ELSS funds have a 3-year lock-in per SIP installment. You can only set up an SWP after each installment's 3-year lock-in expires. Most ELSS investors switch to a regular equity fund after the lock-in for SWP purposes.",
+      },
+      {
+        q: "How is SWP different from simply redeeming units periodically?",
+        a: "Functionally identical — an SWP is simply an automated, scheduled redemption. The advantage is discipline and automation. You do not need to manually place a redemption order each month, reducing the temptation to redeem more or less depending on market mood.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-file-itr-capital-gains",
+    title: "How to File ITR for Stock Market Income — Capital Gains Tax Guide India",
+    description:
+      "Step-by-step guide to filing ITR-2 for STCG and LTCG from stocks and mutual funds in India. Covers Schedule CG, 10% LTCG above ₹1.25L, F&O as business income, and AIS/26AS reconciliation.",
+    readingTime: 8,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["cagr-meaning", "what-are-futures-options", "what-is-dividend"],
+    content: `
+<h2>Which ITR Form for Stock Market Income?</h2>
+<p>The correct ITR form depends on the type of stock market income you have:</p>
+<ul>
+  <li><strong>ITR-2:</strong> For salaried individuals with capital gains from stocks, equity mutual funds, debt funds, or any investment. This is the form for most retail investors.</li>
+  <li><strong>ITR-3:</strong> Required if you have F&O (Futures &amp; Options) income, intraday trading income, or any other business income from the market. F&O is classified as "non-speculative business income" by the Income Tax Act.</li>
+  <li><strong>ITR-1 (Sahaj):</strong> Cannot be used if you have any capital gains from stocks. Do not use ITR-1 if you sold stocks or mutual funds during the year.</li>
+</ul>
+
+<h2>Short-Term vs Long-Term Capital Gains</h2>
+<p>The holding period determines whether your gain is STCG or LTCG:</p>
+<ul>
+  <li><strong>Equity shares and equity mutual funds:</strong> Held ≤1 year = STCG (20% tax); Held &gt;1 year = LTCG (12.5% above ₹1.25 lakh exemption per year)</li>
+  <li><strong>Debt mutual funds (post-April 2023):</strong> Always taxed at income slab rate regardless of holding period — no LTCG benefit</li>
+  <li><strong>Unlisted shares:</strong> STCG if held ≤2 years; LTCG at 12.5% if held &gt;2 years</li>
+  <li><strong>Dividends:</strong> Always taxed at income slab rate, regardless of holding period — reported under "Income from Other Sources"</li>
+</ul>
+
+<h2>Schedule CG in ITR-2 — Step by Step</h2>
+<p>In ITR-2, all capital gains are reported in <strong>Schedule CG (Capital Gains)</strong>:</p>
+<ul>
+  <li><strong>Part A — Short-term capital gains:</strong> Enter total STCG from equity (20%), STCG from debt, STCG from property separately</li>
+  <li><strong>Part B — Long-term capital gains:</strong> Section 112A for equity LTCG; enter total sale proceeds, cost of acquisition (original purchase price), and net LTCG</li>
+  <li><strong>Section 112A exemption:</strong> First ₹1.25 lakh of equity LTCG is exempt. Only the amount above ₹1.25L is taxed at 12.5%. This ₹1.25L limit resets every financial year.</li>
+  <li><strong>Grandfathering clause:</strong> For shares purchased before January 31, 2018, the cost of acquisition is deemed to be the higher of the actual purchase price or the market price on January 31, 2018. Your broker's capital gains statement will calculate this for you.</li>
+</ul>
+
+<h2>Getting Your Capital Gains Statement</h2>
+<p>Before filing, collect these documents:</p>
+<ul>
+  <li><strong>Broker capital gains statement:</strong> Log into Zerodha Console, Groww, or your broker's platform → Tax P&amp;L → Download for the financial year. This gives STCG, LTCG, and dividend income broken by scrip.</li>
+  <li><strong>Mutual fund capital gains statement:</strong> Log into MF Central (mfcentral.com) with your PAN → download combined capital gains statement across all AMCs</li>
+  <li><strong>Form 26AS:</strong> Download from income tax portal (incometax.gov.in) → Annual Information Statement. Shows all TDS deducted on dividends, proceeds from securities transactions.</li>
+  <li><strong>AIS (Annual Information Statement):</strong> More detailed than 26AS — shows individual transactions reported by brokers and AMCs to the IT department. Your ITR must match AIS figures exactly or you will get a notice.</li>
+</ul>
+
+<h2>F&O Income — ITR-3 and Business Treatment</h2>
+<p>F&O trading is treated as a business, not capital gains. This means:</p>
+<ul>
+  <li>Profits are added to your income and taxed at slab rate</li>
+  <li>Losses can be set off against other business income (not salary)</li>
+  <li>F&O losses can be carried forward for 8 years and set off against future F&O profits</li>
+  <li>Business expenses (internet, brokerage, advisory fees) can be deducted</li>
+  <li>If F&O turnover exceeds ₹10 crore, a tax audit is mandatory; below ₹10 crore, if profit is less than 6% of turnover, audit is required</li>
+  <li>F&O turnover = absolute sum of all profits + absolute sum of all losses (not just net P&amp;L)</li>
+</ul>
+
+<h2>AIS/TIS Reconciliation — Critical Step</h2>
+<p>The Income Tax Department receives transaction data directly from NSE/BSE, depositories (CDSL/NSDL), and AMCs. This data appears in your AIS (Annual Information Statement). Before filing:</p>
+<ul>
+  <li>Download your AIS from the IT portal</li>
+  <li>Cross-check every line with your broker's capital gains statement</li>
+  <li>If you see discrepancies (wrong amounts, transactions not yours), submit feedback on the AIS portal to flag them</li>
+  <li>File only after AIS and your records match — mismatches invite automated scrutiny notices</li>
+</ul>
+
+<h2>Key Deadlines and Penalties</h2>
+<ul>
+  <li><strong>July 31:</strong> Due date for individual ITR without audit</li>
+  <li><strong>October 31:</strong> For cases requiring tax audit (F&O traders above threshold)</li>
+  <li>Late filing after July 31 but before December 31: ₹5,000 penalty (₹1,000 if income below ₹5 lakh)</li>
+  <li>Advance tax: If your tax liability exceeds ₹10,000 in a year, you must pay advance tax in installments (June 15, September 15, December 15, March 15) to avoid interest under Section 234B/234C</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Can I set off STCG from stocks against LTCG losses?",
+        a: "Yes. Short-term capital losses can be set off against both STCG and LTCG. Long-term capital losses can only be set off against LTCG, not STCG. Unabsorbed capital losses can be carried forward for 8 years, but only if you file your ITR on time.",
+      },
+      {
+        q: "My broker shows ₹50,000 LTCG. Do I need to pay any tax?",
+        a: "No. LTCG from equity up to ₹1.25 lakh per year is completely exempt under Section 112A. You still need to report it in Schedule CG of ITR-2, but no tax is payable.",
+      },
+      {
+        q: "What if I traded intraday in stocks — is that capital gains or business income?",
+        a: "Intraday stock trading (buying and selling within the same day without taking delivery) is classified as 'speculative business income' — not capital gains. It requires ITR-3. Intraday losses can only be set off against speculative profits, not other income.",
+      },
+      {
+        q: "I received dividends from stocks — where do I report them?",
+        a: "Dividends are reported under 'Income from Other Sources' in ITR-2. They are taxed at your income slab rate. TDS of 10% is deducted by the company if dividends exceed ₹5,000 per year — this appears in your Form 26AS and is creditable against your tax liability.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-nfo",
+    title: "What is NFO (New Fund Offer)? Should You Invest in a New Mutual Fund?",
+    description:
+      "NFO is the launch of a new mutual fund scheme. Learn why the ₹10 NAV is not cheaper than an existing fund, when NFOs make sense, and how to evaluate whether to invest.",
+    readingTime: 5,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-mutual-fund", "what-is-index-fund", "ipo-gmp"],
+    content: `
+<h2>What is an NFO?</h2>
+<p>A New Fund Offer (NFO) is the first subscription offering of a new mutual fund scheme by an Asset Management Company (AMC). During the NFO period (typically 15–30 days), investors can buy units at the <strong>face value of ₹10 per unit</strong>. After the NFO closes, the fund starts operating and units are bought/sold at the prevailing NAV.</p>
+<p>NFOs are similar to IPOs in the stock market in that both are first-time offerings — but the analogy ends there. An IPO gives you shares of a real company with business fundamentals. An NFO gives you units of a fund that does not yet own any assets — the fund manager will invest your money after collecting it.</p>
+
+<h2>The ₹10 NAV Myth — Why It Is NOT Cheaper</h2>
+<p>The most common misconception about NFOs: "The NAV is just ₹10, so it is cheap and I can buy more units." This is completely wrong. Here is why:</p>
+<ul>
+  <li>NAV simply reflects the value of the underlying portfolio divided by number of units</li>
+  <li>A fund with NAV of ₹10 and a similar fund with NAV of ₹200 give identical returns if their portfolios perform the same way</li>
+  <li>If you invest ₹10,000 in both: at ₹10 NAV you get 1,000 units; at ₹200 NAV you get 50 units. If both funds gain 15% in a year, you have ₹11,500 in both cases — the number of units is irrelevant</li>
+  <li>A lower NAV does NOT mean the fund is cheaper or will give better returns</li>
+</ul>
+
+<h2>NFO vs Existing Fund — Which is Better?</h2>
+<p>In most cases, an <strong>existing fund with a track record is better than an NFO</strong>. Here is why:</p>
+<ul>
+  <li><strong>No track record:</strong> You cannot evaluate the fund manager's past performance in this specific scheme</li>
+  <li><strong>No portfolio to analyze:</strong> The fund has not yet invested — you do not know what it will hold</li>
+  <li><strong>Existing alternatives exist:</strong> If an AMC is launching a large-cap fund, there are already 20+ large-cap funds with 5–10 year track records. Why pick the unknown one?</li>
+  <li><strong>Deployment lag:</strong> After the NFO closes, the fund manager needs time to deploy capital. You could miss an upswing while your money sits in cash.</li>
+</ul>
+
+<h2>When Does an NFO Make Sense?</h2>
+<p>NFOs are worth considering only in specific situations:</p>
+<ul>
+  <li><strong>Truly new category:</strong> When SEBI creates a new fund category (e.g., when factor funds like momentum and quality funds were introduced), an NFO is the only way to get early access to a category without history</li>
+  <li><strong>Unique mandate:</strong> If the NFO offers a strategy not available in existing funds (e.g., a very specific sector or international exposure not covered elsewhere)</li>
+  <li><strong>Star fund manager launch:</strong> When a highly regarded manager with a strong individual track record launches a new scheme — though even here, waiting 1–2 years for performance data is wiser</li>
+  <li><strong>ELSS NFO during March:</strong> If you need 80C tax saving and all existing ELSS funds are currently at a market high, an ELSS NFO at ₹10 is no different from any other — the NAV still tracks the market</li>
+</ul>
+
+<h2>ELSS NFO Lock-in Rules</h2>
+<p>ELSS (Equity Linked Savings Scheme) NFOs have a mandatory 3-year lock-in. Each SIP installment has its own 3-year lock-in from the date of investment. For regular ELSS funds, the same rule applies — so there is no difference in lock-in between a new ELSS NFO and an existing ELSS fund.</p>
+
+<h2>How to Apply for an NFO</h2>
+<p>You can apply for an NFO through: your broker's app (Zerodha Coin, Groww, ET Money), AMC's website, MF Central, or your bank. You need a PAN card and a KYC-verified demat or mutual fund account. Minimum investment is usually ₹500–₹1,000. Payment is via net banking or UPI.</p>
+    `,
+    faq: [
+      {
+        q: "Is an NFO the same as an IPO?",
+        a: "No. An IPO is shares of a real company being sold to the public for the first time — the company has real assets, revenues, and profits to analyze. An NFO is a new mutual fund scheme with no portfolio yet — you are investing in the fund manager's strategy, not a company.",
+      },
+      {
+        q: "Can I redeem my NFO investment immediately after it opens for trading?",
+        a: "For open-ended funds: yes, you can redeem after the NFO closes and units are allotted (usually 5 business days after NFO closes). For close-ended funds and ELSS: there is a mandatory lock-in period of 3 years.",
+      },
+      {
+        q: "Are NFOs riskier than existing mutual funds?",
+        a: "NFOs carry additional uncertainty risk because you cannot evaluate past performance. The market risk is identical to any similar existing fund. Most financial advisors recommend waiting 2–3 years for a new fund to build a track record before investing.",
+      },
+      {
+        q: "What happens to my money if the NFO does not collect enough investors?",
+        a: "If an NFO fails to meet its minimum subscription requirement (usually ₹20 crore for most categories), the AMC can choose to cancel the NFO and refund all money. This is rare but has happened with some niche funds.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-arbitrage-fund",
+    title: "What is Arbitrage Mutual Fund? Tax-Efficient Alternative to Liquid Funds",
+    description:
+      "Arbitrage funds exploit price differences between cash and futures markets. Taxed as equity, they offer liquid-fund-like returns with better post-tax outcomes for 3–12 month parking. Here's how they work.",
+    readingTime: 5,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-mutual-fund", "what-are-futures-options", "sip-guide"],
+    content: `
+<h2>What is an Arbitrage Fund?</h2>
+<p>An arbitrage mutual fund simultaneously buys shares in the <strong>cash (spot) market</strong> and sells them in the <strong>futures market</strong> at a higher price, locking in a risk-free profit. The fund captures the difference (called "basis") between the spot price and the futures price. Since both legs of the trade are placed simultaneously, there is virtually no market risk — the profit is locked in from the moment of trade.</p>
+<p>Example: If Reliance shares trade at ₹2,800 in the spot market and the one-month futures contract trades at ₹2,830, an arbitrage fund buys at ₹2,800 and sells futures at ₹2,830, locking in ₹30 per share profit (~1.07% for the month) regardless of where the stock moves.</p>
+
+<h2>How Arbitrage Funds Are Taxed</h2>
+<p>This is the key advantage. SEBI mandates that arbitrage funds maintain at least <strong>65% equity exposure</strong> (achieved through the hedged equity positions). Because of this, arbitrage funds are classified as <strong>equity funds for taxation</strong>:</p>
+<ul>
+  <li><strong>Held less than 1 year:</strong> STCG at 20%</li>
+  <li><strong>Held 1 year or more:</strong> LTCG at 12.5% (with ₹1.25L annual exemption)</li>
+  <li><strong>Dividend option:</strong> 10% DDT</li>
+</ul>
+<p>Compare this to a liquid fund or short-duration debt fund, where returns are taxed at your income slab rate (up to 30%). For someone in the 30% slab, an arbitrage fund generating 6.5% returns is equivalent to a debt fund generating ~8.5% returns pre-tax. This makes a huge difference for high-income earners.</p>
+
+<h2>Returns: What to Expect</h2>
+<p>Arbitrage fund returns are closely tied to the spread between cash and futures prices, which in turn correlates with overall market sentiment and short-term interest rates:</p>
+<ul>
+  <li>In volatile, bullish markets: arbitrage spread widens, returns improve (6.5–7.5% annualised)</li>
+  <li>In flat, low-volatility markets: spread compresses, returns fall (5–6% annualised)</li>
+  <li>Long-term average: roughly 50–100 basis points above overnight/liquid fund returns</li>
+</ul>
+
+<h2>Risk Profile</h2>
+<p>Arbitrage funds have <strong>very low market risk</strong> because every position is hedged. However:</p>
+<ul>
+  <li><strong>Execution risk:</strong> In fast markets, the cash and futures leg may not execute at expected prices simultaneously</li>
+  <li><strong>Futures rollover risk:</strong> Futures expire monthly. Rolling positions to the next month sometimes results in unfavorable pricing</li>
+  <li><strong>Lower yield in range-bound markets:</strong> If fewer arbitrage opportunities exist, the fund may hold more of its cash in overnight instruments earning lower returns</li>
+</ul>
+<p>Overall, arbitrage funds have never delivered negative annual returns in India — they are among the most stable mutual fund categories.</p>
+
+<h2>Ideal Use Cases — 3 to 12 Months</h2>
+<p>Arbitrage funds are best suited for money you need in 3–12 months where tax efficiency matters:</p>
+<ul>
+  <li>Emergency fund top-up (better post-tax than FD for high-income earners)</li>
+  <li>Parking bonus/salary surplus for 6–12 months before deployment into equity</li>
+  <li>Short-term goal saving (vacation, gadget, down payment top-up)</li>
+  <li>Not ideal for less than 3 months: exit load (usually 0.25% for 30-day exit) and STCG at 20% can make it worse than a liquid fund</li>
+</ul>
+
+<h2>Popular Arbitrage Funds in India</h2>
+<ul>
+  <li><strong>Nippon India Arbitrage Fund</strong> — one of the largest AUM, consistent returns</li>
+  <li><strong>ICICI Prudential Equity-Arbitrage Fund</strong> — well-managed with strong track record</li>
+  <li><strong>Kotak Equity Arbitrage Fund</strong> — high AUM, liquid</li>
+  <li><strong>SBI Arbitrage Opportunities Fund</strong> — good for those preferring PSU AMC</li>
+</ul>
+<p>Most arbitrage funds have a 30-day exit load of 0.25% and then become free to exit. Look for funds with AUM above ₹5,000 crore for liquidity comfort.</p>
+    `,
+    faq: [
+      {
+        q: "Is an arbitrage fund safe for short-term parking?",
+        a: "Yes — for 3 months or more. Arbitrage funds have minimal market risk due to the hedged structure and have never delivered negative calendar year returns. For less than 30 days, a liquid fund is better due to exit loads.",
+      },
+      {
+        q: "How is an arbitrage fund different from a balanced advantage fund?",
+        a: "A balanced advantage fund (BAF) actively shifts between equity and debt based on market valuations — it has real market risk. An arbitrage fund is always 100% hedged — it has negligible market risk. They both get equity taxation but are very different in risk-return profile.",
+      },
+      {
+        q: "Can I do a SIP in an arbitrage fund?",
+        a: "Yes, but it is unusual. SIPs make most sense for long-term wealth creation (10+ years). Arbitrage funds are designed for short-term parking. Most investors make lump sum investments in arbitrage funds based on when they have surplus cash.",
+      },
+      {
+        q: "How much should the spread between cash and futures be before investing?",
+        a: "You do not need to calculate this manually. The fund manager handles it. Simply look at the trailing 1-year and 3-year returns. If the annualised return is above 6%, the fund is capturing reasonable spreads.",
+      },
+    ],
+  },
+  {
+    slug: "elss-vs-ppf-vs-nps",
+    title: "ELSS vs PPF vs NPS — Best Tax-Saving Investment Under Section 80C",
+    description:
+      "Compare ELSS (3-year lock-in, equity returns), PPF (15-year, guaranteed 7.1%, EEE status), and NPS (till age 60, market returns, extra ₹50K deduction) to find the best 80C investment for your age and risk.",
+    readingTime: 7,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-nps", "what-is-mutual-fund", "sip-guide"],
+    content: `
+<h2>Section 80C — What It Does</h2>
+<p>Section 80C of the Income Tax Act allows you to deduct up to <strong>₹1.5 lakh per financial year</strong> from your taxable income. For someone in the 30% tax bracket, this saves ₹46,800 in taxes (including cess). Three of the most popular 80C instruments are ELSS, PPF, and NPS.</p>
+
+<h2>ELSS — Equity Linked Savings Scheme</h2>
+<p>ELSS is an equity mutual fund with a mandatory 3-year lock-in per SIP installment. Key characteristics:</p>
+<ul>
+  <li><strong>Lock-in:</strong> 3 years (shortest among 80C options)</li>
+  <li><strong>Returns:</strong> Market-linked. Historical 10–15% CAGR over 10+ year periods. Not guaranteed.</li>
+  <li><strong>Taxation on maturity:</strong> LTCG at 12.5% above ₹1.25L per year. Not fully tax-free at maturity.</li>
+  <li><strong>Minimum investment:</strong> ₹500 per SIP installment</li>
+  <li><strong>Liquidity:</strong> After 3 years from each installment, fully liquid</li>
+  <li><strong>Tax treatment:</strong> EET (Exempt-Exempt-Taxed) — contributions deductible, growth tax-free, 12.5% LTCG on redemption</li>
+</ul>
+<p><strong>Best for:</strong> Investors below 45 with moderate-to-high risk tolerance who want the shortest lock-in and highest return potential.</p>
+
+<h2>PPF — Public Provident Fund</h2>
+<p>PPF is a government-backed small savings scheme with a 15-year tenure. Key characteristics:</p>
+<ul>
+  <li><strong>Lock-in:</strong> 15 years (with partial withdrawal from Year 7 and loan facility from Year 3)</li>
+  <li><strong>Returns:</strong> Guaranteed, set by government quarterly. Currently 7.1% per annum. Compounded annually.</li>
+  <li><strong>Taxation:</strong> EEE status — contributions deductible (80C), returns tax-free, maturity amount tax-free. Most tax-efficient instrument in India.</li>
+  <li><strong>Maximum investment:</strong> ₹1.5 lakh per year across all PPF accounts</li>
+  <li><strong>Extension:</strong> After 15 years, can extend in 5-year blocks (with or without contributions)</li>
+  <li><strong>Safety:</strong> Sovereign guarantee — zero credit risk</li>
+</ul>
+<p><strong>Best for:</strong> Conservative investors, those in 30% tax bracket who want guaranteed returns, retirement corpus building (EEE makes PPF one of the best long-term compounders in India after tax).</p>
+
+<h2>NPS — National Pension System</h2>
+<p>NPS is a government-regulated pension scheme that invests in equity (E), corporate bonds (C), and government securities (G). Key characteristics:</p>
+<ul>
+  <li><strong>Lock-in:</strong> Until age 60. Partial withdrawal (up to 25% of own contributions) allowed after 3 years for specific needs</li>
+  <li><strong>Returns:</strong> Market-linked, based on your chosen asset allocation. Tier-I accounts have historically returned 8–12% CAGR for Aggressive (75% equity) allocation</li>
+  <li><strong>Tax deduction:</strong> ₹1.5L under 80C (combined) PLUS an additional ₹50,000 deduction under <strong>Section 80CCD(1B)</strong> — exclusive to NPS. Total deduction potential: ₹2 lakh</li>
+  <li><strong>Taxation at maturity:</strong> 60% of corpus withdrawn tax-free at age 60; remaining 40% must be used to buy annuity (taxed as income)</li>
+  <li><strong>Annuity returns:</strong> Typically 5–6% per annum — lower than inflation in many scenarios</li>
+</ul>
+<p><strong>Best for:</strong> Salaried individuals in high tax brackets (30%) who want to maximize tax savings via the extra ₹50K 80CCD(1B) deduction. Less suitable if you want full flexibility — NPS locks money until 60.</p>
+
+<h2>Side-by-Side Comparison</h2>
+<ul>
+  <li><strong>Best returns potential:</strong> ELSS (equity) &gt; NPS (equity allocation) &gt; PPF (guaranteed 7.1%)</li>
+  <li><strong>Shortest lock-in:</strong> ELSS (3 years) vs PPF (15 years) vs NPS (till age 60)</li>
+  <li><strong>Most tax-efficient:</strong> PPF (EEE) = no tax at any stage</li>
+  <li><strong>Maximum deduction:</strong> NPS (₹1.5L + ₹50K = ₹2L total)</li>
+  <li><strong>Safest:</strong> PPF (sovereign guarantee) &gt; NPS (regulated, market-linked) &gt; ELSS (market risk)</li>
+</ul>
+
+<h2>Recommended Allocation by Age and Risk</h2>
+<ul>
+  <li><strong>Age 20–35 (aggressive):</strong> 70% ELSS + 20% PPF + 10% NPS. Maximize equity returns; PPF provides safe floor; NPS for extra ₹50K deduction.</li>
+  <li><strong>Age 36–50 (moderate):</strong> 40% ELSS + 40% PPF + 20% NPS. Shift safety up as retirement approaches.</li>
+  <li><strong>Age 51–60 (conservative):</strong> 20% ELSS + 50% PPF + 30% NPS. Prioritize capital preservation; NPS equity can still be 50% for growth.</li>
+  <li><strong>Additional ₹50K via NPS 80CCD(1B):</strong> Recommended for anyone in the 20%+ tax bracket. The extra ₹10,000–₹15,600 in tax saved annually is worth the NPS lock-in at these income levels.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Can I invest in all three — ELSS, PPF, and NPS — simultaneously?",
+        a: "Yes. The ₹1.5L 80C limit applies to combined ELSS + PPF contributions. NPS contributions also fall under 80C for the first ₹1.5L, but the additional ₹50,000 under 80CCD(1B) is over and above the ₹1.5L ceiling. So maximum total deduction: ₹2L.",
+      },
+      {
+        q: "Is PPF interest rate fixed forever?",
+        a: "No. The PPF interest rate is set by the government every quarter and can change. It has ranged from 7% to 12% historically. Currently at 7.1% (unchanged since April 2020). Past changes have been small (25–50 bps), and the rate is unlikely to fall below 7% given political sensitivity.",
+      },
+      {
+        q: "Can I withdraw from NPS before age 60?",
+        a: "After 3 years, you can withdraw up to 25% of your own contributions for specific purposes: higher education, marriage, house purchase, or medical treatment. Full exit before 60 is allowed only if corpus is below ₹2.5 lakh — and 80% of it must be annuitized.",
+      },
+      {
+        q: "Which ELSS fund should I choose?",
+        a: "Look for 5–10 year track record, consistent alpha over benchmark, and AUM above ₹3,000 crore for stability. Popular options: Mirae Asset ELSS Tax Saver, Quant ELSS, SBI Long Term Equity Fund. Past performance does not guarantee future returns.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-t-bill",
+    title: "What is a T-Bill? Treasury Bills and Government Securities Explained for Indian Investors",
+    description:
+      "Treasury bills are short-term government debt instruments issued by RBI with zero credit risk. Learn about 91-day, 182-day, 364-day T-bills, how to buy them via RBI Retail Direct, and how they compare to FDs.",
+    readingTime: 5,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-nps", "what-is-reit", "what-is-mutual-fund"],
+    content: `
+<h2>What is a T-Bill?</h2>
+<p>A Treasury Bill (T-Bill) is a <strong>short-term debt instrument issued by the Government of India</strong> through the Reserve Bank of India (RBI). T-bills are used by the government to meet short-term funding needs. They come in three maturities: <strong>91 days, 182 days, and 364 days</strong>.</p>
+<p>T-bills are issued at a <strong>discount to face value</strong>. You buy a ₹100 T-bill for, say, ₹97.50 and receive ₹100 at maturity — your return is the difference (₹2.50). There are no periodic interest payments (no coupons). The return is entirely from the price appreciation from purchase to face value.</p>
+
+<h2>T-Bills vs G-Secs — What is the Difference?</h2>
+<ul>
+  <li><strong>T-Bills:</strong> Maturity of 91, 182, or 364 days. Short-term. Issued at discount, no coupons.</li>
+  <li><strong>G-Secs (Government Securities):</strong> Long-term bonds with maturity from 2 to 40 years. Pay semi-annual coupon interest. Also called gilts or dated securities.</li>
+  <li>Both are sovereign debt — zero credit risk. The government can always print money to repay (in practice, it never defaults on domestic debt).</li>
+  <li><strong>State Development Loans (SDLs):</strong> Similar to G-Secs but issued by state governments, slightly higher yield than central government G-Secs.</li>
+</ul>
+
+<h2>How to Calculate T-Bill Yield</h2>
+<p>The yield on a T-bill is calculated as:</p>
+<ul>
+  <li><strong>Yield = ((Face Value - Purchase Price) / Purchase Price) × (365 / Days to Maturity) × 100</strong></li>
+  <li>Example: 91-day T-bill purchased at ₹98.20, face value ₹100. Yield = ((100-98.20)/98.20) × (365/91) × 100 = 1.83% × 4.01 = 7.35% annualised</li>
+</ul>
+<p>T-bill yields are closely linked to the RBI's repo rate. When repo rate is 6.5%, 91-day T-bill yields are typically 6.4–6.8%.</p>
+
+<h2>How Retail Investors Can Buy T-Bills</h2>
+<p>Retail investors have three main routes:</p>
+<ul>
+  <li><strong>RBI Retail Direct (retaildirect.rbi.org.in):</strong> Free platform by RBI. Open a gilt account, participate in weekly T-bill auctions directly. No intermediary fees. Minimum investment ₹10,000 and in multiples of ₹10,000. This is the cheapest route.</li>
+  <li><strong>Zerodha Coin / Groww / Paytm Money:</strong> Some brokers offer G-Sec and T-bill purchases through their platform. Convenient but may have fees.</li>
+  <li><strong>Through mutual funds:</strong> Liquid funds, overnight funds, and ultra-short funds heavily invest in T-bills. Investing in these funds gives indirect exposure without the hassle of direct auctions.</li>
+</ul>
+
+<h2>T-Bills vs Fixed Deposits — Which is Better?</h2>
+<ul>
+  <li><strong>Safety:</strong> T-bills = sovereign guarantee (technically zero risk). FDs = DICGC insured up to ₹5 lakh per bank. Beyond ₹5 lakh, FD has credit risk (bank default). T-bills are safer for large amounts.</li>
+  <li><strong>Returns:</strong> T-bill yield currently ~7.0–7.3% (91-day). SBI FD for 91 days: ~5.5–6%. T-bills typically yield more than equivalent-tenure FDs from major PSU banks.</li>
+  <li><strong>Tax:</strong> Both are taxed at income slab rate. No advantage either way.</li>
+  <li><strong>Liquidity:</strong> FDs: premature withdrawal allowed (with penalty). T-bills: can sell in secondary market via RBI Retail Direct or through your broker (liquidity depends on market conditions).</li>
+  <li><strong>Convenience:</strong> FD wins — easy to open at any branch or online banking app. T-bills require RBI Retail Direct registration which takes 2–3 days.</li>
+</ul>
+
+<h2>Who Should Buy T-Bills Directly?</h2>
+<p>T-bills make sense for: high-net-worth individuals wanting risk-free returns above FD rates for amounts above ₹5 lakh (beyond DICGC cover), corporates and trusts with short-term surplus, and investors who understand the auction mechanism. For amounts below ₹5 lakh or investors who prefer convenience, liquid mutual funds (which invest heavily in T-bills) achieve similar outcomes without direct auction participation.</p>
+    `,
+    faq: [
+      {
+        q: "Are T-bills completely risk-free?",
+        a: "T-bills have zero credit risk — the Government of India cannot default on INR-denominated debt. However, if you sell before maturity in the secondary market, you face price risk (yields may have risen, pushing price down). Held to maturity, return is locked in.",
+      },
+      {
+        q: "What happens if I miss the T-bill auction?",
+        a: "RBI conducts T-bill auctions every Wednesday. If you miss one, simply participate in the next week's auction. You can also buy T-bills in the secondary market (through NDS-OM or RBI Retail Direct's secondary market interface) between auctions.",
+      },
+      {
+        q: "How is T-bill interest taxed?",
+        a: "The discount at which T-bills are issued (the difference between purchase price and face value) is taxed as 'income from other sources' at your applicable slab rate. There is no TDS deducted. You report it in your ITR when the T-bill matures.",
+      },
+      {
+        q: "What is the minimum investment for T-bills through RBI Retail Direct?",
+        a: "Minimum ₹10,000 and in multiples of ₹10,000. There is no maximum limit for retail investors on RBI Retail Direct, though very large bids may affect auction results.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-contra-fund",
+    title: "What is a Contra Fund? Contrarian Investing in Indian Mutual Funds",
+    description:
+      "Contra funds buy unloved, out-of-favour stocks that the market has ignored. SEBI mandates 65% contra bets. Learn how the SBI Contra Fund works, when contrarian investing wins, and its risks.",
+    readingTime: 5,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-mutual-fund", "what-is-index-fund", "pe-ratio"],
+    content: `
+<h2>What is a Contra Fund?</h2>
+<p>A contra fund follows a <strong>contrarian investment strategy</strong> — it deliberately buys stocks and sectors that are currently unpopular, undervalued, or out of favor with the broader market. The bet is that these stocks will eventually be re-rated by the market as their underlying business fundamentals are recognized, delivering superior returns.</p>
+<p>SEBI requires that contra funds invest at least <strong>65% of their portfolio in "contra bets"</strong> — stocks that the fund manager believes are undervalued by the market, going against prevailing market sentiment. The remaining 35% can be invested in any equity.</p>
+
+<h2>How Contrarian Investing Works</h2>
+<p>The logic is simple: markets are emotional. They overprice popular stocks (everyone loves them) and underprice unpopular ones (everyone hates them). Contrarian investors systematically buy when others are selling in panic and wait for rational valuation to return.</p>
+<p>Classic contrarian situations in India:</p>
+<ul>
+  <li><strong>Sector rotation plays:</strong> PSU banks were deeply out of favor in 2019–2021 due to NPA crisis. Contra funds that built positions then saw 200–300% returns in 2022–2024 as NPAs cleaned up</li>
+  <li><strong>Post-scandal recovery:</strong> Yes Bank investors who bought post-2020 RBI rescue at ₹12–15 saw 100%+ gain in 12 months</li>
+  <li><strong>Commodity cycle bottoms:</strong> Metal and steel companies were avoided during 2015–2020 commodity downcycle but delivered massive returns in 2020–2022</li>
+</ul>
+
+<h2>SBI Contra Fund — India's Standout Example</h2>
+<p>SBI Contra Fund is the most discussed contra fund in India. Its notable contrarian calls:</p>
+<ul>
+  <li>Held significant positions in PSU stocks (BHEL, Coal India, NTPC) when they were widely mocked as "government junk" — these became multi-baggers in 2022–2024</li>
+  <li>Built pharmaceutical exposure during the US FDA overhang period (2016–2019) when most investors avoided pharma</li>
+  <li>Historical 5-year return: outperformed Nifty 50 in multiple cycles</li>
+</ul>
+<p>Note: Past outperformance does not guarantee future results. Contra funds can underperform for extended periods if their "contra bets" do not play out.</p>
+
+<h2>When Does Contra Strategy Work?</h2>
+<p>Contrarian investing works best when:</p>
+<ul>
+  <li><strong>Temporary problems vs permanent decline:</strong> A company facing a temporary headwind (regulatory issue, raw material spike, management transition) is a contra bet. A company with structural business erosion (e.g., a landline phone company) is a value trap.</li>
+  <li><strong>Sector recovery cycles:</strong> Real estate (2013–2016 downcycle → 2021 recovery), infrastructure (2012–2019 avoided → 2021 onwards boom)</li>
+  <li><strong>Market corrections:</strong> Broad market sell-offs create contra opportunities in quality stocks temporarily beaten down</li>
+</ul>
+
+<h2>Risks of Contra Funds</h2>
+<ul>
+  <li><strong>Long periods of underperformance:</strong> A contra bet may take 3–5 years to play out. During this time, momentum funds and index funds will outperform significantly. Most retail investors abandon ship before the thesis plays out.</li>
+  <li><strong>Value traps:</strong> Some stocks are cheap for good reason — their business is declining. A skilled contra manager distinguishes between temporarily out-of-favor and permanently broken businesses.</li>
+  <li><strong>Concentration risk:</strong> Taking large positions in unpopular sectors means higher volatility and drawdowns than diversified funds.</li>
+</ul>
+
+<h2>Is a Contra Fund Right for You?</h2>
+<p>Contra funds require a minimum 5-year investment horizon and high tolerance for periods of underperformance. They are not suitable for short-term investors or those who will panic and exit during underperformance. Ideal investor profile: seasoned investor with 10+ year horizon who understands that cycles turn and can hold through a 2–3 year underperformance streak. Allocate 10–15% of equity portfolio to contra/value funds at most.</p>
+    `,
+    faq: [
+      {
+        q: "What is the difference between a contra fund and a value fund?",
+        a: "Both buy undervalued stocks, but they differ slightly. Value funds focus on quantitative metrics — low P/E, low P/B, high dividend yield. Contra funds focus on market sentiment — they specifically buy what the crowd is selling, regardless of pure valuation metrics. In practice, their portfolios often overlap significantly.",
+      },
+      {
+        q: "Are contra funds riskier than regular equity funds?",
+        a: "Yes, in terms of short-term volatility and tracking error versus benchmarks. Contra funds will often significantly underperform for 1–3 years before their thesis plays out. But over 7–10 year cycles, strong contra funds have matched or beaten broad market indices.",
+      },
+      {
+        q: "How many contra funds are there in India?",
+        a: "SEBI allows only one contra fund per AMC. Currently there are only a handful — SBI Contra Fund, Invesco India Contra Fund, and Kotak India EQ Contra Fund are the most popular. This scarcity itself is informative — AMCs prefer to launch funds in popular categories.",
+      },
+      {
+        q: "Can I do a SIP in a contra fund?",
+        a: "Yes, and it is often the best way to invest in a contra fund. SIP averages your cost of buying contra positions over time, reducing the risk of investing a large lump sum just before a further decline in the out-of-favor sectors.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-read-quarterly-results",
+    title: "How to Read Quarterly Results — Revenue, PAT, EBITDA, and What Really Matters",
+    description:
+      "Step-by-step guide to reading a company's quarterly P&L — from Revenue to PAT, understanding EBITDA margin, YoY vs QoQ growth, EPS dilution, exceptional items, and what analysts focus on.",
+    readingTime: 7,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-ebitda", "what-is-eps", "how-to-read-annual-report"],
+    content: `
+<h2>Why Quarterly Results Matter</h2>
+<p>Every listed company in India is required by SEBI to publish financial results within 45 days of each quarter end (Q1: Apr-Jun, Q2: Jul-Sep, Q3: Oct-Dec, Q4: Jan-Mar). Quarterly results are the most frequent source of ground truth on a company's actual performance — separating narrative from reality. A company can tell any story in press releases, but numbers do not lie.</p>
+
+<h2>The P&L Statement — Reading Top to Bottom</h2>
+<p>The Profit and Loss (P&L) statement flows from Revenue down to PAT (Profit After Tax) in this order:</p>
+<ul>
+  <li><strong>Revenue from Operations:</strong> Total money earned from the core business. Also called "top line." Compare this to the same quarter last year (YoY) and last quarter (QoQ).</li>
+  <li><strong>Gross Profit = Revenue − Cost of Goods Sold (COGS):</strong> Shows basic profitability before operating expenses. Gross margin = Gross Profit / Revenue × 100.</li>
+  <li><strong>EBITDA = Gross Profit − Operating Expenses:</strong> Earnings Before Interest, Taxes, Depreciation, and Amortisation. The most watched metric for operational efficiency. EBITDA margin = EBITDA / Revenue × 100.</li>
+  <li><strong>EBIT = EBITDA − Depreciation &amp; Amortisation:</strong> Removes non-cash D&amp;A charges. Shows operating profit.</li>
+  <li><strong>PBT (Profit Before Tax) = EBIT − Net Interest Cost:</strong> After paying interest on debt. High debt companies show large gap between EBIT and PBT.</li>
+  <li><strong>PAT (Profit After Tax):</strong> The "bottom line." Net profit after all expenses and taxes. Used to calculate EPS.</li>
+</ul>
+
+<h2>Key Metrics to Track Every Quarter</h2>
+<ul>
+  <li><strong>Revenue growth YoY:</strong> Most important. Is the business growing? 15%+ YoY is good for most sectors. Below 5% suggests challenges.</li>
+  <li><strong>EBITDA margin:</strong> Are profit margins improving or compressing? Margin expansion = pricing power or cost efficiency. Margin compression = rising costs or pricing pressure.</li>
+  <li><strong>PAT growth vs Revenue growth:</strong> PAT should ideally grow faster than Revenue (operating leverage). If revenue grew 20% but PAT grew only 5%, profitability is under pressure.</li>
+  <li><strong>Working capital days:</strong> Receivable days, inventory days — are they rising? Rising receivables can signal collection problems even if reported revenue is good.</li>
+</ul>
+
+<h2>The Exceptional Items Trap</h2>
+<p>Watch for "exceptional items" below the EBIT line. These are one-time, non-recurring items — asset write-offs, restructuring costs, legal settlements, gain on asset sale. Always calculate the <strong>"Adjusted PAT"</strong> excluding exceptional items for like-to-like comparison:</p>
+<ul>
+  <li>A company reports PAT of ₹500 crore — but ₹300 crore is from selling a subsidiary. Core business PAT is only ₹200 crore. This is misleading if you look only at the headline number.</li>
+  <li>Conversely, if PAT fell due to a one-time restructuring charge, the underlying business may be healthier than the headline suggests.</li>
+</ul>
+
+<h2>EPS and Dilution — Track Carefully</h2>
+<p>EPS (Earnings Per Share) = PAT / Total number of shares outstanding. If a company issued new shares (via QIP, ESOP vesting, preferential allotment), the share count increases and EPS gets diluted even if PAT grows:</p>
+<ul>
+  <li>PAT grew 20%, but shares outstanding grew 15% → EPS grew only ~4%</li>
+  <li>Always track <strong>diluted EPS</strong> (which assumes all options and convertibles are exercised)</li>
+  <li>BSE/NSE results show both basic and diluted EPS</li>
+</ul>
+
+<h2>Management Commentary and Concalls</h2>
+<p>Numbers tell you what happened. Management commentary tells you why, and what to expect. Key things to read in quarterly releases:</p>
+<ul>
+  <li><strong>MD&amp;A (Management Discussion &amp; Analysis):</strong> Attached to quarterly results. Explains drivers behind the numbers.</li>
+  <li><strong>Concall transcript:</strong> Most companies do a post-results analyst call. Transcripts are on stock exchange filings within 48 hours. The Q&amp;A section is most revealing — analysts ask hard questions management cannot easily dodge.</li>
+  <li><strong>Order book / pipeline updates:</strong> For B2B companies (IT, infrastructure, capital goods), order inflows are leading indicators of future revenue.</li>
+  <li><strong>Guidance:</strong> Some companies give explicit quarterly or annual guidance. Track whether management consistently meets, beats, or misses their own guidance.</li>
+</ul>
+
+<h2>Beat vs Miss — The Consensus Estimate</h2>
+<p>Stock prices often move more based on how results compare to analyst expectations than the absolute numbers. If consensus estimate was PAT of ₹300 crore and the company reports ₹350 crore, the stock may rally even if PAT fell from ₹320 crore last year. Sources for consensus estimates: Bloomberg (paid), Trendlyne (free), Screener.in comments, brokerage research reports.</p>
+    `,
+    faq: [
+      {
+        q: "Where do I find quarterly results for Indian companies?",
+        a: "BSE India (bseindia.com) → Company → Financials → Quarterly Results. NSE India (nseindia.com) similarly. Results are filed within 45 days of quarter end. Trendlyne and Tickertape aggregate results with analysis for convenience.",
+      },
+      {
+        q: "What is QoQ vs YoY comparison?",
+        a: "QoQ (Quarter-on-Quarter) compares current quarter to the immediately preceding quarter. YoY (Year-on-Year) compares to the same quarter last year. YoY is more meaningful for businesses with seasonality (e.g., FMCG companies with festive season Q2 bump). QoQ reveals short-term momentum changes.",
+      },
+      {
+        q: "Why do companies report both standalone and consolidated results?",
+        a: "Standalone results show only the parent company's financials. Consolidated results include all subsidiaries and associates. For companies with significant business through subsidiaries (e.g., Tata Motors includes JLR in consolidated), always analyze consolidated results. Standalone alone gives an incomplete picture.",
+      },
+      {
+        q: "What is deferred tax and how does it affect PAT?",
+        a: "Deferred tax is a non-cash adjustment arising from differences in accounting profit and taxable profit. Large deferred tax credits can temporarily inflate PAT, while deferred tax charges can suppress it. When evaluating true business profitability, use 'Profit Before Tax × (1 - effective tax rate)' as a cleaner measure.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-international-mutual-fund",
+    title: "What is International Mutual Fund? How to Invest in US Stocks from India",
+    description:
+      "International mutual funds let you invest in US stocks (Nasdaq 100, S&P 500) through Indian AMCs. Learn about feeder fund structure, LRS limits, TCS on remittances, tax treatment, and currency risk.",
+    readingTime: 6,
+    publishedAt: "2026-05-17",
+    relatedSlugs: ["what-is-mutual-fund", "what-is-index-fund", "cagr-meaning"],
+    content: `
+<h2>What is an International Mutual Fund?</h2>
+<p>An international mutual fund is a fund registered in India that invests in equity markets outside India — primarily the US (S&amp;P 500, Nasdaq 100), but also China, Europe, Asia-Pacific, or global indices. These funds allow Indian retail investors to gain exposure to companies like Apple, Microsoft, Amazon, and Google <strong>without opening a foreign brokerage account</strong> or dealing with foreign currency directly.</p>
+
+<h2>Feeder Fund Structure — How Indian AMCs Invest Abroad</h2>
+<p>Most Indian international funds use a <strong>feeder fund structure</strong>:</p>
+<ul>
+  <li>You invest rupees in the Indian feeder fund (e.g., Motilal Oswal Nasdaq 100 ETF of ETFs)</li>
+  <li>The Indian fund collects money and invests it into a corresponding overseas ETF (e.g., Invesco QQQ in the US)</li>
+  <li>The overseas ETF holds the actual stocks (Apple, Microsoft, etc.)</li>
+  <li>Currency conversion happens at the fund level — you never deal with USD directly</li>
+</ul>
+<p>Some funds invest directly in overseas stocks without using an overseas ETF — called a "direct fund of funds" or a fund with a dedicated overseas investment team.</p>
+
+<h2>Popular International Fund Options in India</h2>
+<ul>
+  <li><strong>Motilal Oswal Nasdaq 100 ETF / FoF:</strong> Tracks Nasdaq 100 index — heavy on US tech (Apple, Microsoft, Nvidia, Meta, Alphabet). Highest volatile, highest return potential.</li>
+  <li><strong>ICICI Prudential US Bluechip Equity Fund:</strong> Actively managed US equity fund; higher fees but potential for alpha over S&amp;P 500</li>
+  <li><strong>Edelweiss Greater China Off-shore Fund:</strong> For China exposure (much higher risk due to regulatory risks)</li>
+  <li><strong>PGIM India Global Equity Opportunities Fund:</strong> Diversified global equity across US, Europe, Asia</li>
+  <li><strong>Navi US Total Stock Market FoF:</strong> Tracks Vanguard Total Stock Market ETF — broadest US exposure</li>
+</ul>
+
+<h2>Direct International Investing via LRS — For DIY Investors</h2>
+<p>Under the <strong>Liberalised Remittance Scheme (LRS)</strong>, Indian residents can remit up to <strong>$250,000 per financial year</strong> for approved purposes including foreign equity investment. You can open accounts with:</p>
+<ul>
+  <li>Vested Finance (Indian interface for US stocks)</li>
+  <li>INDmoney (partner with US broker DriveWealth)</li>
+  <li>Interactive Brokers, Charles Schwab (direct foreign account)</li>
+</ul>
+<p>LRS allows buying individual US stocks, ETFs, and even fractional shares. More control than a feeder fund but involves more complexity: you manage currency conversion, foreign tax filing, FBAR compliance, and US estate tax implications.</p>
+
+<h2>TCS on LRS Remittances — Important Tax Point</h2>
+<p>From October 2023: <strong>Tax Collected at Source (TCS) of 20%</strong> is collected on LRS remittances above ₹7 lakh per financial year for most purposes (education and medical have different rates). This is not an extra tax — TCS is credited against your final income tax liability or refunded if excess. But it creates a cash flow burden: if you remit ₹10 lakh for US investing, your bank collects ₹60,000 upfront as TCS (on ₹3L above ₹7L threshold). You get this back when you file ITR.</p>
+
+<h2>Taxation of International Mutual Funds in India</h2>
+<p>Post April 1, 2023 rule change: International mutual funds are taxed as <strong>debt funds</strong>, regardless of underlying equity exposure:</p>
+<ul>
+  <li>Gains are taxed at your income slab rate (up to 30%) — no LTCG rate benefit</li>
+  <li>Indexation benefit (previously available for debt funds held 3+ years) has also been removed</li>
+  <li>This significantly reduced the attractiveness of international mutual funds vs direct LRS investing</li>
+  <li>Direct LRS investing in US ETFs: capital gains on US ETFs held abroad are taxed as per Indian capital gains rules on foreign assets — still at slab rate for STCG, but the calculation is more complex</li>
+</ul>
+
+<h2>Currency Risk — The Invisible Factor</h2>
+<p>When you invest in international funds, your returns are affected by both the underlying asset performance AND INR/USD movements:</p>
+<ul>
+  <li>If Nasdaq 100 rises 15% in USD but INR appreciates 5% vs USD, your INR return = ~9.3%</li>
+  <li>If Nasdaq 100 rises 15% in USD and INR depreciates 5% vs USD, your INR return = ~21%</li>
+  <li>Historically, INR has depreciated ~3–4% annually vs USD over long periods — adding to international fund returns for Indian investors</li>
+  <li>Some funds hedge currency exposure (USD/INR hedge) — these have lower return potential but reduce currency volatility</li>
+</ul>
+
+<h2>How Much to Allocate to International Funds?</h2>
+<p>Financial advisors typically suggest 10–20% of an equity portfolio in international assets for diversification. Rationale: India's Nifty 50 and US S&amp;P 500 historically have low correlation — when Indian markets underperform (as in 2015–2019), US markets often outperform, and vice versa. Geographic diversification reduces overall portfolio volatility.</p>
+    `,
+    faq: [
+      {
+        q: "Why did international mutual funds stop accepting fresh investments in 2022?",
+        a: "SEBI sets an industry-wide limit on overseas investments for Indian mutual funds (currently $7 billion total). In early 2022, this limit was exhausted and SEBI temporarily froze new investments. Some funds resumed accepting investments after the limit was revised. Always check if your chosen international fund is currently open for fresh investment.",
+      },
+      {
+        q: "Is there US estate tax risk when investing in US stocks via Indian mutual funds?",
+        a: "No. When you invest via an Indian mutual fund (feeder fund structure), you own units of an Indian fund — not directly US stocks. There is no US estate tax exposure. US estate tax applies only to non-US residents who directly hold US situs assets (US stocks, US real estate) above $60,000.",
+      },
+      {
+        q: "Which is better — Nasdaq 100 fund or S&P 500 fund from India?",
+        a: "Nasdaq 100 is more concentrated in tech and has higher volatility (and higher returns in bull markets). S&P 500 is more diversified across 500 companies and less tech-heavy. For most Indian retail investors, the S&P 500 exposure provides better diversification. Nasdaq 100 suits those specifically wanting concentrated US tech exposure.",
+      },
+      {
+        q: "Can NRIs invest in Indian international mutual funds?",
+        a: "NRIs can invest in most Indian mutual funds including international funds, subject to AMC-specific policies. However, US and Canada-based NRIs face restrictions because many Indian AMCs do not want to comply with FATCA/CRS obligations — check each AMC's NRI eligibility list before investing.",
+      },
+    ],
+  },
 ];
 
 export function getArticle(slug: string): Article | undefined {
