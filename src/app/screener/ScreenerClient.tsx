@@ -40,7 +40,7 @@ const TYPE_OPTIONS = [
   { key: "sme", label: "SME only" },
 ];
 
-type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol";
+type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol" | "near52wLow" | "near52wHigh";
 
 export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sectors: string[] }) {
   const [search, setSearch] = useState("");
@@ -108,11 +108,16 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         if (sortBy === "chg1d") return c.chg1d ?? -999;
         if (sortBy === "chg1d_asc") return c.chg1d ?? 999;
         if (sortBy === "vol") return c.volume ?? -1;
+        // 52W proximity: (ltp - low52w) / (high52w - low52w), 0=at low, 1=at high
+        if (sortBy === "near52wLow" || sortBy === "near52wHigh") {
+          if (!c.ltp || !c.high52w || !c.low52w || c.high52w === c.low52w) return 0.5;
+          return (c.ltp - c.low52w) / (c.high52w - c.low52w);
+        }
         return 0;
       };
       const av = get(a);
       const bv = get(b);
-      return (sortBy === "pe" || sortBy === "chg1d_asc") ? av - bv : bv - av;
+      return (sortBy === "pe" || sortBy === "chg1d_asc" || sortBy === "near52wLow") ? av - bv : bv - av;
     };
     return result.sort(compare).slice(0, 200);
   }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, sortBy]);
@@ -133,19 +138,53 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   function applyPreset(name: string) {
     reset();
     if (name === "value") {
-      setPeMax("20"); setRoeMin("15"); setDebtMax("1");
+      setPeMax("20"); setRoeMin("15"); setDebtMax("1"); setRequireFundamentals(true);
     } else if (name === "growth") {
-      setRoeMin("18"); setDebtMax("0.5");
+      setRoeMin("18"); setDebtMax("0.5"); setRequireFundamentals(true);
     } else if (name === "dividend") {
-      setDivMin("3"); setDebtMax("1");
+      setDivMin("3"); setDebtMax("1"); setRequireFundamentals(true);
     } else if (name === "lowdebt") {
-      setDebtMax("0.3");
+      setDebtMax("0.3"); setRequireFundamentals(true);
+    } else if (name === "highMcapLowPE") {
+      setMcapBand("large"); setPeMax("25"); setRequireFundamentals(true); setSortBy("pe");
+    } else if (name === "near52wLow") {
+      setSortBy("near52wLow");
+    } else if (name === "near52wHigh") {
+      setSortBy("near52wHigh");
+    } else if (name === "highRoe") {
+      setRoeMin("20"); setRequireFundamentals(true); setSortBy("roe");
+    } else if (name === "highDiv") {
+      setDivMin("2.5"); setRequireFundamentals(true); setSortBy("divYield");
     }
     setShowFundamentals(true);
   }
 
   return (
     <div className="space-y-4">
+
+      {/* Quick Screens — prominent preset tiles */}
+      <div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Quick Screens</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[
+            { key: "highMcapLowPE", label: "High MktCap", sub: "Low P/E ≤25", color: "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100" },
+            { key: "near52wLow",    label: "Near 52W Low", sub: "Bottom of range", color: "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100" },
+            { key: "near52wHigh",   label: "Near 52W High", sub: "Top of range", color: "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100" },
+            { key: "highRoe",       label: "High ROE", sub: "ROE ≥20%", color: "bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100" },
+            { key: "highDiv",       label: "High Dividend", sub: "Yield ≥2.5%", color: "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100" },
+          ].map((s) => (
+            <button
+              key={s.key}
+              onClick={() => applyPreset(s.key)}
+              className={`text-left p-3 rounded-xl border font-medium transition ${s.color}`}
+            >
+              <div className="text-sm font-bold">{s.label}</div>
+              <div className="text-[11px] opacity-70 mt-0.5">{s.sub}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="card">
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Filter className="w-4 h-4 text-indigo-600" />
@@ -248,12 +287,14 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
           Sort by:
           <select className="input text-xs py-1" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
             <option value="marketCap">Market cap ↓</option>
+            <option value="near52wLow">Near 52W Low ↑</option>
+            <option value="near52wHigh">Near 52W High ↓</option>
             <option value="chg1d">Top gainers (1D) ↓</option>
             <option value="chg1d_asc">Top losers (1D) ↑</option>
-            <option value="vol">Volume ↓</option>
             <option value="pe">P/E low→high</option>
             <option value="roe">ROE % ↓</option>
             <option value="divYield">Dividend yield ↓</option>
+            <option value="vol">Volume ↓</option>
           </select>
         </div>
       </div>
@@ -268,8 +309,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                 <th className="px-3 py-3 text-right">Market cap</th>
                 <th className="px-3 py-3 text-right">LTP</th>
                 <th className="px-3 py-3 text-right">1D %</th>
-                <th className="px-3 py-3 text-right">52W H</th>
-                <th className="px-3 py-3 text-right">52W L</th>
+                <th className="px-3 py-3 text-right">52W Range</th>
                 <th className="px-3 py-3 text-right">P/E</th>
                 <th className="px-3 py-3 text-right">ROE %</th>
               </tr>
@@ -295,11 +335,20 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                   }`}>
                     {c.chg1d != null ? `${c.chg1d >= 0 ? "+" : ""}${c.chg1d.toFixed(2)}%` : "—"}
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
-                    {c.high52w != null ? `₹${c.high52w.toFixed(0)}` : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-600">
-                    {c.low52w != null ? `₹${c.low52w.toFixed(0)}` : "—"}
+                  <td className="px-3 py-2.5 text-right">
+                    {c.ltp && c.high52w && c.low52w && c.high52w !== c.low52w ? (
+                      <div className="flex flex-col items-end gap-0.5">
+                        <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-indigo-400 rounded-full"
+                            style={{ width: `${Math.round(((c.ltp - c.low52w) / (c.high52w - c.low52w)) * 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-[10px] text-gray-400 tabular-nums">
+                          ₹{c.low52w.toFixed(0)} – ₹{c.high52w.toFixed(0)}
+                        </div>
+                      </div>
+                    ) : "—"}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.peRatio != null ? c.peRatio.toFixed(1) : "—"}</td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.roePercent != null ? c.roePercent.toFixed(1) : "—"}</td>

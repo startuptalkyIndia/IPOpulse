@@ -108,7 +108,8 @@ const navGroups: NavGroup[] = [
         { href: "/calculators/tax",       label: "Income Tax Calculator" },
         { href: "/calculators/lrs-tcs",      label: "LRS / TCS Calculator" },
         { href: "/calculators/usd-returns",  label: "USD Returns" },
-        { href: "/calculators/capital-gains", label: "Capital Gains Tax" },
+        { href: "/calculators/capital-gains",   label: "Capital Gains Tax" },
+        { href: "/calculators/stock-forecast",  label: "FORE — Stock Returns" },
       ],
       [
         { href: "/us-ipo",                          label: "US IPO Tracker" },
