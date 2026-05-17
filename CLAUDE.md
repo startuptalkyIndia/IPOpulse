@@ -184,6 +184,28 @@ Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_share
 
 ---
 
+## 🗄️ DATABASE STANDARD — Follow Before Any Schema Change
+
+Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/DB_STANDARD.md`
+
+**Required on every model:**
+- `createdAt DateTime @default(now())`
+- `updatedAt DateTime @updatedAt`  ← required for TalkyHub sync
+- `deletedAt DateTime?`  ← soft delete, never hard-delete user data
+
+**Always add to DATABASE_URL:**
+`?connection_limit=5&pool_timeout=10`  ← already set on server, keep in local .env too
+
+**Before every schema change:**
+1. Back up DB first
+2. Only additive changes on live tables
+3. Test locally before deploying
+4. Never `prisma migrate reset` on production
+
+**Raw SQL:** Only use `$queryRaw` with `Prisma.sql` template tags — never string concatenation.
+
+---
+
 ## CHANGELOG — Read Before Starting
 
 Before ANY work, read CHANGELOG.md (in this project root).
