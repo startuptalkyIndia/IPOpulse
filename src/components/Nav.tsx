@@ -65,6 +65,7 @@ const navGroups: NavGroup[] = [
         { href: "/mutual-funds",                    label: "Mutual Funds" },
         { href: "/mutual-funds/screener",           label: "MF Screener" },
         { href: "/shareholding",                    label: "Shareholding" },
+        { href: "/screener/promoter",               label: "Promoter >45% Screen" },
         { href: "/dividend-yield",                  label: "Dividend Yield" },
         { href: "/corporate-actions",               label: "Corporate Actions" },
         { href: "/corporate-actions/rights-bonus",  label: "Rights & Bonus" },

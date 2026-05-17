@@ -166,6 +166,75 @@ export const companyDescriptions: Record<string, string> = {
   "abbott-india": "Indian subsidiary of Abbott Laboratories USA. Markets branded formulations — Thyronorm (thyroid), Duphalac, Vertin. Asset-light; imports formulations from Abbott globally.",
   "pfizer-india": "Indian subsidiary of Pfizer Inc USA. Focused on branded specialty medicines in pain, cardiovascular, and hospital products. High dividend payer, very low debt.",
   "astrazeneca-pharma-india": "Indian subsidiary of AstraZeneca plc UK. Markets Atacand (BP), Faslodex (breast cancer), and Tagrisso (lung cancer) in India. Mainly a distribution arm.",
+
+  // ── Mid-cap IT ────────────────────────────────────────────────────────────
+  "l-and-t-technology-services": "Engineering R&D services company spun off from L&T in 2016, serving global OEMs and technology companies. One of the fastest-growing ER&D companies in India with a strong automotive and industrial vertical.",
+  "cyient": "Hyderabad-based engineering services company focused on aerospace, rail, utilities, and semiconductor industries. Deep domain IP in geospatial services and precision engineering distinguishes it from generic IT peers.",
+  "kpit-technologies": "Pune-based pure-play automotive software company — one of the few Indian IT firms exclusively focused on EV, ADAS, and connected vehicle technology. Strong partnerships with global Tier-1 auto suppliers.",
+  "mastek": "UK-listed, India-operated IT company specialising in public sector digital transformation in the UK and US. A trusted partner to UK government departments including NHS and HMRC.",
+  "hexaware-technologies": "Carlyle-backed IT services company relisted on NSE/BSE in 2025 after a PE buyout. Specialises in digital, cloud, and BPO services with a strong North American financial services client base.",
+  "zensar-technologies": "RPG Group's mid-size IT company with particular strength in banking, retail, and hi-tech verticals. Undergoing a focused transformation to improve deal sizes and margins under RPG's leadership.",
+
+  // ── Auto Components ───────────────────────────────────────────────────────
+  "bosch-india": "Indian arm of Robert Bosch GmbH Germany — makes automotive components (fuel injection, brakes, starters) and industrial technology. A key beneficiary of the shift to electronic fuel injection mandated by BS-VI emissions norms.",
+  "minda-industries": "Uno Minda Group's listed auto component company making switches, horns, lighting, and alloy wheels for two-wheelers and passenger vehicles. One of the fastest-growing auto ancillary companies in India.",
+  "balkrishna-industries": "Maker of BKT brand off-highway tyres — specialty tyres for agriculture, mining, and industrial use sold in 160+ countries. India's only meaningful competitor to global giants like Titan and Mitas in specialty tyres.",
+  "suprajit-engineering": "Bengaluru-based manufacturer of automotive cables (throttle, clutch, brake) for two-wheelers and passenger cars. Acquired Phoenix Lamps and UK-based Wescon to expand globally.",
+  "endurance-technologies": "Aurangabad-based auto component company supplying aluminium die castings, brakes, and suspension components to Bajaj Auto, Honda, and Hero. Promoter-led with strong engineering capabilities.",
+
+  // ── Chemicals ─────────────────────────────────────────────────────────────
+  "deepak-nitrite": "Vadodara-based specialty chemicals company making sodium nitrite, nitrotoluenes, and phenol/acetone (via Deepak Phenolics). One of India's most efficiently managed chemical companies with strong backward integration.",
+  "aarti-industries": "One of India's largest benzene-chain specialty chemical companies, supplying to global pharma, agrochemical, and polymer industries. Long-term supply agreements with top global chemical companies provide revenue visibility.",
+  "srf-limited": "Diversified specialty chemicals conglomerate with businesses in refrigerants, fluorochemicals, pharma packaging (BOPP/BOPET films), and technical textiles. Among the top global producers of HFC refrigerants.",
+  "navin-fluorine-international": "Surat-based specialty fluorochemicals company with capabilities from basic HFCs to complex high-value agrochemical and pharma fluorine intermediates. Strong CRAMS pipeline with multinational partnerships.",
+  "vinati-organics": "Niche specialty chemicals company with near-global monopoly in ATBS (used in water treatment) and IBB (ibuprofen intermediate). Zero-debt, high-margin, single-digit customer concentration — a remarkable compounding story.",
+  "gujarat-fluorochemicals": "India's largest fluoropolymer (PTFE, FEP, PVDF) manufacturer and a significant fluorochemical intermediates player. Positioned to benefit from the global energy transition as PVDF is a critical EV battery material.",
+
+  // ── Consumer ──────────────────────────────────────────────────────────────
+  "varun-beverages": "India's largest Pepsi bottler and one of the largest Pepsi franchisees globally. Has been steadily expanding into new geographies including Africa; consistent high-growth compounder in Indian beverages.",
+  "bikaji-foods-international": "Bikaner-based ethnic snacks company best known for namkeen, papads, and sweets. Went public in 2022; rapidly expanding distribution and building a pan-India premium snacks brand.",
+  "radico-khaitan": "India's third-largest spirits company (8PM whisky, Magic Moments vodka, Rampur single malt). Focused on premiumisation and growing the prestige/above segment which commands higher margins.",
+  "united-spirits": "Subsidiary of Diageo plc UK — India's largest spirits company by volume (McDowell's No.1, Royal Challenge, Johnnie Walker). Diageo has been driving premiumisation and portfolio rationalisation since acquisition.",
+  "devyani-international": "Master franchisee of KFC, Pizza Hut, and Costa Coffee in India. One of the largest QSR operators in India by store count; also expanding the Vaango! (South Indian) brand.",
+  "jubilant-foodworks": "Master franchisee of Domino's Pizza in India, Sri Lanka, Bangladesh, and Nepal — the country's largest QSR chain with 2,000+ Domino's outlets. Also operates Popeyes and Hong's Kitchen.",
+
+  // ── Healthcare / Diagnostics ──────────────────────────────────────────────
+  "aster-dm-healthcare": "Integrated healthcare company with hospitals and clinics across India and Gulf countries. Among the largest hospital chains in Kerala and one of India's fastest-growing diagnostic lab networks.",
+  "metropolis-healthcare": "One of India's largest diagnostics chains with 130+ labs and 4,000+ collection centres. Known for high-complexity specialty testing and strong B2B hospital diagnostics business.",
+  "dr-lal-pathlabs": "Delhi-based diagnostics company — India's largest by revenue — with a hub-and-spoke lab model serving 8,000+ cities. Strong brand recognition in northern India with consistent margin delivery.",
+  "thyrocare-technologies": "Nashik-based diagnostics company acquired by PharmEasy (API Holdings) in 2021. Known for low-cost wellness packages and a centralised mega-lab model that enables sub-₹200 thyroid tests.",
+  "hle-glascoat": "Vadodara-based manufacturer of glass-lined equipment used by pharma, chemical, and food companies. A niche but capital-intensive specialty equipment company with strong export order book.",
+
+  // ── Infrastructure ────────────────────────────────────────────────────────
+  "irb-infrastructure-developers": "India's largest private highway developer and toll operator by number of BOT projects. Strong order book from NHAI and state highway projects; expanding into hybrid annuity model.",
+  "dilip-buildcon": "Bhopal-based infrastructure company with focus on roads, highways, irrigation, and urban infrastructure. Known for fast project execution; expanding into tunnels and metro rail.",
+  "knr-constructions": "Hyderabad-based highway construction EPC company with a consistent track record of on-time delivery and zero NPA. Strong in southern India; diversifying into irrigation and urban infrastructure.",
+  "pnc-infratech": "Agra-based road and highway EPC contractor with significant presence in Uttar Pradesh and northern India. Lean balance sheet and steady order inflows make it one of the better-quality mid-cap infra plays.",
+
+  // ── Specialty / New-age ────────────────────────────────────────────────────
+  "affle-india": "Ad-tech company that helps brands reach and convert mobile consumers through a pay-per-converted-user model. One of the few Indian listed tech companies that has been consistently profitable since listing.",
+  "route-mobile": "Cloud communications platform (CPaaS) company providing SMS, voice, email, and WhatsApp business messaging for enterprises globally. Among the top-3 A2P messaging companies in Asia.",
+  "nazara-technologies": "India's first publicly listed gaming company, owning Nodwin Gaming (esports), Sportskeeda, and Kiddopia (kids' learning). Built through acquisitions across gaming, esports, and kids' entertainment.",
+  "easy-trip-planners": "Online travel agency (EasyMyTrip) known for zero convenience fee on flights. One of India's fastest-growing OTAs with expanding hotel and holiday packages business.",
+
+  // ── Small / Regional Banking ──────────────────────────────────────────────
+  "rbl-bank": "Mumbai-headquartered private bank that underwent significant leadership transition in 2021-22. Building retail deposits and cards business after resolving asset quality concerns; still in recovery phase.",
+  "city-union-bank": "Kumbakonam-based private bank with a 120-year history, operating mainly in Tamil Nadu. Conservative lending culture focused on SME and agriculture; known for very low NPAs over decades.",
+  "karnataka-bank": "Mangalore-based private sector bank with a strong presence in Karnataka. Undergoing digital modernisation; consistently profitable and one of the better-run South Indian private banks.",
+  "karur-vysya-bank": "Tamil Nadu-based private bank known for its textile and trade finance lending heritage. Strong in the Karur-Tirupur MSME belt; well-managed with improving asset quality trends.",
+  "south-indian-bank": "Thrissur-based private bank with a loyal NRI deposit base from Kerala. Underwent asset quality cleanup post-2020; management change in 2021 has begun delivering improved fundamentals.",
+
+  // ── Retail ────────────────────────────────────────────────────────────────
+  "fsn-e-commerce-ventures": "Operator of Nykaa — India's leading beauty and personal care e-commerce platform for women. Also runs Nykaa Fashion; a high-GMV platform with strong private label strategy in cosmetics.",
+
+  // ── Logistics ─────────────────────────────────────────────────────────────
+  "tci-express": "Asset-light express cargo company focused on B2B surface express — SME consignments delivered within 24-48 hours. High ROCE, debt-free, and a consistent dividend payer despite being in a capital-light niche.",
+  "transport-corporation-of-india": "One of India's oldest logistics companies providing surface express (TCI Express), full-truck-load, and supply chain solutions. Promoter-family-controlled with a multi-decade track record.",
+  "mahindra-logistics": "3PL logistics arm of the Mahindra Group, providing supply chain management and B2C e-commerce logistics. Expanding beyond its captive Mahindra Group volumes into third-party enterprise clients.",
+
+  // ── Additional companies ────────────────────────────────────────────────────
+  "bandhan-bank": "Kolkata-headquartered private bank that converted from a microfinance institution in 2015. Dominant in eastern India for small-ticket unsecured loans; rebuilding credit quality after COVID disruptions.",
+  "ujjivan-small-finance-bank": "Bengaluru-based small finance bank with a large microfinance base across rural and semi-urban India. Listed in 2019; focusing on asset diversification to reduce micro-loan concentration.",
 };
 
 /**
