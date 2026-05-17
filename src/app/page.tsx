@@ -208,6 +208,38 @@ const moduleCards = [
     accent: "group-hover:text-orange-800",
     lines: ["All IPO listing gains", "Best · worst · monthly trends"],
   },
+  {
+    title: "Market News",
+    icon: Newspaper,
+    href: "/news",
+    color: "bg-sky-50 text-sky-600",
+    accent: "group-hover:text-sky-800",
+    lines: ["Finance · IPO · FII · Deals", "Aggregated every 15 minutes"],
+  },
+  {
+    title: "FORE Calculator",
+    icon: Calculator,
+    href: "/calculators/stock-forecast",
+    color: "bg-violet-50 text-violet-600",
+    accent: "group-hover:text-violet-800",
+    lines: ["Forecasted Returns Estimator", "EPS growth × Exit P/E formula"],
+  },
+  {
+    title: "Dividend Stocks",
+    icon: Coins,
+    href: "/dividend-yield",
+    color: "bg-amber-50 text-amber-600",
+    accent: "group-hover:text-amber-800",
+    lines: ["High yield PSU & private stocks", "Coal India · Infosys · ITC · HUL"],
+  },
+  {
+    title: "Financial Twitter",
+    icon: Users,
+    href: "/news/twitter",
+    color: "bg-cyan-50 text-cyan-600",
+    accent: "group-hover:text-cyan-800",
+    lines: ["Top investors on X/Twitter", "20 curated Indian finance voices"],
+  },
 ];
 
 const calcShortcuts = [
@@ -216,14 +248,16 @@ const calcShortcuts = [
   { href: "/calculators/tax", label: "Income Tax", color: "hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200" },
   { href: "/calculators/lumpsum", label: "Lumpsum", color: "hover:bg-violet-50 hover:text-violet-700 hover:border-violet-200" },
   { href: "/calculators/fd", label: "FD Calculator", color: "hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200" },
-  { href: "/calculators/brokerage", label: "Brokerage", color: "hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200" },
+  { href: "/calculators/brokerage",      label: "Brokerage",     color: "hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200" },
+  { href: "/calculators/stock-forecast", label: "FORE Forecast",  color: "hover:bg-violet-50 hover:text-violet-700 hover:border-violet-200" },
+  { href: "/calculators/capital-gains",  label: "Capital Gains",  color: "hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200" },
 ];
 
 const whyStats = [
   { stat: "2,500+", label: "Companies tracked", color: "text-indigo-600", bg: "bg-indigo-50" },
-  { stat: "20+", label: "Free calculators", color: "text-emerald-600", bg: "bg-emerald-50" },
-  { stat: "Daily", label: "FII/DII & price updates", color: "text-sky-600", bg: "bg-sky-50" },
-  { stat: "AI", label: "DRHP risk analysis", color: "text-violet-600", bg: "bg-violet-50" },
+  { stat: "55+", label: "Free guides & articles", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { stat: "15-min", label: "Price update frequency", color: "text-sky-600", bg: "bg-sky-50" },
+  { stat: "25+", label: "Free calculators", color: "text-violet-600", bg: "bg-violet-50" },
 ];
 
 export default async function HomePage() {
