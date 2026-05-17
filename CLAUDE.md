@@ -162,3 +162,22 @@ Read the full research spec: `/Users/shubhamkumar/Desktop/Claude Code/_shared/RE
 
 
 Save findings to COMMS.md under "## Research Findings — [DATE IST]"
+
+
+---
+
+## 🔒 SECURITY — Non-Negotiable Rules
+
+Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/SECURITY_STANDARD.md`
+
+**Must check before every deploy:**
+1. Every `/api/*` route has auth check (session/token validation)
+2. `/api/auth/*` has rate limiting
+3. All user inputs validated with Zod
+4. No secrets/API keys hardcoded in source (use process.env)
+5. Security headers in next.config.ts (X-Frame-Options, X-Content-Type-Options etc)
+6. `npm audit --audit-level=high` = 0 high/critical vulns
+7. No `console.log` with user data in production code
+8. `.env` is in `.gitignore` and NOT tracked by git
+
+**Weekly automated check:** Runs every Sunday 01:00 IST. Results in `/home/ubuntu/logs/security-DATE.txt`
