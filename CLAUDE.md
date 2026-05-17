@@ -149,3 +149,16 @@ When you need to scrape data (LinkedIn, Google, Instagram, G2, contacts, news), 
 - Max 3 concurrent actors
 - Free $5/month credits — use sparingly
 
+
+
+---
+
+## 🔬 RESEARCH TASK — Do This Before Proposing New Features
+
+Before building anything new, research what real users say online about this product category.
+Read the full research spec: `/Users/shubhamkumar/Desktop/Claude Code/_shared/RESEARCH_TASK.md`
+
+**Search terms specific to this product:**
+
+
+Save findings to COMMS.md under "## Research Findings — [DATE IST]"
