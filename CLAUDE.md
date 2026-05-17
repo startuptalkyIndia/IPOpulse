@@ -1,3 +1,28 @@
+# 🚦 START HERE — Run This Every Session Before Anything Else
+
+**Step 1 — Read context (5 min)**
+- Read `PRODUCT.md` → understand what this product does and what's built
+- Read `COMMS.md` → see all pending tasks (work through them TOP TO BOTTOM, in order)
+- Read `CHANGELOG.md` → know what broke before, don't repeat it
+
+**Step 2 — Health check (2 min)**
+```bash
+curl -s http://localhost:3065/api/health        # is the app healthy?
+docker compose logs app --tail 50 | grep -iE "error|warn|fail|crash" | head -20
+npx tsc --noEmit 2>&1 | head -20               # any TypeScript errors?
+```
+
+**Step 3 — Fix broken things first**
+If Step 2 finds errors → fix them BEFORE starting any new feature. No new code on broken foundations.
+
+**Step 4 — Do COMMS.md tasks in order**
+Top of COMMS.md = highest priority. Complete in order. Don't skip to easier tasks.
+
+**Step 5 — Update COMMS.md when done**
+Mark completed tasks. Note what you built. Log any new issues found.
+
+---
+
 # PRODUCTION SYNC PROTOCOL
 > Every agent working on this project MUST follow this checklist before considering any task done.
 ## ⚠️ DEPLOY RULE — READ BEFORE EVERY DEPLOY
