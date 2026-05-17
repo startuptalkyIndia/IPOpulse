@@ -1,6 +1,51 @@
 # IPOpulse — COMMS
 ---
 
+## 2026-05-17 — Priority Tasks for Launch (from Master Hub)
+
+**Product:** India's comprehensive IPO + stock data website (content/data site, not SaaS)
+**Status:** Email ✅ | Data pipelines ✅ (BSE/NSE schedulers) | User accounts ❌ | Alerts ❌ | Monetization ❌
+
+### Task 1 (Highest Priority): Free vs Premium User Tiers
+Introduce a paywall for high-value features. Core data stays free — premium adds actionable alerts and exports:
+- **Free (no account needed):** All IPO listings, GMP table, subscription status, allotment status, basic company info, calculators
+- **Premium — ₹199/mo:**
+  - GMP alerts: "Notify me when [IPO] GMP changes by X%" via email
+  - Subscription status alerts: get notified when an IPO opens/closes
+  - Allotment alerts: "Your IPO allotment result is out"
+  - Export any data table to Excel (.xlsx)
+  - Advanced filters: filter IPOs by GMP %, subscription multiple, lot size, issue size
+  - Watchlist: save IPOs to track (currently may be public — make this premium)
+
+Implementation:
+- Add `plan Enum (FREE | PREMIUM)` and `planExpiresAt DateTime?` to User model
+- Gate premium features in the UI with a lock icon + "Upgrade to Premium" CTA
+- Integrate with existing payment setup (Razorpay) — ₹199/mo monthly, ₹1,499/yr annual (save ₹900)
+- Add `/pricing` page with the two tiers
+
+### Task 2: Alert System
+Build email alerts for IPO events. Data pipelines already run — just need to add the alert trigger layer:
+- **User sets alert:** On any IPO page, button "Get GMP alert for this IPO" → modal with threshold input ("Alert me when GMP changes by __ %") → save `UserAlert { userId, ipoId, type: 'GMP_CHANGE', threshold: 20 }` to DB
+- **Cron checks:** Every 2 hours, the existing GMP scheduler checks if GMP has changed by >= threshold for any saved alert → sends email via Resend with the new GMP value + link to the IPO page
+- Also add: allotment alerts (trigger when allotment date is reached + status is fetched), subscription open/close alerts
+- Use the same node-cron pattern already used in BSE/NSE schedulers
+- Limit: Free users = 0 alerts. Premium users = unlimited alerts.
+
+### Task 3: WhatsApp Alert Channel
+High-impact, zero-code growth hack — Indian retail investors strongly prefer WhatsApp over email for financial alerts:
+- Create a WhatsApp Channel (free, no API needed — just like a broadcast list at wa.me/channel/...)
+- Add a prominent "Join our WhatsApp channel for instant IPO alerts" button/banner on:
+  - Homepage (sticky banner or hero section)
+  - Every IPO detail page (below the GMP table)
+  - The pricing/premium page
+- Banner copy: "Get instant IPO alerts on WhatsApp — GMP updates, allotment results, subscription status. Join free, 10,000+ investors already tracking."
+- Link: `https://whatsapp.com/channel/<your-channel-id>` (create the channel manually from phone, then add the link to code)
+- No backend needed — just a link. This is a growth + retention mechanic, not a tech feature.
+
+**Deploy:** `bash /home/ubuntu/scripts/safe-deploy.sh IPOpulse 3065`
+
+---
+
 ## 2026-05-17 — BROADCAST: Create PRODUCT.md (from Master Hub)
 
 **Action required before next feature work.**
