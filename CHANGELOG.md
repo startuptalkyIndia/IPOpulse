@@ -1,10 +1,30 @@
 # Changelog — IPOpulse
 
+> **Read last 10 entries before starting any work. Every fix and root cause is documented here.**
+
+
 All notable changes to IPOpulse are documented here.
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/)
 
 ---
+
+---
+
+## 2026-05-17 IST
+
+### Fixed
+- CI lint errors — Root cause: react-hooks rules flagging valid patterns, no-unescaped-entities on JSX text — Do NOT: add --force flag to disable all lint, fix rules properly in eslint.config.mjs
+
+### Standard
+- Autosave spec: /Users/shubhamkumar/Desktop/Claude Code/_shared/AUTOSAVE_SPEC.md
+- Apify spec: /Users/shubhamkumar/Desktop/Claude Code/_shared/APIFY_SPEC.md
+- Research task: /Users/shubhamkumar/Desktop/Claude Code/_shared/RESEARCH_TASK.md
+- QC checklist: /Users/shubhamkumar/Desktop/Claude Code/_shared/QC_CHECKLIST.md
+
+### Warning for future agents
+- Smoke test: `bash /home/ubuntu/scripts/smoke-test.sh IPOpulse 3065`
+- Safe deploy: `bash /home/ubuntu/scripts/safe-deploy.sh IPOpulse 3065`
 
 ## [Unreleased]
 

@@ -181,3 +181,16 @@ Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_share
 8. `.env` is in `.gitignore` and NOT tracked by git
 
 **Weekly automated check:** Runs every Sunday 01:00 IST. Results in `/home/ubuntu/logs/security-DATE.txt`
+
+---
+
+## CHANGELOG — Read Before Starting
+
+Before ANY work, read CHANGELOG.md (in this project root).
+- Know what was previously broken and why
+- Know what patterns to avoid
+- Add your own entry before committing
+
+Rule: If you fix a bug, document the root cause so the next agent doesn't repeat it.
+
+Deploy rule: Use `bash /home/ubuntu/scripts/safe-deploy.sh FOLDER PORT` — includes smoke tests + auto-rollback.
