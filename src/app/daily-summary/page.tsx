@@ -77,8 +77,9 @@ export default async function DailySummaryPage() {
     select: { date: true },
   });
 
-  let topBhavGainers: Array<{ companyId: number; close: Decimal; changePct: Decimal | null; company: { name: string; slug: string } }> = [];
-  let topBhavLosers: Array<{ companyId: number; close: Decimal; changePct: Decimal | null; company: { name: string; slug: string } }> = [];
+  type BhavMoverRow = { id: number; company_name: string; slug: string; close: number; change_pct: number };
+  let topBhavGainers: BhavMoverRow[] = [];
+  let topBhavLosers: BhavMoverRow[] = [];
 
   if (latestBhav) {
     const [gainers, losers] = await Promise.all([
@@ -107,8 +108,8 @@ export default async function DailySummaryPage() {
         LIMIT 5
       `,
     ]);
-    topBhavGainers = gainers as any;
-    topBhavLosers = losers as any;
+    topBhavGainers = gainers as BhavMoverRow[];
+    topBhavLosers = losers as BhavMoverRow[];
   }
 
   // ── Derived values ────────────────────────────────────────────────────────
@@ -338,7 +339,7 @@ export default async function DailySummaryPage() {
                       </div>
                     </Link>
                   ))
-                : topBhavGainers.map((m: any) => (
+                : topBhavGainers.map((m) => (
                     <Link
                       key={m.slug}
                       href={`/ticker/${m.slug}`}
@@ -385,7 +386,7 @@ export default async function DailySummaryPage() {
                       </div>
                     </Link>
                   ))
-                : topBhavLosers.map((m: any) => (
+                : topBhavLosers.map((m) => (
                     <Link
                       key={m.slug}
                       href={`/ticker/${m.slug}`}

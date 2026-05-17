@@ -235,6 +235,9 @@ export const companyDescriptions: Record<string, string> = {
   // ── Additional companies ────────────────────────────────────────────────────
   "bandhan-bank": "Kolkata-headquartered private bank that converted from a microfinance institution in 2015. Dominant in eastern India for small-ticket unsecured loans; rebuilding credit quality after COVID disruptions.",
   "ujjivan-small-finance-bank": "Bengaluru-based small finance bank with a large microfinance base across rural and semi-urban India. Listed in 2019; focusing on asset diversification to reduce micro-loan concentration.",
+  "piramal-enterprises": "Diversified conglomerate under Ajay Piramal with businesses in pharma (Piramal Pharma), financial services (wholesale & retail lending), and healthcare analytics. Completed major demerger of pharma and finance verticals.",
+  "gland-pharma": "Hyderabad-based injectable pharmaceutical company majority-owned by Shanghai Fosun Pharma. One of the largest sterile injectables CDMO companies in India with a large US ANDA pipeline.",
+  "strides-pharma-science": "Bengaluru-based specialty pharma company focused on regulated markets — US, Australia, UK — with a strong generic soft-gel and regulated-market compliance track record.",
 };
 
 /**
