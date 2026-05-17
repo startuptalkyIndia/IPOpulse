@@ -81,6 +81,8 @@ const navGroups: NavGroup[] = [
     label: "Research",
     items: [
       [
+        { href: "/news",                    label: "Market News",           badge: "Live" },
+        { href: "/news/twitter",            label: "Financial Twitter India" },
         { href: "/research",                label: "Research Hub" },
         { href: "/research/next-day",       label: "Tomorrow's Watch List" },
         { href: "/sectors/momentum",        label: "Sector Momentum" },

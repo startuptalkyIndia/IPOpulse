@@ -25,6 +25,8 @@ const columns = [
       { href: "/screener", label: "Stock Screener" },
       { href: "/movers", label: "Gainers / Losers" },
       { href: "/daily-summary", label: "Daily Market Wrap" },
+      { href: "/news", label: "Market News" },
+      { href: "/news/twitter", label: "Financial Twitter India" },
       { href: "/research", label: "Research Hub" },
       { href: "/research/next-day", label: "Tomorrow's Watch List" },
       { href: "/indices", label: "Nifty Indices" },
