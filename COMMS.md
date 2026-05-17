@@ -1,4 +1,24 @@
 # IPOpulse — COMMS
+---
+
+## 2026-05-17 — BROADCAST: Create PRODUCT.md (from Master Hub)
+
+**Action required before next feature work.**
+
+Create `PRODUCT.md` in your project root documenting the product.
+
+**Template:** `/Users/shubhamkumar/Desktop/Claude Code/_shared/templates/PRODUCT.md.template`
+**Full instructions:** `/Users/shubhamkumar/Desktop/Claude Code/_shared/broadcasts/PRODUCT_DOC_BROADCAST.md`
+
+Steps:
+1. Read the template
+2. Read your CLAUDE.md + CHANGELOG.md + prisma/schema.prisma
+3. Fill every section honestly (use 'TBD' if unsure, not guesses)
+4. Commit: `docs: create PRODUCT.md — product documentation`
+5. Push to GitHub
+6. Add `> 📖 Product docs: See `PRODUCT.md` for full feature inventory.` to top of CLAUDE.md
+
+---
 
 Cross-team / Master Hub broadcasts log. Append, don't overwrite.
 
