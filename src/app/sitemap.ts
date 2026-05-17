@@ -93,6 +93,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/mutual-funds/screener`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/corporate-actions/rights-bonus`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/shareholding`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/screener/promoter`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/news`, lastModified: now, priority: 0.9, changeFrequency: "hourly" },
+    { url: `${BASE}/news/twitter`, lastModified: now, priority: 0.7, changeFrequency: "monthly" },
+    { url: `${BASE}/calculators/stock-forecast`, lastModified: now, priority: 0.8, changeFrequency: "yearly" },
+    { url: `${BASE}/dividend-yield`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
   ];
 
   const unlistedPages: MetadataRoute.Sitemap = unlistedShares.map((u) => ({

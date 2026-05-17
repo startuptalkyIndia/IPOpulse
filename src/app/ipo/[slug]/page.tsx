@@ -42,6 +42,7 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  if (!slug) return { title: "IPO not found" };
   const ipo = await prisma.ipo.findUnique({ where: { slug } });
   if (!ipo) return { title: "IPO not found" };
   return {
