@@ -23,6 +23,27 @@ import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 export const dynamic = "force-dynamic";
 
+async function fetchLatestNews(): Promise<Array<{ title: string; link: string; source: string; pubDate: string }>> {
+  try {
+    const url = `https://news.google.com/rss/search?q=India+stock+market+NSE+Nifty+IPO&hl=en-IN&gl=IN&ceid=IN:en`;
+    const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" }, next: { revalidate: 900 }, signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const items: Array<{ title: string; link: string; source: string; pubDate: string }> = [];
+    const matches = xml.matchAll(/<item>([\s\S]*?)<\/item>/g);
+    for (const m of matches) {
+      const c = m[1];
+      const title = c.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ?? c.match(/<title>(.*?)<\/title>/)?.[1] ?? "";
+      const link = c.match(/<link>(.*?)<\/link>/)?.[1] ?? "";
+      const source = c.match(/<source[^>]*>(.*?)<\/source>/)?.[1] ?? "Google News";
+      const pubDate = c.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] ?? "";
+      if (title && link) items.push({ title, link, source, pubDate });
+      if (items.length >= 8) break;
+    }
+    return items;
+  } catch { return []; }
+}
+
 const moduleCards = [
   {
     title: "IPO Center",
@@ -261,11 +282,12 @@ const whyStats = [
 ];
 
 export default async function HomePage() {
-  const [liveCount, upcomingCount, todayFiiDii, nifty50] = await Promise.all([
+  const [liveCount, upcomingCount, todayFiiDii, nifty50, latestNews] = await Promise.all([
     prisma.ipo.count({ where: { status: "live" } }).catch(() => 0),
     prisma.ipo.count({ where: { status: "upcoming" } }).catch(() => 0),
     prisma.fiiDiiDaily.findFirst({ where: { segment: "cash" }, orderBy: { date: "desc" } }).catch(() => null),
     prisma.niftyIndex.findFirst({ where: { indexName: "Nifty 50" }, orderBy: { date: "desc" } }).catch(() => null),
+    fetchLatestNews(),
   ]);
   const fiiNet = todayFiiDii?.fiiNet ? Number(todayFiiDii.fiiNet) : null;
   const diiNet = todayFiiDii?.diiNet ? Number(todayFiiDii.diiNet) : null;
@@ -477,6 +499,37 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Latest Market News */}
+      {latestNews.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-4">
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-md bg-sky-100 text-sky-600 flex items-center justify-center">
+                  <Newspaper className="w-3.5 h-3.5" />
+                </span>
+                Latest Market News
+              </h2>
+              <Link href="/news" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                All news →
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+              {latestNews.slice(0, 6).map((item, i) => (
+                <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
+                  className="flex items-start gap-2 py-2.5 px-0 sm:px-3 first:pl-0 last:pr-0 hover:text-indigo-700 transition-colors group">
+                  <span className="text-gray-300 text-sm font-bold mt-0.5 flex-shrink-0">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <p className="text-xs text-gray-800 font-medium leading-snug line-clamp-2 group-hover:text-indigo-700">{item.title}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{item.source}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Newsletter */}
       <section className="max-w-7xl mx-auto px-4 py-4">
