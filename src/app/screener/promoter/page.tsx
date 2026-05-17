@@ -4,8 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Users, AlertTriangle, TrendingUp } from "lucide-react";
 
-export const metadata = undefined; // client component
-
 interface ShareholdingData {
   company: string;
   symbol: string;
