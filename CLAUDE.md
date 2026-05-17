@@ -209,6 +209,29 @@ Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_share
 
 ---
 
+## ✅ QUALITY STANDARD — Definition of Done
+
+Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/QUALITY_STANDARD.md`
+
+**Before marking ANY task done:**
+- [ ] Tested locally end-to-end
+- [ ] `npx tsc --noEmit` — zero errors
+- [ ] No `console.log` with user data
+- [ ] Smoke test passes: `bash /home/ubuntu/scripts/enhanced-smoke-test.sh FOLDER PORT`
+- [ ] CHANGELOG.md updated
+- [ ] COMMS.md updated — task marked done
+
+**Never deploy if:**
+- `npm audit --audit-level=high` shows vulnerabilities
+- TypeScript errors exist
+- Previous smoke test failed
+
+**Automated checks running:**
+- Every 5 min: downtime monitor (ntfy.sh alerts)
+- Daily 08:00 IST: SSL expiry + response times + error digest
+- Every 6h: smoke tests
+- Saturday 11 AM IST: full compliance + security + npm audit scan
+
 ## 🗄️ DATABASE STANDARD — Follow Before Any Schema Change
 
 Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/DB_STANDARD.md`
