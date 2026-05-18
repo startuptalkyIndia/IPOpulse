@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const { available, via } = await claudeAvailable();
   if (!available) {
     return NextResponse.json(
-      { error: "DRHP AI not available. Set ANTHROPIC_API_KEY or install the Claude CLI on the server." },
+      { error: "DRHP AI not available. Claude CLI is not installed on the server." },
       { status: 503 },
     );
   }

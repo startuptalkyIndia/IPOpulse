@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { analyzeDrhpAuto, urlChanged, computeRiskScore, type DrhpAnalysis } from "@/lib/drhp-analyzer";
+import { analyzeDrhpViaClaudeCli, urlChanged, computeRiskScore, type DrhpAnalysis } from "@/lib/drhp-analyzer";
 import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 
 /**
@@ -21,11 +21,11 @@ import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 const MAX_PER_RUN = parseInt(process.env.DRHP_MAX_PER_RUN ?? "3", 10);
 
 export async function analyzePendingDrhps(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
-  // Check if any Claude path is available (SDK or CLI)
+  // Check if Claude CLI is available
   const { claudeAvailable } = await import("@/lib/claude-runner");
-  const { available, via } = await claudeAvailable();
+  const { available } = await claudeAvailable();
   if (!available) {
-    return { rowsIn: 0, notes: "No Claude path available. Set ANTHROPIC_API_KEY or install the Claude CLI." };
+    return { rowsIn: 0, notes: "Claude CLI not available. Install @anthropic-ai/claude-code and run `claude` once to authenticate." };
   }
 
   // Candidate IPOs:
@@ -79,7 +79,7 @@ export async function analyzePendingDrhps(): Promise<{ rowsIn: number; rowsError
     });
 
     try {
-      const { analysis, modelUsed } = await analyzeDrhpAuto({
+      const { analysis, modelUsed } = await analyzeDrhpViaClaudeCli({
         pdfUrl: w.pdfUrl,
         ipoName: w.ipo.name,
         ipoType: w.ipo.type,

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const { available, via } = await claudeAvailable();
   if (!available) {
-    return NextResponse.json({ error: "Concall AI not available. Set ANTHROPIC_API_KEY or install the Claude CLI." }, { status: 503 });
+    return NextResponse.json({ error: "Concall AI not available. Claude CLI is not installed on the server." }, { status: 503 });
   }
 
   const body = await request.json().catch(() => ({}));

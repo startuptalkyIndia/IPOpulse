@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { analyzeDrhpAuto, analyzeDrhpViaClaudeCli } from "@/lib/drhp-analyzer";
+import { analyzeDrhpViaClaudeCli } from "@/lib/drhp-analyzer";
 import { persistAnalysis } from "@/crons/jobs/drhp-analyze";
 
 /**
- * Admin force-reanalyze a specific IPO's DRHP.
+ * Admin force-reanalyze a specific IPO's DRHP via Claude CLI.
  *
- * POST body: { slug: "tata-capital-ipo", via?: "sdk" | "cli" }
- *
- * Default path is "sdk" (uses ANTHROPIC_API_KEY on server). The "cli" path
- * shells out to the local `claude` command — only useful when the founder
- * runs this from a logged-in shell on the server (not via HTTP from prod).
+ * POST body: { slug: "tata-capital-ipo" }
  */
 async function adminGuard() {
   const session = await auth();
@@ -26,7 +22,6 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}));
   const slug = String(body.slug ?? "").trim();
-  const via = String(body.via ?? "sdk") === "cli" ? "cli" : "sdk";
   if (!slug) return NextResponse.json({ error: "Missing slug" }, { status: 400 });
 
   const ipo = await prisma.ipo.findUnique({
@@ -47,15 +42,7 @@ export async function POST(request: Request) {
   });
 
   try {
-    let result: { analysis: import("@/lib/drhp-analyzer").DrhpAnalysis; modelUsed: string };
-
-    // "cli" forces the Claude CLI path; default "sdk" uses auto-detect (SDK → CLI)
-    if (via === "cli") {
-      result = await analyzeDrhpViaClaudeCli({ pdfUrl, ipoName: ipo.name, ipoType: ipo.type, sourceType });
-    } else {
-      result = await analyzeDrhpAuto({ pdfUrl, ipoName: ipo.name, ipoType: ipo.type, sourceType });
-    }
-
+    const result = await analyzeDrhpViaClaudeCli({ pdfUrl, ipoName: ipo.name, ipoType: ipo.type, sourceType });
     await persistAnalysis(ipo.id, pdfUrl, sourceType, result.analysis, result.modelUsed);
     return NextResponse.json({ ok: true, slug, modelUsed: result.modelUsed });
   } catch (err) {

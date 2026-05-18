@@ -1,21 +1,14 @@
 /**
- * Universal Claude caller.
+ * Universal Claude caller — CLI only.
  *
- * Tries in order:
- *   1. Anthropic SDK  — if ANTHROPIC_API_KEY is set in env
- *   2. Claude CLI     — if `claude` binary is on PATH and ~/.claude/ credentials exist
- *   3. Throws ClaudeUnavailableError
- *
- * This means the founder can use their existing Claude Pro / Max / Team subscription
- * (no separate API key purchase) as long as `claude` is installed on the server
- * and authenticated once via `claude` login.
+ * Uses the local `claude` CLI binary (Claude Code). No ANTHROPIC_API_KEY needed.
+ * The server must have `@anthropic-ai/claude-code` installed globally and
+ * authenticated via `claude` login.
  *
  * Usage:
  *   import { callClaude, claudeAvailable } from "@/lib/claude-runner";
  *
  *   const text = await callClaude({ system: "...", user: "...", maxTokens: 1000 });
- *
- * Both paths return a plain string — callers parse JSON from it when needed.
  */
 
 import { spawn } from "node:child_process";
@@ -24,7 +17,7 @@ import { which } from "./which-util";
 export class ClaudeUnavailableError extends Error {
   constructor() {
     super(
-      "Claude AI is not available. Set ANTHROPIC_API_KEY in .env, or install the Claude CLI " +
+      "Claude AI is not available. Install the Claude CLI " +
         "(`npm install -g @anthropic-ai/claude-code`) and run `claude` once to authenticate.",
     );
     this.name = "ClaudeUnavailableError";
@@ -35,11 +28,11 @@ export interface ClaudeCallOptions {
   system: string;
   user: string;
   maxTokens?: number;
-  /** Override model. For SDK path only; CLI path uses the plan default. */
+  /** Override model — passed to CLI via --model flag. */
   model?: string;
 }
 
-let _claudeBin: string | null | undefined = undefined; // undefined = not yet resolved
+let _claudeBin: string | null | undefined = undefined;
 
 async function getClaudeBin(): Promise<string | null> {
   if (_claudeBin !== undefined) return _claudeBin;
@@ -47,56 +40,24 @@ async function getClaudeBin(): Promise<string | null> {
   return _claudeBin;
 }
 
-/** Check if either path is available — use in route handlers to gate features. */
-export async function claudeAvailable(): Promise<{ available: boolean; via: "sdk" | "cli" | null }> {
-  if (process.env.ANTHROPIC_API_KEY) return { available: true, via: "sdk" };
+/** Check if Claude CLI is available. */
+export async function claudeAvailable(): Promise<{ available: boolean; via: "cli" | null }> {
   const bin = await getClaudeBin();
   if (bin) return { available: true, via: "cli" };
   return { available: false, via: null };
 }
 
 /**
- * Call Claude and return the assistant's text response.
- * Throws ClaudeUnavailableError if neither path is configured.
+ * Call Claude CLI and return the assistant's text response.
+ * Throws ClaudeUnavailableError if the CLI is not installed.
  */
 export async function callClaude(opts: ClaudeCallOptions): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  // ── Path 1: Anthropic SDK ────────────────────────────────────────────
-  if (apiKey) {
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
-    const resp = await client.messages.create({
-      model: opts.model ?? "claude-sonnet-4-5",
-      max_tokens: opts.maxTokens ?? 1500,
-      system: opts.system,
-      messages: [{ role: "user", content: opts.user }],
-    });
-    const block = resp.content.find((b) => b.type === "text");
-    if (block && block.type === "text") return block.text;
-    throw new Error("SDK returned no text block");
-  }
-
-  // ── Path 2: Claude CLI ───────────────────────────────────────────────
   const bin = await getClaudeBin();
-  if (bin) {
-    return callViaCli(bin, opts);
-  }
-
-  throw new ClaudeUnavailableError();
+  if (!bin) throw new ClaudeUnavailableError();
+  return callViaCli(bin, opts);
 }
 
-async function callViaCli(bin: string, opts: ClaudeCallOptions): Promise<string> {
-  /**
-   * Pipe the combined prompt via stdin to the Claude CLI.
-   * Uses spawn (not execFile) so we can write to stdin after process start.
-   *
-   * Flags:
-   *   -p                  non-interactive print mode
-   *   --output-format text  return raw text
-   *   --no-history        don't persist this call to ~/.claude history
-   *   --model             only when explicitly requested
-   */
+function callViaCli(bin: string, opts: ClaudeCallOptions): Promise<string> {
   const combinedPrompt = `<system>\n${opts.system}\n</system>\n\n${opts.user}`;
   const args = ["-p", "--output-format", "text"];
   if (opts.model) args.push("--model", opts.model);

@@ -25,7 +25,7 @@ export const FLAG_DEFINITIONS: Array<{
   { key: "revenue.market_ticker", label: "Live market news ticker (top of every page)", description: "Right-to-left scrolling ticker with FII/DII, IPO updates, recent listings.", category: "revenue", defaultEnabled: true },
 
   // AI
-  { key: "ai.drhp_search", label: "DRHP AI Q&A page", description: "Show /ipo/drhp page with Claude-powered prospectus search. Requires ANTHROPIC_API_KEY.", category: "ai", defaultEnabled: true },
+  { key: "ai.drhp_search", label: "DRHP AI Q&A page", description: "Show /ipo/drhp page with Claude-powered prospectus search. Requires Claude CLI on server.", category: "ai", defaultEnabled: true },
 
   // SEO / data
   { key: "seo.email_digest", label: "Email digest (admin preview + send)", description: "Render and send daily email digest. Requires RESEND_API_KEY.", category: "data", defaultEnabled: false },

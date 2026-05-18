@@ -7,11 +7,7 @@
  *   - scripts/analyze-drhp.ts               (local CLI, npx tsx)
  *   - scripts/analyze-drhp-via-cli.sh       (Claude CLI wrapper)
  *
- * Two execution modes both produce the same structured output:
- *   1. SDK mode      — uses ANTHROPIC_API_KEY directly (server cron, admin)
- *   2. Claude CLI    — shells out to `claude -p` (local, ad-hoc)
- *
- * Cost guard: ~$0.60–$1.20 per DRHP at Sonnet 4.5 (300–500 page typical).
+ * Uses Claude CLI only — no ANTHROPIC_API_KEY needed.
  * We cache aggressively — analysis only re-runs when sourceUrl changes.
  */
 
@@ -206,87 +202,10 @@ export function urlChanged(prev: string | null | undefined, next: string): boole
 }
 
 /**
- * Run the analysis via the Anthropic SDK with the prospectus URL as a
- * `document` content block. Returns parsed JSON or throws.
- */
-/**
- * Run the analysis via the Anthropic SDK with the prospectus URL as a
- * `document` content block. This path requires ANTHROPIC_API_KEY.
- * Note: PDF document blocks are only supported via the SDK (not CLI),
- * so the DRHP deep-dive always uses SDK when available, and falls back
- * to a text-extraction prompt via CLI when not.
- */
-export async function analyzeDrhpViaSdk(opts: {
-  apiKey: string;
-  pdfUrl: string;
-  ipoName: string;
-  ipoType: string;
-  sourceType: "DRHP" | "RHP";
-  model?: string;
-}): Promise<{ analysis: DrhpAnalysis; modelUsed: string }> {
-  const { default: Anthropic } = await import("@anthropic-ai/sdk");
-  const client = new Anthropic({ apiKey: opts.apiKey });
-
-  const model = opts.model ?? "claude-sonnet-4-5";
-  const resp = await client.messages.create({
-    model,
-    max_tokens: 4000,
-    system: DRHP_SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "document",
-            source: { type: "url", url: opts.pdfUrl },
-            title: `${opts.ipoName} — ${opts.sourceType}`,
-            context: `Indian ${opts.ipoType === "sme" ? "SME" : "Mainboard"} IPO prospectus.`,
-          },
-          { type: "text", text: "Extract the full structured intelligence per the schema. Output JSON only." },
-        ],
-      },
-    ],
-  });
-
-  const textBlock = resp.content.find((b) => b.type === "text");
-  const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
-  const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error("AI response was not valid JSON: " + raw.slice(0, 200));
-  }
-  const parsed = JSON.parse(jsonMatch[0]) as DrhpAnalysis;
-  return { analysis: parsed, modelUsed: model };
-}
-
-/**
- * Auto-select: uses SDK (PDF document block) if ANTHROPIC_API_KEY is set,
- * otherwise falls back to Claude CLI. The CLI path fetches the PDF text
- * by instructing Claude to read the URL directly via its web tool.
- */
-export async function analyzeDrhpAuto(opts: {
-  pdfUrl: string;
-  ipoName: string;
-  ipoType: string;
-  sourceType: "DRHP" | "RHP";
-}): Promise<{ analysis: DrhpAnalysis; modelUsed: string }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (apiKey) {
-    return analyzeDrhpViaSdk({ ...opts, apiKey });
-  }
-  // CLI path
-  return analyzeDrhpViaClaudeCli(opts);
-}
-
-/**
- * Run the analysis via the local Claude CLI (`claude` command). Used when
- * the founder runs the analysis from their laptop without an API key.
- *
+ * Run the analysis via the local Claude CLI (`claude` command).
  * The CLI inherits Claude Code's session credentials. We pass the prompt
  * via stdin and the URL inline; the CLI's tool-using loop fetches the PDF
  * and returns the analysis.
- *
- * NOTE: this path requires the `claude` binary on PATH and an active
- * Claude Code session. The cron does NOT use this — it always uses the SDK.
  */
 export async function analyzeDrhpViaClaudeCli(opts: {
   pdfUrl: string;

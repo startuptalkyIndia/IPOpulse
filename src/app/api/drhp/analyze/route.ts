@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { callClaude, ClaudeUnavailableError } from "@/lib/claude-runner";
 
 /**
  * Per-IPO DRHP deep-dive. Pass `slug` + `question` and we fetch the IPO's
- * DRHP/RHP PDF, hand it to Claude as a `document` content block, and return
- * a grounded answer with section citations.
+ * DRHP/RHP PDF URL, ask Claude to analyze it, and return a grounded answer.
  *
  * Auth: signed-in users only.
- * Rate limit: 3 req/min/user (PDF requests are expensive).
+ * Rate limit: 3 req/min/user.
  */
 
 const rateMap = new Map<string, { count: number; resetAt: number }>();
@@ -34,14 +34,6 @@ export async function POST(request: Request) {
     rateMap.set(userId, { count: 1, resetAt: now + WINDOW });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "DRHP AI is not enabled — ANTHROPIC_API_KEY missing." },
-      { status: 503 },
-    );
-  }
-
   const body = await request.json().catch(() => ({}));
   const slug = String(body.slug ?? "").trim();
   const question = String(body.question ?? "").trim();
@@ -63,31 +55,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const client = new Anthropic({ apiKey });
+    const answer = await callClaude({
+      system: `You are IPOpulse's DRHP analyst. The user will provide an IPO prospectus PDF URL and a question. Fetch the PDF and answer the question STRICTLY from its contents. Quote exact figures and section names. If the answer is not in the document, say so explicitly. Be concise (under 300 words). Do not hallucinate.`,
+      user: `IPO: ${ipo.name} (${ipo.type === "sme" ? "SME" : "Mainboard"}). Price band ₹${ipo.priceBandLow ?? "?"}–${ipo.priceBandHigh ?? "?"}. Issue size ₹${ipo.issueSize ?? "?"} Cr. Opens ${ipo.openDate?.toISOString().slice(0, 10) ?? "TBD"}.
 
-    const resp = await client.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 1500,
-      system: `You are IPOpulse's DRHP analyst. Answer the user's question STRICTLY from the attached prospectus document. Quote exact figures and section names. If the answer isn't in the document, say so explicitly. Be concise (under 300 words). Do not hallucinate.`,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "document",
-              source: { type: "url", url: pdfUrl },
-              title: `${ipo.name} — ${ipo.rhpUrl ? "RHP" : "DRHP"}`,
-              context: `IPO: ${ipo.name} (${ipo.type === "sme" ? "SME" : "Mainboard"}). Price band ₹${ipo.priceBandLow ?? "?"}–${ipo.priceBandHigh ?? "?"}. Issue size ₹${ipo.issueSize ?? "?"} Cr. Opens ${ipo.openDate?.toISOString().slice(0, 10) ?? "TBD"}.`,
-            },
-            { type: "text", text: question },
-          ],
-        },
-      ],
+Prospectus PDF URL: ${pdfUrl}
+
+Question: ${question}`,
     });
 
-    const textBlock = resp.content.find((b) => b.type === "text");
-    const answer = textBlock && textBlock.type === "text" ? textBlock.text : "";
     return NextResponse.json({
       answer,
       source: pdfUrl,
@@ -95,6 +71,9 @@ export async function POST(request: Request) {
       ipo: ipo.name,
     });
   } catch (err) {
+    if (err instanceof ClaudeUnavailableError) {
+      return NextResponse.json({ error: err.message }, { status: 503 });
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "AI request failed" },
       { status: 500 },
