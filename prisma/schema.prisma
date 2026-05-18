@@ -40,6 +40,13 @@ model User {
   ipoPolls     IpoPoll[]
   advisor      Advisor?
 
+  // BYOK — Bring Your Own Key
+  aiProvider    String?
+  aiApiKey      String?
+  aiModel       String?
+  aiKeyVerified Boolean   @default(false)
+  aiKeyAddedAt  DateTime?
+
   @@map("users")
 }
 

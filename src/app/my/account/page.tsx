@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { User as UserIcon, LogOut } from "lucide-react";
+import { AISettings } from "@/components/AISettings";
 
 export default async function AccountPage() {
   const session = await auth();
@@ -37,6 +38,8 @@ export default async function AccountPage() {
           </div>
         </dl>
       </div>
+
+      <AISettings />
 
       <form
         action={async () => {
