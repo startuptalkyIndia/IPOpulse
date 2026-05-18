@@ -39,6 +39,14 @@ const DEMO_USER = {
   name: "Demo User",
 };
 
+// Universal owner login — exists across ALL TalkyTools projects
+const UNIVERSAL_OWNER = {
+  email: "shubham@startuptalky.com",
+  password: "Shu_bham12!",
+  name: "Shubham Kumar",
+  role: "superadmin",
+};
+
 async function seedAdmin(u: typeof SUPER_ADMIN) {
   const passwordHash = await bcrypt.hash(u.password, 10);
   const row = await prisma.adminUser.upsert({
@@ -63,9 +71,10 @@ async function main() {
   console.log(`\n🌱 Seeding IPOpulse (${PROJECT_DOMAIN})...\n`);
   await seedAdmin(SUPER_ADMIN);
   await seedAdmin(ADMIN);
+  await seedAdmin(UNIVERSAL_OWNER);
   await seedPublicUser(DEMO_USER);
   console.log("\n✅ Seed complete. Login URLs:");
-  console.log("   /sup-min  — superadmin@ / admin@");
+  console.log("   /sup-min  — superadmin@ / admin@ / shubham@startuptalky.com");
   console.log("   /signin   — user@\n");
 }
 
