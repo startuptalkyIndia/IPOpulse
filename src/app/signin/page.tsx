@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 
 export default function SigninPage() {
   return (
@@ -22,6 +22,7 @@ function SigninForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,7 +58,12 @@ function SigninForm() {
           </div>
           <div>
             <label className="label" htmlFor="password">Password</label>
-            <input id="password" type="password" className="input w-full" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            <div className="relative">
+              <input id="password" type={showPassword ? "text" : "password"} className="input w-full pr-10" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           {error ? <div className="bg-red-50 text-red-600 text-sm rounded-lg px-3 py-2">{error}</div> : null}
           <button type="submit" className="btn-primary w-full" disabled={pending}>

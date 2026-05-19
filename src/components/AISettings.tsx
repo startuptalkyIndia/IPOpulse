@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const PROVIDERS = [
   { value: "anthropic", label: "Anthropic Claude", placeholder: "sk-ant-api03-...", url: "https://console.anthropic.com/keys" },
@@ -28,6 +29,7 @@ export function AISettings() {
   const [status, setStatus]     = useState<"idle"|"saving"|"saved"|"error">("idle");
   const [connected, setConnected] = useState<any>(null);
   const [error, setError]       = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings/ai").then(r => r.json()).then(d => { if (d.aiKeyVerified) setConnected(d); });
@@ -74,7 +76,12 @@ export function AISettings() {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">API Key <a href={pInfo.url} target="_blank" rel="noopener" className="text-indigo-600 font-normal">Get key →</a></label>
-          <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={pInfo.placeholder} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono" />
+          <div className="relative">
+            <input type={showApiKey ? "text" : "password"} value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={pInfo.placeholder} className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm font-mono" />
+            <button type="button" onClick={() => setShowApiKey(!showApiKey)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+              {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <button onClick={save} disabled={!apiKey || status === "saving"} className="w-full bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50">
