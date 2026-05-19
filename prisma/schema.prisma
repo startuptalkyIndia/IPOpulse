@@ -39,6 +39,7 @@ model User {
   commentVotes CommentVote[]
   ipoPolls     IpoPoll[]
   advisor      Advisor?
+  alerts       Alert[]
 
   // BYOK — Bring Your Own Key
   aiProvider    String?
@@ -478,6 +479,25 @@ model IngestionRun {
 // ============================================================
 // Newsletter / User Alerts
 // ============================================================
+
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipoName   String   @map("ipo_name")
+  ipoSymbol String?  @map("ipo_symbol")
+  ipoSlug   String?  @map("ipo_slug")
+  type      String   // "gmp_threshold" | "allotment" | "listing" | "subscription_open" | "subscription_close"
+  threshold Float?   // for gmp_threshold alerts — % change
+  isActive  Boolean  @default(true) @map("is_active")
+  firedAt   DateTime? @map("fired_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId, isActive])
+  @@index([ipoSlug, type])
+  @@map("alerts")
+}
 
 // ============================================================
 // AMFI Mutual Funds

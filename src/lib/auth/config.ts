@@ -54,16 +54,5 @@ export const authConfig: NextAuthConfig = {
       }
       return session;
     },
-    authorized: async ({ auth, request }) => {
-      const { pathname } = request.nextUrl;
-      if (pathname.startsWith("/sup-min/") && pathname !== "/sup-min") {
-        const role = (auth?.user as { role?: string } | undefined)?.role;
-        return role === "admin" || role === "superadmin";
-      }
-      if (pathname.startsWith("/my/")) {
-        return !!auth?.user;
-      }
-      return true;
-    },
   },
 };

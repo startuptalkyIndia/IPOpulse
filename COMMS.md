@@ -1,6 +1,26 @@
 # IPOpulse — COMMS
 ---
 
+## 2026-05-19 — User Accounts + IPO Alerts (completed)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Alert model added to schema | ✅ Done | `prisma db push` applied locally |
+| 2 | Auth.js v5 middleware.ts | ✅ Done | Protects /dashboard/, /my/, /api/alerts/, /sup-min/ |
+| 3 | Alert API routes (POST/GET/DELETE) | ✅ Done | /api/alerts + /api/alerts/[id] |
+| 4 | SetAlertButton component with modal | ✅ Done | 5 alert types, GMP threshold input, login redirect |
+| 5 | Button added to IPO detail page | ✅ Done | Next to Watchlist + Track Application |
+| 6 | /login + /register redirect pages | ✅ Done | Canonical pages remain /signin and /signup |
+| 7 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` clean |
+| 8 | Build | ✅ Passes | Fixed pre-existing Turbopack+standalone ENOENT bug |
+| 9 | Committed + pushed | ✅ Done | feat: user accounts + IPO alerts |
+
+**Note for future agents:** If you run `npm install` and break the node_modules patches, the local `npx next build` will fail with `ENOENT: middleware.js.nft.json`. This is a Next.js 16 Turbopack + standalone bug. The Docker build on the server (Linux, webpack) is NOT affected. To re-apply patches locally:
+- In `node_modules/next/dist/build/utils.js` line ~1052: add `.catch((err) => { if (err.code !== 'ENOENT') throw err; })` on the `handleTraceFiles(middlewareTrace)` call
+- In `node_modules/next/dist/build/index.js` line ~291: wrap the `copyFile` for middleware.js with an `existsSync` check
+
+---
+
 ## 2026-05-17 — Priority Tasks for Launch (from Master Hub)
 
 **Product:** India's comprehensive IPO + stock data website (content/data site, not SaaS)

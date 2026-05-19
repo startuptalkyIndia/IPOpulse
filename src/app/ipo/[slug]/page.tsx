@@ -20,6 +20,7 @@ import { SubscriptionVelocity } from "@/components/ipo/SubscriptionVelocity";
 import { DrhpAnalysisCard } from "@/components/ipo/DrhpAnalysisCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
+import { SetAlertButton } from "@/components/ipo/SetAlertButton";
 import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
 import { ListingPredictorCard } from "@/components/ipo/ListingPredictorCard";
 import { IpoReviewsCard } from "@/components/ipo/IpoReviewsCard";
@@ -174,6 +175,7 @@ export default async function IpoDetailPage({ params }: Props) {
           <div className="flex flex-wrap gap-2">
             <WatchlistButton type="ipo" targetSlug={ipo.slug} initial={inWatchlist} authed={!!userId} />
             <TrackApplicationButton ipoId={ipo.id} ipoName={ipo.name} initial={trackedApp} authed={!!userId} />
+            <SetAlertButton ipoName={ipo.name} ipoSymbol={ipo.nseSymbol} ipoSlug={ipo.slug} authed={!!userId} />
             {ipo.registrarUrl ? (
               <a
                 href={ipo.registrarUrl}
