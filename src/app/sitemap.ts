@@ -4,6 +4,7 @@ import { superInvestors } from "@/lib/super-investors";
 import { sectors } from "@/lib/sectors";
 import { unlistedShares } from "@/lib/unlisted-shares";
 import { articles } from "@/lib/learn-articles";
+import { bestStocksCategories } from "@/lib/best-stocks-categories";
 import { prisma } from "@/lib/db";
 
 const BASE = "https://ipopulse.talkytools.com";
@@ -98,7 +99,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/news/twitter`, lastModified: now, priority: 0.7, changeFrequency: "monthly" },
     { url: `${BASE}/calculators/stock-forecast`, lastModified: now, priority: 0.8, changeFrequency: "yearly" },
     { url: `${BASE}/dividend-yield`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/best-stocks`, lastModified: now, priority: 0.9, changeFrequency: "weekly" },
   ];
+
+  const bestStocksPages: MetadataRoute.Sitemap = bestStocksCategories.map((c) => ({
+    url: `${BASE}/best-stocks/${c.slug}`,
+    lastModified: now,
+    priority: 0.8,
+    changeFrequency: "daily" as const,
+  }));
 
   const unlistedPages: MetadataRoute.Sitemap = unlistedShares.map((u) => ({
     url: `${BASE}/unlisted-shares/${u.slug}`,
@@ -156,5 +165,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly",
   }));
 
-  return [...staticPages, ...calcPages, ...investorPages, ...sectorPages, ...ipoPages, ...tickerPages, ...unlistedPages, ...learnPages];
+  return [...staticPages, ...calcPages, ...investorPages, ...sectorPages, ...ipoPages, ...tickerPages, ...unlistedPages, ...learnPages, ...bestStocksPages];
 }

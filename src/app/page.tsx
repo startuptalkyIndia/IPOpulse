@@ -262,6 +262,14 @@ const moduleCards = [
     accent: "group-hover:text-cyan-800",
     lines: ["Top investors on X/Twitter", "20 curated Indian finance voices"],
   },
+  {
+    title: "Best Stocks Lists",
+    icon: TrendingUp,
+    href: "/best-stocks",
+    color: "bg-rose-50 text-rose-600",
+    accent: "group-hover:text-rose-800",
+    lines: ["Under ₹100 · Blue chip · Penny", "10 curated lists, live data"],
+  },
 ];
 
 const calcShortcuts = [
