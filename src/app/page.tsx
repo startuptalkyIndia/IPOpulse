@@ -23,7 +23,6 @@ import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 
-export const dynamic = "force-dynamic";
 
 async function fetchLatestNews(): Promise<Array<{ title: string; link: string; source: string; pubDate: string }>> {
   try {

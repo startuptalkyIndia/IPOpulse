@@ -23,6 +23,20 @@ Mark completed tasks. Note what you built. Log any new issues found.
 
 ---
 
+## ✅ MANDATORY — End Every Session With a Status Table
+
+Every agent MUST end their session with this table in COMMS.md and final message:
+
+```
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | What you built/fixed | ✅ Done / ❌ Broken / ⏭️ Skipped | detail |
+| 2 | TypeScript errors | ✅ 0 errors | or 🔴 N errors |
+| 3 | Deployed to server | ✅ HTTP 200 | or ❌ not deployed |
+```
+Never write "done" without the table. Every attempted task = one row.
+
+
 # PRODUCTION SYNC PROTOCOL
 > Every agent working on this project MUST follow this checklist before considering any task done.
 ## ⚠️ DEPLOY RULE — READ BEFORE EVERY DEPLOY
