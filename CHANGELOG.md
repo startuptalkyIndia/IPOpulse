@@ -11,6 +11,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: 
 
 ---
 
+## 2026-05-21 IST
+
+### Fixed
+- Docker build crash `ENOENT: middleware.js.nft.json` (Next.js 16.2.6 + `output: "standalone"` + root `middleware.ts`). Root cause: Next 16 build code (`node_modules/next/dist/build/index.js` ~line 2520) renames `proxy.js.nft.json` → `middleware.js.nft.json` for the new `proxy.ts` convention; when the NFT trace file is absent the rename/readFile pair throws. The previous local-only patch to node_modules didn't propagate into Docker (fresh `npm install`). Fix: added `scripts/patch-next-middleware-nft.js` (idempotent, marker-tagged) and a `RUN node scripts/patch-next-middleware-nft.js` line in the Dockerfile builder stage, between `prisma generate` and `npm run build`. Patches wrap the rename block in a try/catch that swallows ENOENT, and short-circuit `handleTraceFiles` when the trace file is missing. Do NOT: remove `output: "standalone"` (breaks the runner stage which copies `.next/standalone`). Verified locally: `npm run build` completes and produces `.next/standalone/`.
+
+---
+
 ## 2026-05-17 IST
 
 ### Fixed

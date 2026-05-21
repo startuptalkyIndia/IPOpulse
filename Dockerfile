@@ -16,6 +16,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"
 ENV DATABASE_URL=$DATABASE_URL
 RUN npx prisma generate
+
+# Workaround for Next.js 16.2.6 standalone + middleware bug:
+# build crashes with `ENOENT: middleware.js.nft.json` when
+# `output: "standalone"` is combined with a root `middleware.ts`.
+# Patches node_modules/next/dist/build/{index,utils}.js to handle the
+# missing NFT file gracefully. Idempotent. See script header for detail.
+RUN node scripts/patch-next-middleware-nft.js
+
 RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
 
 # Stage 3: Production runner
