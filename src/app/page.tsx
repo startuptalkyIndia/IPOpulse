@@ -269,7 +269,7 @@ const moduleCards = [
     href: "/best-stocks",
     color: "bg-rose-50 text-rose-600",
     accent: "group-hover:text-rose-800",
-    lines: ["Under ₹100 · Blue chip · Penny", "10 curated lists, live data"],
+    lines: ["Under ₹100 · PSU · Dividend · Multibagger", "14 curated lists, live data"],
   },
 ];
 
@@ -286,7 +286,7 @@ const calcShortcuts = [
 
 const whyStats = [
   { stat: "2,500+", label: "Companies tracked", color: "text-indigo-600", bg: "bg-indigo-50" },
-  { stat: "55+", label: "Free guides & articles", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { stat: "65+", label: "Free guides & articles", color: "text-emerald-600", bg: "bg-emerald-50" },
   { stat: "15-min", label: "Price update frequency", color: "text-sky-600", bg: "bg-sky-50" },
   { stat: "25+", label: "Free calculators", color: "text-violet-600", bg: "bg-violet-50" },
 ];
