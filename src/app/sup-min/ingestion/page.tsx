@@ -82,7 +82,12 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
   screener_fundamentals: {
     label: "Screener fundamentals — Yahoo Finance (Mon–Fri 22:30 IST)",
     schedule: "Mon–Fri at 22:30 IST",
-    desc: "Fetches P/E, P/B, ROE, D/E, EPS, book value, and dividend yield for top 1,000 companies via Yahoo Finance quoteSummary API. Free, no auth. Powers the /screener filter columns.",
+    desc: "Pass 1: Batch v7 quote API for PE, PB, EPS, dividendYield, marketCap, sharesOutstanding, ROE. Pass 2: yahoo-finance2 quoteSummary for companies still missing shares/ROE (cap 200/run). Ends with market_cap recalc from shares×price for all companies.",
+  },
+  yahoo_fundamentals: {
+    label: "Yahoo Fundamentals — Deep Weekly Sync (Sunday 2:00 AM IST)",
+    schedule: "Sunday at 2:00 AM IST",
+    desc: "Full fundamentals refresh via yahoo-finance2 (handles crumb auth). Gets sharesOutstanding, ROE, D/E, operatingMargin, netMargin for ALL active NSE companies. ~45 min runtime at 1 req/1.2s. Ends with market_cap recalc. Run manually to bootstrap data.",
   },
   nse_indices: {
     label: "NSE Index daily data — Nifty 50 + 70 indices (Mon–Fri 16:00 IST)",

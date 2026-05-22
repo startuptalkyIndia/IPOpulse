@@ -24,6 +24,7 @@ import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
 import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
 import { checkIpoAlerts } from "./jobs/check-alerts";
+import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals";
 
 let started = false;
 
@@ -60,12 +61,23 @@ export function startScheduler() {
   }, { timezone: "Asia/Kolkata" });
 
   // NSE EOD Bhavcopy — 4:15 PM (post-close, early) + 7:00 PM IST (full EOD with delivery data)
+  // After each bhavcopy run, recalculate market_cap from shares × latest price
   for (const sch of ["15 16 * * 1-5", "0 19 * * 1-5"]) {
     cron.schedule(sch, async () => {
       const result = await runIngestion("nse_bhavcopy", ingestNseBhavcopy);
       console.log(`[cron nse_bhavcopy] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+      // Update market_cap for all companies with sharesOutstanding using fresh prices
+      recalcMarketCap().catch(() => null);
     }, { timezone: "Asia/Kolkata" });
   }
+
+  // Yahoo Fundamentals (deep sync) — Sunday 2:00 AM IST
+  // Fetches sharesOutstanding, ROE, D/E, margins for all NSE companies via yahoo-finance2
+  // ~45 min runtime for 2,300+ companies at 1 req/1.2s
+  cron.schedule("0 2 * * 0", async () => {
+    const result = await runIngestion("yahoo_fundamentals", runYahooFundamentals);
+    console.log(`[cron yahoo_fundamentals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
 
   // BSE corporate announcements — every 30 min during market hours, hourly outside
   cron.schedule("*/30 9-16 * * 1-5", async () => {
@@ -178,7 +190,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(Sun 2AM), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -206,4 +218,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   bhavcopy_historical: ingestHistoricalBhavcopy,
   fii_dii_historical: ingestHistoricalFiiDii,
   check_alerts: checkIpoAlerts,
+  yahoo_fundamentals: runYahooFundamentals,
 };
