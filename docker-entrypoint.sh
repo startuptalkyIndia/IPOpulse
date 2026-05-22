@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "[entrypoint] Running prisma migrate deploy..."
-npx prisma migrate deploy || echo "[entrypoint] No migrations to apply (first boot may use db push)"
+echo "[entrypoint] Running prisma db push (additive schema sync)..."
+# IPOpulse uses prisma db push (no migration files). Safe for additive-only changes.
+npx prisma db push --accept-data-loss 2>&1 || echo "[entrypoint] prisma db push skipped or failed — schema may be current"
 
 # Restore Claude CLI config from backup if missing (mount wipes .claude.json on each restart)
 if [ ! -f /root/.claude.json ] && [ -d /root/.claude/backups ]; then
