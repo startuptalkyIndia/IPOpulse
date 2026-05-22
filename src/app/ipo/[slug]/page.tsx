@@ -21,6 +21,7 @@ import { DrhpAnalysisCard } from "@/components/ipo/DrhpAnalysisCard";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { SetAlertButton } from "@/components/ipo/SetAlertButton";
+import { PremiumGate } from "@/components/PremiumGate";
 import { SmeRiskCard } from "@/components/ipo/SmeRiskCard";
 import { ListingPredictorCard } from "@/components/ipo/ListingPredictorCard";
 import { IpoReviewsCard } from "@/components/ipo/IpoReviewsCard";
@@ -74,13 +75,19 @@ export default async function IpoDetailPage({ params }: Props) {
   const userId = (session?.user as { id?: string } | undefined)?.id;
   let inWatchlist = false;
   let trackedApp = false;
+  let isPremium = false;
   if (userId) {
-    const [w, a] = await Promise.all([
+    const [w, a, userRecord] = await Promise.all([
       prisma.watchlistItem.findFirst({ where: { userId, type: "ipo", targetSlug: ipo.slug } }),
       prisma.ipoApplication.findFirst({ where: { userId, ipoId: ipo.id } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { plan: true, planExpiresAt: true } }),
     ]);
     inWatchlist = !!w;
     trackedApp = !!a;
+    if (userRecord?.plan === "PREMIUM") {
+      const expired = userRecord.planExpiresAt && userRecord.planExpiresAt < new Date();
+      isPremium = !expired;
+    }
   }
 
   const gmpPoints: GmpPoint[] = ipo.gmpEntries.map((g) => ({
@@ -175,7 +182,9 @@ export default async function IpoDetailPage({ params }: Props) {
           <div className="flex flex-wrap gap-2">
             <WatchlistButton type="ipo" targetSlug={ipo.slug} initial={inWatchlist} authed={!!userId} />
             <TrackApplicationButton ipoId={ipo.id} ipoName={ipo.name} initial={trackedApp} authed={!!userId} />
-            <SetAlertButton ipoName={ipo.name} ipoSymbol={ipo.nseSymbol} ipoSlug={ipo.slug} authed={!!userId} />
+            <PremiumGate isPremium={isPremium} description="Alerts are Premium.">
+              <SetAlertButton ipoName={ipo.name} ipoSymbol={ipo.nseSymbol} ipoSlug={ipo.slug} authed={!!userId} />
+            </PremiumGate>
             {ipo.registrarUrl ? (
               <a
                 href={ipo.registrarUrl}

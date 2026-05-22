@@ -220,6 +220,12 @@ export async function Nav() {
           <MobileNav authed={authed} />
           <SearchPalette />
           <ThemeToggle />
+          <Link
+            href="/pricing"
+            className="hidden sm:inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 transition"
+          >
+            Pricing
+          </Link>
           {authed ? (
             <Link
               href="/my/watchlist"

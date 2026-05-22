@@ -11,6 +11,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: 
 
 ---
 
+## 2026-05-23 IST
+
+### Added
+- `Plan` enum (`FREE | PREMIUM`) + `planExpiresAt DateTime?` on `User` model in `prisma/schema.prisma`. Run `prisma db push` on the server after deploy.
+- `/pricing` page (`src/app/pricing/page.tsx`) — two-column FREE | PREMIUM layout, Indigo theme, Razorpay "Coming soon" CTA disabled.
+- `PremiumGate` component (`src/components/PremiumGate.tsx`) — wraps premium-only UI; shows lock icon + "Upgrade to Premium" link to `/pricing` when `isPremium` is false.
+- IPO detail page (`src/app/ipo/[slug]/page.tsx`) — fetches `plan` + `planExpiresAt` from DB, derives `isPremium`, wraps `SetAlertButton` in `PremiumGate`.
+- "Pricing" link added to Nav desktop right-side actions.
+
+### Notes
+- TypeScript: 0 errors (`npx tsc --noEmit` clean).
+- Razorpay integration deferred — Premium CTA is disabled with "Coming soon".
+
+---
+
 ## 2026-05-21 IST
 
 ### Fixed

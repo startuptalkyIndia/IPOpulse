@@ -1,6 +1,22 @@
 # IPOpulse — COMMS
 ---
 
+## 2026-05-23 — Free vs Premium Tier (Task 1)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Schema: `Plan` enum + `plan`/`planExpiresAt` on User | ✅ Done | `prisma generate` run; `prisma db push` required on server after deploy |
+| 2 | `/pricing` page | ✅ Done | FREE/PREMIUM columns, ₹199/mo or ₹1,499/yr, Razorpay CTA disabled (coming soon) |
+| 3 | `PremiumGate` component | ✅ Done | `src/components/PremiumGate.tsx` — lock icon + /pricing link for non-premium users |
+| 4 | Gate `SetAlertButton` on IPO detail page | ✅ Done | Fetches `plan` from DB, wraps button in PremiumGate |
+| 5 | Pricing link in Nav | ✅ Done | Desktop nav right-side |
+| 6 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` clean |
+| 7 | Deployed to server | ⏭️ Skipped | DO NOT DEPLOY — Master Hub handles deploys |
+
+**Note for next agent:** After Master Hub deploys, run `prisma db push` (or `prisma migrate dev`) on the server to add `plan` enum + `planExpiresAt` column to the `users` table. Prisma will handle the PostgreSQL enum DDL automatically.
+
+---
+
 ## 2026-05-19 — User Accounts + IPO Alerts (completed)
 
 | # | Task | Status | Notes |

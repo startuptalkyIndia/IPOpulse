@@ -24,14 +24,21 @@ model AdminUser {
   @@map("admin_users")
 }
 
+enum Plan {
+  FREE
+  PREMIUM
+}
+
 model User {
-  id           String            @id @default(cuid())
-  email        String            @unique
-  passwordHash String
-  name         String?
-  banned       Boolean           @default(false)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id            String            @id @default(cuid())
+  email         String            @unique
+  passwordHash  String
+  name          String?
+  banned        Boolean           @default(false)
+  plan          Plan              @default(FREE)
+  planExpiresAt DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   watchlist    WatchlistItem[]
   applications IpoApplication[]
