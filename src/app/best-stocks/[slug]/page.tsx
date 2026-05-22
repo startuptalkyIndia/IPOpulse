@@ -45,65 +45,102 @@ export default async function BestStocksCategoryPage({ params }: Props) {
 
   if (!latestBhav) notFound();
 
-  // Build company filter
-  const companyWhere: Prisma.CompanyWhereInput = {
-    active: true,
-    ...(cat.filter.nseSymbolIn && cat.filter.nseSymbolIn.length > 0 && { nseSymbol: { in: cat.filter.nseSymbolIn } }),
-    ...(cat.filter.excludeSme && { isSme: false }),
-    ...(cat.filter.marketCapMin && { marketCap: { gte: cat.filter.marketCapMin, ...(cat.filter.marketCapMax && { lte: cat.filter.marketCapMax }) } }),
-    ...(cat.filter.marketCapMax && !cat.filter.marketCapMin && { marketCap: { lte: cat.filter.marketCapMax } }),
-    ...(cat.filter.peMax && { peRatio: { gte: cat.filter.peMin ?? 0.1, lte: cat.filter.peMax } }),
-    ...(cat.filter.roeMin && { roePercent: { gte: cat.filter.roeMin } }),
-    ...(cat.filter.dividendMin && { dividendYield: { gte: cat.filter.dividendMin } }),
-    ...(cat.filter.pbMax && { pbRatio: { gte: 0.05, lte: cat.filter.pbMax } }),
-  };
-
-  // Determine if a price filter is required (under-100, under-50, penny-stocks)
+  // Determine if a price filter is active (under-100, under-50, penny-stocks)
   const needsPrice = cat.filter.priceMin != null || cat.filter.priceMax != null;
 
-  // Fetch more candidates: price-filtered pages need extra buffer; others need enough to reach limit
-  const candidateCount = cat.filter.nseSymbolIn
-    ? cat.filter.nseSymbolIn.length + 10
-    : needsPrice
-    ? cat.filter.limit * 8
-    : cat.filter.limit * 3;
+  type StockRow = {
+    id: number; slug: string; name: string; nseSymbol: string | null;
+    sector: string | null; industry: string | null;
+    marketCap: Prisma.Decimal | null; peRatio: Prisma.Decimal | null;
+    pbRatio: Prisma.Decimal | null; roePercent: Prisma.Decimal | null;
+    dividendYield: Prisma.Decimal | null; eps: Prisma.Decimal | null;
+    ltp: number | null; volume: number | null;
+  };
 
-  // Order
-  const orderBy: Prisma.CompanyOrderByWithRelationInput =
-    cat.filter.sortBy === "marketCap" ? { marketCap: cat.filter.sortOrder } :
-    cat.filter.sortBy === "pe" ? { peRatio: cat.filter.sortOrder } :
-    cat.filter.sortBy === "roe" ? { roePercent: cat.filter.sortOrder } :
-    cat.filter.sortBy === "dividend" ? { dividendYield: cat.filter.sortOrder } :
-    cat.filter.sortBy === "pb" ? { pbRatio: cat.filter.sortOrder } :
-    { marketCap: "desc" };
+  let filtered: StockRow[] = [];
 
-  const candidates = await prisma.company.findMany({
-    where: companyWhere,
-    orderBy,
-    take: candidateCount,
-    select: {
-      id: true, slug: true, name: true, nseSymbol: true, sector: true, industry: true,
-      marketCap: true, peRatio: true, pbRatio: true, roePercent: true, dividendYield: true, eps: true,
-    },
-  });
+  if (needsPrice) {
+    // For price-range pages: start from bhavcopy (has all 2,300+ stocks) then join Company
+    // This ensures we show stocks even when Company.marketCap is NULL
+    type RawRow = {
+      id: bigint; slug: string; name: string; nse_symbol: string | null;
+      sector: string | null; industry: string | null;
+      market_cap: string | null; pe_ratio: string | null; pb_ratio: string | null;
+      roe_pct: string | null; dividend_yield: string | null; eps: string | null;
+      ltp: string; volume: bigint;
+    };
+    const priceMin = cat.filter.priceMin ?? 0;
+    const priceMax = cat.filter.priceMax ?? 999999;
+    const rows = await prisma.$queryRaw<RawRow[]>`
+      SELECT c.id, c.slug, c.name, c.nse_symbol, c.sector, c.industry,
+             c.market_cap, c.pe_ratio, c.pb_ratio, c.roe_pct, c.dividend_yield, c.eps,
+             b.close as ltp, b.volume
+      FROM bhavcopy_daily b
+      JOIN companies c ON c.id = b.company_id
+      WHERE b.date = ${latestBhav.date}
+        AND b.close >= ${priceMin}
+        AND b.close <= ${priceMax}
+        AND b.volume > 25000
+        AND c.active = true
+        AND c.is_sme = false
+      ORDER BY c.market_cap DESC NULLS LAST, b.volume DESC
+      LIMIT ${cat.filter.limit}
+    `;
+    filtered = rows.map((r) => ({
+      id: Number(r.id), slug: r.slug, name: r.name, nseSymbol: r.nse_symbol,
+      sector: r.sector, industry: r.industry,
+      marketCap: r.market_cap ? new Prisma.Decimal(r.market_cap) : null,
+      peRatio: r.pe_ratio ? new Prisma.Decimal(r.pe_ratio) : null,
+      pbRatio: r.pb_ratio ? new Prisma.Decimal(r.pb_ratio) : null,
+      roePercent: r.roe_pct ? new Prisma.Decimal(r.roe_pct) : null,
+      dividendYield: r.dividend_yield ? new Prisma.Decimal(r.dividend_yield) : null,
+      eps: r.eps ? new Prisma.Decimal(r.eps) : null,
+      ltp: Number(r.ltp), volume: Number(r.volume),
+    }));
+  } else {
+    // For market-cap / fundamentals pages: start from Company table
+    const companyWhere: Prisma.CompanyWhereInput = {
+      active: true,
+      ...(cat.filter.nseSymbolIn && cat.filter.nseSymbolIn.length > 0 && { nseSymbol: { in: cat.filter.nseSymbolIn } }),
+      ...(cat.filter.excludeSme && { isSme: false }),
+      ...(cat.filter.marketCapMin && { marketCap: { gte: cat.filter.marketCapMin, ...(cat.filter.marketCapMax && { lte: cat.filter.marketCapMax }) } }),
+      ...(cat.filter.marketCapMax && !cat.filter.marketCapMin && { marketCap: { lte: cat.filter.marketCapMax } }),
+      ...(cat.filter.peMax && { peRatio: { gte: cat.filter.peMin ?? 0.1, lte: cat.filter.peMax } }),
+      ...(cat.filter.roeMin && { roePercent: { gte: cat.filter.roeMin } }),
+      ...(cat.filter.dividendMin && { dividendYield: { gte: cat.filter.dividendMin } }),
+      ...(cat.filter.pbMax && { pbRatio: { gte: 0.05, lte: cat.filter.pbMax } }),
+    };
 
-  // Get latest prices for these companies
-  const prices = await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: candidates.map((c) => c.id) }, date: latestBhav.date },
-    select: { companyId: true, close: true, volume: true },
-  });
-  const priceMap = new Map(prices.map((p) => [p.companyId, { close: Number(p.close), volume: Number(p.volume) }]));
+    const candidateCount = cat.filter.nseSymbolIn
+      ? cat.filter.nseSymbolIn.length + 10
+      : cat.filter.limit * 3;
 
-  // Apply price filter and slice to limit
-  const filtered = candidates
-    .map((c) => ({ ...c, ltp: priceMap.get(c.id)?.close ?? null, volume: priceMap.get(c.id)?.volume ?? null }))
-    .filter((c) => {
-      if (needsPrice && !c.ltp) return false; // Price pages need LTP to apply the filter
-      if (cat.filter.priceMin != null && c.ltp != null && c.ltp < cat.filter.priceMin) return false;
-      if (cat.filter.priceMax != null && c.ltp != null && c.ltp > cat.filter.priceMax) return false;
-      return true;
-    })
-    .slice(0, cat.filter.limit);
+    const orderBy: Prisma.CompanyOrderByWithRelationInput =
+      cat.filter.sortBy === "marketCap" ? { marketCap: cat.filter.sortOrder } :
+      cat.filter.sortBy === "pe" ? { peRatio: cat.filter.sortOrder } :
+      cat.filter.sortBy === "roe" ? { roePercent: cat.filter.sortOrder } :
+      cat.filter.sortBy === "dividend" ? { dividendYield: cat.filter.sortOrder } :
+      cat.filter.sortBy === "pb" ? { pbRatio: cat.filter.sortOrder } :
+      { marketCap: "desc" };
+
+    const candidates = await prisma.company.findMany({
+      where: companyWhere, orderBy, take: candidateCount,
+      select: {
+        id: true, slug: true, name: true, nseSymbol: true, sector: true, industry: true,
+        marketCap: true, peRatio: true, pbRatio: true, roePercent: true, dividendYield: true, eps: true,
+      },
+    });
+
+    const prices = await prisma.bhavcopyDaily.findMany({
+      where: { companyId: { in: candidates.map((c) => c.id) }, date: latestBhav.date },
+      select: { companyId: true, close: true, volume: true },
+    });
+    const priceMap = new Map(prices.map((p) => [p.companyId, { close: Number(p.close), volume: Number(p.volume) }]));
+
+    filtered = candidates
+      .map((c) => ({ ...c, ltp: priceMap.get(c.id)?.close ?? null, volume: priceMap.get(c.id)?.volume ?? null }))
+      .slice(0, cat.filter.limit);
+  }
 
   const Icon = ICON_MAP[cat.icon] ?? Coins;
 
