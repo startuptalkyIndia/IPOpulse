@@ -23,7 +23,10 @@ export interface BestStocksCategory {
     peMin?: number;
     peMax?: number;
     roeMin?: number;
-    sortBy: "marketCap" | "price" | "pe" | "roe" | "dividend" | "1y_return";
+    dividendMin?: number;      // minimum dividendYield %
+    pbMax?: number;            // maximum P/B ratio
+    nseSymbolIn?: string[];    // filter by specific NSE symbols (e.g. PSU stocks)
+    sortBy: "marketCap" | "price" | "pe" | "roe" | "dividend" | "pb" | "1y_return";
     sortOrder: "asc" | "desc";
     limit: number;
     excludeSme?: boolean;
@@ -152,6 +155,67 @@ export const bestStocksCategories: BestStocksCategory[] = [
     filter: { marketCapMin: 50000, sortBy: "marketCap", sortOrder: "desc", limit: 30, excludeSme: true },
     keyMetric: "Market Cap",
     expertNote: "Blue-chips are slow but reliable. Expect 10-13% long-term CAGR with much lower drawdowns than the broader market. Best for first-time investors and conservative portfolios."
+  },
+  // ─── Strategy-based categories ────────────────────────────────────────────
+  {
+    slug: "high-dividend",
+    title: "High Dividend Yield Stocks India 2026 — Top Income Stocks",
+    shortLabel: "High Dividend",
+    description: "Stocks with dividend yield above 2.5% — PSUs, MNCs, and blue chips that pay consistent cash dividends to shareholders.",
+    longDescription: "High dividend yield stocks provide regular income through cash dividends. Indian dividend payers include PSU giants (Coal India, ONGC), MNCs with strong cash flows (HUL, TCS), and regulated utilities (PowerGrid, NTPC). Post-2020, dividends are taxed at your slab rate — factor in tax efficiency before chasing yield alone.",
+    icon: "Coins",
+    color: "text-emerald-600 bg-emerald-50",
+    filter: { dividendMin: 2.0, marketCapMin: 3000, sortBy: "dividend", sortOrder: "desc", limit: 50, excludeSme: true },
+    keyMetric: "Dividend Yield %",
+    expertNote: "High dividend yield can be a positive signal (strong cash generation) or a value trap (stock price fell, making yield look high). Always check: Is the payout ratio sustainable? Is free cash flow adequate? Has the company consistently paid dividends for 5+ years?"
+  },
+  {
+    slug: "low-pb",
+    title: "Low P/B Stocks India 2026 — Value Stocks Trading Below Book",
+    shortLabel: "Low P/B Value",
+    description: "Stocks trading at low Price-to-Book ratios — potential value opportunities among large and mid-cap companies.",
+    longDescription: "Price-to-Book (P/B) ratio measures market value against accounting net assets. Stocks trading below 1× P/B mean the market values the company less than its book assets. This is common in PSU banks (NPA concerns), commodity companies (cyclical lows), and capital-intensive businesses. Low P/B can signal undervaluation — or hidden risks like unrecognized bad loans and obsolete assets.",
+    icon: "Scale",
+    color: "text-blue-600 bg-blue-50",
+    filter: { pbMax: 1.5, marketCapMin: 5000, sortBy: "pb", sortOrder: "asc", limit: 50, excludeSme: true },
+    keyMetric: "P/B Ratio",
+    expertNote: "P/B below 1 means the market values the company at less than its net assets. This seems like a bargain — but often reflects market distrust of stated asset values (e.g., PSU bank NPAs, outdated manufacturing assets). Always ask: why is it cheap? Is it temporary or structural?"
+  },
+  {
+    slug: "multibagger-watchlist",
+    title: "Multibagger Watchlist India 2026 — High ROE Growth Stocks",
+    shortLabel: "Multibagger Watch",
+    description: "Mid and small-cap stocks with high ROE and reasonable valuations — companies with characteristics historically associated with multi-year compounders.",
+    longDescription: "Multi-baggers share common traits: high and improving Return on Equity (ROE > 20%), reasonable valuations (P/E < 35), mid-cap size (room to grow), and strong earnings trajectory. This screen surfaces companies that match these criteria today. Remember — identifying potential is easy; the hard part is holding through volatility for the thesis to play out over 5-7 years.",
+    icon: "TrendingUp",
+    color: "text-violet-600 bg-violet-50",
+    filter: { roeMin: 20, peMin: 1, peMax: 35, marketCapMin: 2000, marketCapMax: 30000, sortBy: "roe", sortOrder: "desc", limit: 50, excludeSme: true },
+    keyMetric: "ROE %",
+    expertNote: "No screen can reliably predict multi-baggers. High ROE + low P/E + mid-cap size creates favorable conditions — but most stocks that look like multi-baggers on a screen don't deliver. Combine this screen with business quality research, management track record, and sector tailwinds."
+  },
+  {
+    slug: "psu-stocks",
+    title: "Best PSU Stocks India 2026 — Top Government Company Shares",
+    shortLabel: "PSU Stocks",
+    description: "India's top Public Sector Undertaking (PSU) stocks — ONGC, Coal India, NTPC, BHEL, SBI, Canara Bank, BPCL, HAL, BEL and more.",
+    longDescription: "Public Sector Undertakings (PSUs) are government-owned companies that dominate energy, banking, mining, defence, and infrastructure sectors in India. They typically offer high dividend yields (government needs dividend income), trade at lower P/E than private peers, and carry policy/regulatory risk. Since 2021, PSU stocks have significantly re-rated as the government pushed capex, reduced interference, and cleaned up PSU bank balance sheets.",
+    icon: "Building2",
+    color: "text-indigo-600 bg-indigo-50",
+    filter: {
+      nseSymbolIn: [
+        "ONGC", "COALINDIA", "NTPC", "POWERGRID", "BPCL", "IOC", "HINDPETRO",
+        "GAIL", "SAIL", "NMDC", "OIL", "RVNL", "IRFC", "NBCC", "NHPC", "SJVN",
+        "RECLTD", "PFC", "BEL", "HAL", "MAZDOCK", "COCHINSHIP", "IREDA",
+        "RAILTEL", "CANBK", "BANKBARODA", "PNB", "SBIN", "MOIL", "BHEL",
+        "MIDHANI", "RITES", "IRCON", "TITAGARH", "HFCL", "BEML", "MTNL"
+      ],
+      sortBy: "marketCap",
+      sortOrder: "desc",
+      limit: 50,
+      excludeSme: true,
+    },
+    keyMetric: "Market Cap",
+    expertNote: "PSU stocks carry unique risks: policy dependency (election-driven decisions), government interference in pricing (fuel companies), slower decision-making, and talent retention challenges. But they also offer genuine infrastructure moats, high dividend yields, and government backing. Suitable for value/income investors, less so for growth investors."
   },
 ];
 

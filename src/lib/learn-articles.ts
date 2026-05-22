@@ -3196,6 +3196,834 @@ export const articles: Article[] = [
   },
 ];
 
+// ─── 10 Additional articles (batch 3) ───────────────────────────────────────
+
+const additionalArticles: Article[] = [
+  {
+    slug: "what-is-stock-split",
+    title: "What is a Stock Split? How It Works for Indian Investors",
+    description: "A stock split divides shares into smaller units without changing total value. Learn how 1:2, 1:5 and 1:10 splits work, the record date process, and famous examples like TCS and MRF.",
+    readingTime: 4,
+    publishedAt: "2026-05-20",
+    relatedSlugs: ["what-is-bonus-issue", "what-is-eps", "what-is-market-cap"],
+    content: `
+<h2>What is a Stock Split?</h2>
+<p>A stock split is a corporate action where a company divides each of its existing shares into multiple smaller shares. The total number of shares outstanding increases, but the <strong>face value and market price adjust proportionally</strong> — so your total investment value is unchanged immediately after the split.</p>
+<p>Think of it like cutting a pizza into more slices: more slices, but the same total pizza. A company with 10 crore shares at ₹2,000 each, doing a 1:2 split, becomes 20 crore shares at ₹1,000 each. Total market cap: unchanged.</p>
+
+<h2>Split Ratio Explained</h2>
+<p>The notation "1:5 stock split" means each existing share is divided into 5 new shares. Your holding multiplies by 5, the price drops to 1/5th. Similarly:</p>
+<ul>
+  <li><strong>1:2 split:</strong> 1 share becomes 2 shares. Price halves. FV halves.</li>
+  <li><strong>1:5 split:</strong> 1 share becomes 5 shares. Price drops to 1/5th.</li>
+  <li><strong>1:10 split:</strong> 1 share becomes 10 shares. Price drops to 1/10th.</li>
+</ul>
+<p>The face value (FV) of the share reduces proportionally. If FV was ₹10 and split is 1:5, new FV = ₹2. This is how companies like Infosys and TCS reduced their prices from thousands to hundreds through multiple splits over the years.</p>
+
+<h2>Why Companies Split Stocks</h2>
+<ul>
+  <li><strong>Affordability:</strong> A ₹5,000 stock is psychologically less accessible to retail investors than a ₹500 stock — even though the investment value is identical. Splits increase participation.</li>
+  <li><strong>Liquidity:</strong> More shares in circulation means more daily trading volume, tighter bid-ask spreads, and easier price discovery.</li>
+  <li><strong>Signaling confidence:</strong> Companies typically split when they believe the stock will continue to appreciate. It's a bullish signal from management.</li>
+  <li><strong>Index inclusion:</strong> Some indices have price-weighted components. Lower price can help with specific inclusion criteria.</li>
+</ul>
+
+<h2>Does a Stock Split Increase Your Wealth?</h2>
+<p><strong>No, not immediately.</strong> On the ex-split date, the stock price adjusts downward proportionally and your share count increases. Your total portfolio value is identical. Over time, if the split improves liquidity and brings in more retail buyers, the stock may appreciate more — but the split itself creates zero value.</p>
+<p>The most famous example of a company that has <strong>never split</strong> is MRF. Its share trades at over ₹1 lakh, making it the most expensive stock in India by face value. Management deliberately keeps it high to deter short-term speculation.</p>
+
+<h2>Key Dates for a Stock Split</h2>
+<ul>
+  <li><strong>Board announcement date:</strong> When the board approves the split</li>
+  <li><strong>Record date:</strong> Must hold shares on this date to be eligible</li>
+  <li><strong>Ex-split date:</strong> Price adjusts on this date (usually 2 days before record date)</li>
+  <li><strong>Credit date:</strong> New shares appear in your demat account (typically same day as ex-date)</li>
+</ul>
+
+<h2>Reverse Split — When It Goes the Other Way</h2>
+<p>A reverse split consolidates multiple shares into one. Example: 10:1 reverse split means 10 existing shares become 1 share at 10× the price. Total value unchanged. Reverse splits often signal financial distress — companies do it to meet minimum stock price requirements for exchange listing or to attract institutional investors who avoid very low-priced stocks.</p>
+
+<h2>Famous Indian Stock Splits</h2>
+<ul>
+  <li><strong>TCS:</strong> Announced 1:1 bonus in 2004 (effectively a split) and a 1:1 split in 2019. TCS has kept share price in the ₹2,000–₹4,000 range for retail accessibility.</li>
+  <li><strong>Infosys:</strong> Multiple splits — 1993 (10:1), 1994 (1:1 bonus), 1997 (2:1), 1999 (2:1), 2004 (3:1), 2014 (1:1). Each split multiplied shares.</li>
+  <li><strong>Wipro:</strong> Multiple splits and bonuses, now has billions of shares outstanding.</li>
+  <li><strong>MRF:</strong> Never split — only company in India trading above ₹1 lakh per share.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Does a stock split affect my returns?",
+        a: "No direct effect. Your total investment value stays the same immediately after a split. Long term, improved liquidity from a split can help price discovery, but the split itself creates no new wealth.",
+      },
+      {
+        q: "Why hasn't MRF ever split its stock?",
+        a: "MRF's management has deliberately kept the share price high (~₹1 lakh+) to discourage short-term retail speculation and attract only serious long-term investors. It's a deliberate policy choice, not a limitation.",
+      },
+      {
+        q: "Is a 1:10 split better than a 1:2 split for shareholders?",
+        a: "Not inherently. A larger split ratio brings price down more dramatically, increasing retail accessibility. Both are neutral for existing shareholders in terms of immediate value.",
+      },
+      {
+        q: "What happens to my F&O positions during a split?",
+        a: "NSE/BSE adjust contract sizes and strike prices proportionally on the ex-split date. Your profit and loss are unaffected — the exchange handles all adjustments automatically.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-bonus-issue",
+    title: "What is a Bonus Issue? Free Shares Explained",
+    description: "A bonus issue gives existing shareholders free additional shares in a fixed ratio. Learn how 1:1 and 2:1 bonus works, the record date, tax implications, and why it's different from a dividend.",
+    readingTime: 4,
+    publishedAt: "2026-05-20",
+    relatedSlugs: ["what-is-stock-split", "what-is-dividend-yield", "what-is-market-cap"],
+    content: `
+<h2>What is a Bonus Issue?</h2>
+<p>A bonus issue (also called a scrip dividend or capitalization issue) is when a company issues <strong>free additional shares to existing shareholders</strong> in a fixed ratio. No money changes hands — the company converts its retained earnings or free reserves into equity share capital.</p>
+<p>Unlike a stock split (which divides existing shares), a bonus issue creates new shares from the company's reserves. The practical effect for shareholders is similar, but the accounting treatment is different.</p>
+
+<h2>Bonus Ratio Explained</h2>
+<p>The notation works as follows:</p>
+<ul>
+  <li><strong>1:1 bonus:</strong> For every 1 share you hold, receive 1 additional free share. Your holdings double.</li>
+  <li><strong>2:1 bonus:</strong> For every 1 share, receive 2 additional shares. Holdings triple.</li>
+  <li><strong>3:2 bonus:</strong> For every 2 shares, receive 3 additional. Holdings increase 2.5×.</li>
+</ul>
+<p>Example: Hold 100 shares at ₹300 each (total ₹30,000). Company announces 1:1 bonus. After bonus: 200 shares at ₹150 each (total ₹30,000). Same total value — more shares at a lower price per share.</p>
+
+<h2>Where Do Bonus Shares Come From?</h2>
+<p>Bonus shares come from the company's <strong>free reserves and retained earnings</strong> — accumulated profits that have not been distributed as dividends. When a company issues a bonus, it reduces its free reserves and increases its paid-up share capital by the same amount. No cash leaves the company.</p>
+<p>This is why bonus issues signal that a company has strong reserves — it can only issue bonus shares if it has sufficient free reserves to capitalize.</p>
+
+<h2>Key Dates</h2>
+<ul>
+  <li><strong>Board announcement date:</strong> Board approves bonus. Share price often jumps on this news.</li>
+  <li><strong>Record date:</strong> Must hold shares on this date to receive bonus shares.</li>
+  <li><strong>Ex-bonus date:</strong> Price adjusts downward on this date. Shares bought on or after ex-date do not receive bonus.</li>
+  <li><strong>Allotment date:</strong> New bonus shares are allotted and credited to demat accounts (typically 15 days after record date).</li>
+</ul>
+
+<h2>Why Companies Issue Bonus Shares</h2>
+<ul>
+  <li><strong>Reward loyal shareholders:</strong> Creates goodwill without cash outflow. Shareholders receive tangible benefit.</li>
+  <li><strong>Signal financial strength:</strong> Only companies with strong reserves can issue bonuses. It's a positive signal about earnings quality.</li>
+  <li><strong>Improve liquidity:</strong> More shares in circulation → more daily volume → better price discovery.</li>
+  <li><strong>Reduce per-share price:</strong> Makes the stock more accessible to retail investors, similar to a split.</li>
+</ul>
+
+<h2>Bonus vs Dividend — Key Differences</h2>
+<ul>
+  <li><strong>Form:</strong> Bonus = additional shares. Dividend = cash payment.</li>
+  <li><strong>Cash flow:</strong> Bonus requires no cash from company. Dividend requires actual cash outflow.</li>
+  <li><strong>Tax:</strong> Dividend is taxable as income at slab rate immediately. Bonus shares are not taxed at receipt — tax only applies when you sell them (as capital gains).</li>
+  <li><strong>Signal:</strong> Bonus signals strong reserves. Dividend signals strong cash generation.</li>
+</ul>
+
+<h2>Tax on Bonus Shares</h2>
+<p>The cost of acquisition for bonus shares is considered <strong>₹0</strong> (since you paid nothing for them). This means when you sell bonus shares, the <strong>entire sale price is your capital gain</strong>.</p>
+<ul>
+  <li>Holding period for bonus shares: Counted from the date bonus shares are credited to your demat account.</li>
+  <li>If held more than 12 months: LTCG at 12.5% on gains above ₹1.25 lakh/year.</li>
+  <li>If held 12 months or less: STCG at 20%.</li>
+</ul>
+<p>This means selling bonus shares in the same year they're credited results in significantly higher tax than holding for 12+ months.</p>
+
+<h2>Bonus vs Stock Split</h2>
+<ul>
+  <li>Bonus creates new shares from reserves (reserves reduce, share capital increases).</li>
+  <li>Stock split divides existing shares (no change to reserves or capital).</li>
+  <li>Face value: Stays the same in a bonus issue. Changes in a stock split.</li>
+  <li>Both result in more shares at a lower price per share — effect on shareholders is similar.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Are bonus shares free money?",
+        a: "Not exactly. The stock price adjusts downward proportionally, so your total value is unchanged immediately. However, bonus shares signal management confidence and often result in long-term appreciation — but that comes from business performance, not the bonus itself.",
+      },
+      {
+        q: "Do I need to do anything to receive bonus shares?",
+        a: "No action needed. If you hold shares on the record date, bonus shares auto-credit to your demat account within 15 working days of allotment. No forms, no applications required.",
+      },
+      {
+        q: "What is the capital gains tax on bonus shares if I sell them?",
+        a: "The cost basis for bonus shares is ₹0. All sale proceeds are taxable gains. Held more than 12 months: LTCG at 12.5% above ₹1.25 lakh/year. Held 12 months or less: STCG at 20%.",
+      },
+      {
+        q: "Can bonus shares cause the market cap to change?",
+        a: "The market cap stays the same immediately (more shares × lower price = same total value). Over time, if bonus improves liquidity and brings in new buyers, the stock may re-rate — but this happens due to buying demand, not the mechanics of the bonus.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-upper-circuit",
+    title: "What is Upper Circuit and Lower Circuit in Stock Markets?",
+    description: "Upper and lower circuits are price limits that freeze trading when a stock moves too much in one session. Learn SEBI's 5%, 10%, 20% circuit bands, ASM/GSM framework, and what it means for investors.",
+    readingTime: 5,
+    publishedAt: "2026-05-20",
+    relatedSlugs: ["what-is-sensex", "52-week-high-low", "bulk-block-deals"],
+    content: `
+<h2>What are Circuit Limits?</h2>
+<p>Circuit limits (or price bands) are daily price movement limits set by stock exchanges for individual stocks. If a stock's price reaches the upper circuit limit, it cannot trade higher for the rest of that session. If it hits the lower circuit, it cannot trade lower. These limits prevent extreme intraday volatility and manipulation.</p>
+
+<h2>Three Circuit Bands for Individual Stocks</h2>
+<p>SEBI and the exchanges classify stocks into three circuit bands:</p>
+<ul>
+  <li><strong>20% band:</strong> Price can move ±20% from previous close. Applied to most large, liquid, mainboard stocks.</li>
+  <li><strong>10% band:</strong> Applied to mid-sized stocks with moderate liquidity.</li>
+  <li><strong>5% band:</strong> Applied to illiquid, volatile, or surveillance-listed stocks.</li>
+</ul>
+<p>Some SME IPOs on listing day have a 5% circuit. Some newly listed stocks start with 20% and may be reduced if trading patterns look suspicious.</p>
+
+<h2>What Happens When a Stock Hits Upper Circuit?</h2>
+<p>When a stock reaches its upper circuit price, only <strong>buy orders</strong> can be placed — no sell orders are accepted. Trading "freezes" at that price. The stock shows up as "UC" (Upper Circuit). Since there are no sellers, no trades execute at or above that price. Buyers who placed orders are stuck waiting.</p>
+<p>Similarly, at lower circuit, only sell orders are accepted. No buyers. The stock shows "LC" (Lower Circuit).</p>
+
+<h2>Index-Level Circuit Breakers</h2>
+<p>When Nifty 50 or Sensex move sharply in a single day, market-wide circuit breakers kick in:</p>
+<ul>
+  <li><strong>10% move:</strong> Trading halted for 45 minutes (if before 1 PM). 15 minutes (if between 1 PM and 2:30 PM). No halt if after 2:30 PM.</li>
+  <li><strong>15% move:</strong> Halted for 1 hour 45 minutes (if before 1 PM). 45 minutes (after 1 PM). No halt after 2 PM.</li>
+  <li><strong>20% move:</strong> Market closed for the entire day, regardless of time.</li>
+</ul>
+<p>Index-level circuit breakers have been triggered only a handful of times in Indian market history — including the 1992 Harshad Mehta scam, 2004 UPA election result shock, and the 2008 global financial crisis.</p>
+
+<h2>Dynamic vs Static Circuits</h2>
+<ul>
+  <li><strong>Static circuit:</strong> Fixed % from the previous day's closing price. The most common type.</li>
+  <li><strong>Dynamic circuit:</strong> Band moves intraday based on the VWAP (Volume-Weighted Average Price). Prevents sharp intraday spikes even within the static band.</li>
+</ul>
+<p>NSE uses dynamic price bands for most actively traded stocks to provide real-time volatility control alongside static overnight bands.</p>
+
+<h2>ASM and GSM — Enhanced Surveillance</h2>
+<p>SEBI maintains two surveillance frameworks for suspicious stocks:</p>
+<ul>
+  <li><strong>ASM (Additional Surveillance Measure):</strong> Stocks showing unusual price movement, high volatility, or low delivery %. Places stock under 5% circuit, enhanced margin requirements, and closer monitoring. ASM list published on NSE/BSE websites.</li>
+  <li><strong>GSM (Graded Surveillance Measure):</strong> Stricter — 5% circuit + 100% margin requirement + periodic trade restrictions. Companies that don't comply with disclosure norms or show suspicious trading are placed here.</li>
+</ul>
+<p>Stocks in ASM/GSM Stage II-VI are very high risk. Treat them as warning signs, not opportunities.</p>
+
+<h2>Practical Implications for Investors</h2>
+<ul>
+  <li><strong>Stuck in upper circuit:</strong> You can place buy orders but cannot sell. If you hold the stock and want to exit, you must wait for a day when sellers emerge.</li>
+  <li><strong>Lower circuit trap:</strong> If a stock is in lower circuit for multiple days, you cannot sell — causing panic and forced holding. This is why small-cap investors must have stop losses.</li>
+  <li><strong>SME IPO listing:</strong> Many SME IPOs hit upper circuit on listing day, then lower circuit on day 2 — a classic sign of manipulation. Avoid chasing these.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Can a stock be in upper circuit for days in a row?",
+        a: "Yes. A stock with high demand and no sellers can stay at upper circuit for consecutive days — common in small-cap stocks after strong positive news or DRHP announcement. This creates a liquidity trap for buyers who want to exit.",
+      },
+      {
+        q: "Is hitting upper circuit always a good sign?",
+        a: "Not always. For SME IPOs, perpetual upper circuit can be artificial (promoter-controlled demand, no actual sellers). Genuine upper circuits backed by real news, QIB buying, and high delivery volume are more credible.",
+      },
+      {
+        q: "What circuit limit applies to Nifty 50 stocks?",
+        a: "Most Nifty 50 stocks have a 20% individual stock circuit filter. Some stocks may be reviewed and tightened. You can check the circuit limit for any stock on NSE or BSE websites under market data.",
+      },
+      {
+        q: "Can I trade at all when a stock hits lower circuit?",
+        a: "You can place sell orders (but no buyers match). You cannot buy at that price. If you hold the stock, you may be unable to exit until buying demand returns and the stock trades freely.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-sensex",
+    title: "What is SENSEX? India's BSE Index Explained",
+    description: "SENSEX (BSE 30) is India's oldest and most quoted stock market index — 30 large-cap stocks on the Bombay Stock Exchange. Learn how it's calculated, its history from 100 to 80,000+, and how to invest.",
+    readingTime: 5,
+    publishedAt: "2026-05-20",
+    relatedSlugs: ["nifty-50-explained", "pe-ratio", "fii-dii-guide"],
+    content: `
+<h2>What is SENSEX?</h2>
+<p>SENSEX (Sensitive Index) is India's oldest and most widely quoted stock market benchmark. It represents the <strong>30 largest and most liquid companies listed on the Bombay Stock Exchange (BSE)</strong>. Launched in 1986, it started with a base value of 100 on a base year of 1978-79. As of 2026, SENSEX trades above 80,000 — representing over 800× growth from its base.</p>
+<p>It is maintained by BSE (Asia's oldest stock exchange, founded 1875) and serves as a barometer of Indian economic health. When media reports "markets were up 500 points today," they usually mean SENSEX gained 500 points.</p>
+
+<h2>How SENSEX is Calculated</h2>
+<p>SENSEX uses the <strong>free-float market capitalisation weighted methodology</strong>:</p>
+<ul>
+  <li>Only shares available for public trading (not held by promoters, government, or strategic investors) count toward the calculation.</li>
+  <li>Larger companies (by free-float market cap) have more influence on the index movement.</li>
+  <li><strong>Formula:</strong> Index = (Current Free-Float Market Cap of 30 stocks / Base Market Cap) × 100</li>
+  <li>This means a 1% move in Reliance (largest component) has far more impact than a 1% move in a smaller component.</li>
+</ul>
+
+<h2>SENSEX vs Nifty 50 — Key Differences</h2>
+<ul>
+  <li><strong>Exchange:</strong> SENSEX = BSE's benchmark. Nifty 50 = NSE's benchmark.</li>
+  <li><strong>Stocks:</strong> SENSEX has 30 stocks. Nifty 50 has 50 stocks — slightly more diversified.</li>
+  <li><strong>Age:</strong> SENSEX launched 1986 (older). Nifty 50 launched 1996.</li>
+  <li><strong>F&O trading:</strong> Nifty 50 is the dominant F&O index — most traders use Nifty futures and options.</li>
+  <li><strong>Overlap:</strong> ~90% of SENSEX stocks are also in Nifty 50. The indices track each other very closely.</li>
+  <li><strong>Global recognition:</strong> SENSEX is more internationally recognized as a symbol of Indian markets.</li>
+</ul>
+
+<h2>Key SENSEX Components (2026)</h2>
+<p>The 30 companies span banking, IT, consumer goods, energy, auto, and healthcare. Major components include Reliance Industries, TCS, HDFC Bank, Infosys, ICICI Bank, L&T, ITC, Bharti Airtel, Kotak Mahindra Bank, HUL, SBI, Maruti Suzuki, Sun Pharma, Bajaj Finance, Asian Paints, and others. The committee reviews composition semi-annually.</p>
+
+<h2>SENSEX Historical Milestones</h2>
+<ul>
+  <li><strong>1,000:</strong> 1990 — after liberalisation momentum</li>
+  <li><strong>5,000:</strong> 1999 — IT boom</li>
+  <li><strong>10,000:</strong> 2006 — post-liberalization growth era</li>
+  <li><strong>20,000:</strong> 2007 — peak before global financial crisis</li>
+  <li><strong>30,000:</strong> 2017 — demonetization recovery + FII inflows</li>
+  <li><strong>50,000:</strong> 2021 — post-COVID recovery rally</li>
+  <li><strong>75,000:</strong> 2024 — strong corporate earnings + SIP inflows</li>
+  <li><strong>80,000+:</strong> 2026 — sustained domestic buying + economic growth</li>
+</ul>
+<p>This represents approximately 15% CAGR from base — one of the world's best long-term equity market performances.</p>
+
+<h2>Major SENSEX Crashes (and Recoveries)</h2>
+<ul>
+  <li><strong>1992:</strong> Harshad Mehta scam — fell sharply from 4,500 to 2,500. Recovered in 3 years.</li>
+  <li><strong>2000-2001:</strong> Dot-com bust — SENSEX fell from 6,000 to 2,900. Recovered by 2004.</li>
+  <li><strong>2008:</strong> Global financial crisis — fell 60% from 21,000 to 8,200. Recovered to new highs by 2010.</li>
+  <li><strong>2020:</strong> COVID-19 — fell 38% in 40 days (Jan to March 2020). Recovered to all-time high by November 2020.</li>
+</ul>
+<p>Each crash made new all-time highs within 1-3 years. Long-term holders of index funds have always been rewarded.</p>
+
+<h2>How to Invest in SENSEX</h2>
+<ul>
+  <li><strong>Sensex Index Funds:</strong> HDFC Sensex Index Fund, SBI BSE Sensex ETF — expense ratios ~0.10-0.20%</li>
+  <li><strong>ETFs:</strong> HDFC Sensex ETF, Nippon Sensex ETF — trade in real-time on BSE</li>
+  <li><strong>SIP route:</strong> ₹500/month in a Sensex index fund compounds into significant wealth over 20-30 years at historical returns</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Is SENSEX or Nifty better for investment?",
+        a: "Both track similar large-cap Indian companies with high overlap. For index investing, either works well. Nifty 50 has more instruments (ETFs, index funds, F&O) and slightly more diversification with 50 vs 30 stocks.",
+      },
+      {
+        q: "Who decides which stocks are in SENSEX?",
+        a: "The BSE Index Committee sets selection criteria: market cap, trading volume, trading history, financial health, sector representation. The 30 stocks are reviewed semi-annually in March and September.",
+      },
+      {
+        q: "Why does SENSEX fall when global markets crash?",
+        a: "FIIs (foreign investors) hold approximately 28-30% of Indian market free float. When global risk sentiment turns negative (US recession fears, China slowdown), FIIs sell Indian equities and repatriate capital, causing SENSEX to fall regardless of domestic fundamentals.",
+      },
+      {
+        q: "Can SENSEX fall to zero?",
+        a: "Theoretically impossible — it would require all 30 of India's largest companies to simultaneously become worthless. SENSEX can fall 50-60% in extreme crisis (as in 2008-09) but always recovers as long as the Indian economy continues to function.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-book-value",
+    title: "What is Book Value? Price-to-Book Ratio Explained for Indian Stocks",
+    description: "Book value per share measures what a company's net assets are worth per share. Learn how P/B ratio works, why it's crucial for banks, what low P/B stocks signal, and sectors where it matters most.",
+    readingTime: 5,
+    publishedAt: "2026-05-21",
+    relatedSlugs: ["pe-ratio", "what-is-eps", "what-is-roe-roce"],
+    content: `
+<h2>What is Book Value?</h2>
+<p><strong>Book value</strong> (also called shareholders' equity or net worth) is what remains if a company paid off all its liabilities using all its assets. It is the accounting value of a company from the balance sheet:</p>
+<p><strong>Book Value = Total Assets − Total Liabilities</strong></p>
+<p>Dividing by the number of shares gives <strong>Book Value Per Share (BVPS)</strong> — what each share would theoretically be worth if the company liquidated today at accounting values.</p>
+<p>Example: Company has ₹500 Cr assets, ₹300 Cr liabilities → Book Value = ₹200 Cr. With 10 Cr shares, BVPS = ₹20 per share.</p>
+
+<h2>Price-to-Book (P/B) Ratio</h2>
+<p><strong>P/B = Market Price per Share / Book Value per Share</strong></p>
+<p>P/B tells you how much the market is willing to pay for each ₹1 of net assets:</p>
+<ul>
+  <li><strong>P/B = 1:</strong> Market values company exactly at its accounting net worth</li>
+  <li><strong>P/B &lt; 1:</strong> Market values the company below its book — either undervaluation or distrust of stated asset values</li>
+  <li><strong>P/B &gt; 1:</strong> Market pays a premium — usually justified by high ROE (business earns above-average returns on assets)</li>
+</ul>
+
+<h2>What Good P/B Looks Like by Sector</h2>
+<ul>
+  <li><strong>Banks and NBFCs:</strong> P/B 1–3x is normal. High-ROE banks (HDFC Bank) trade at 3–5x. PSU banks often below 1x due to NPA concerns.</li>
+  <li><strong>PSU companies:</strong> Many trade at 0.5–1x P/B due to governance discounts.</li>
+  <li><strong>IT/Software:</strong> P/B 5–20x is normal — software companies have minimal tangible assets; their value lies in intellectual property and people.</li>
+  <li><strong>FMCG/Consumer brands:</strong> P/B 10–30x — brand value far exceeds balance sheet assets.</li>
+  <li><strong>Capital-intensive (metals, utilities):</strong> P/B 0.5–2x typical.</li>
+</ul>
+
+<h2>P/B Below 1× — Bargain or Value Trap?</h2>
+<p>P/B below 1 is most common in banking and capital-heavy sectors. It can mean:</p>
+<ul>
+  <li><strong>Undervaluation:</strong> Market is temporarily pessimistic — if assets are genuinely solid, P/B recovery can drive significant returns</li>
+  <li><strong>Hidden problems:</strong> NPAs (bad loans) in banks, goodwill impairment in manufacturing, obsolete assets in factories — the stated book value overstates real worth</li>
+  <li><strong>Structural decline:</strong> Business model is eroding (e.g., a company with lots of physical retail stores as e-commerce cannibalizes them)</li>
+</ul>
+<p>PSU banks trading at 0.3–0.7x P/B during the NPA crisis of 2015-2019 were value traps until the NPA cleanup was credibly underway. After that, they re-rated sharply.</p>
+
+<h2>Tangible Book Value vs Total Book Value</h2>
+<p>Total book value includes intangible assets (goodwill, brand value, customer relationships, patents) that can be difficult to value and may be written off. <strong>Tangible book value</strong> strips these out:</p>
+<ul>
+  <li>Tangible BV = Total BV − Goodwill − Other Intangibles</li>
+  <li>For acquisitive companies (those that buy other businesses), goodwill can be a large portion of book value. If acquisitions fail, goodwill gets written off, destroying book value.</li>
+  <li>Banks are typically valued on tangible book value since their assets are mostly loans and securities (tangible)</li>
+</ul>
+
+<h2>Why P/B Matters for Banks Specifically</h2>
+<p>For banks and NBFCs, P/B is the primary valuation metric because:</p>
+<ul>
+  <li>Banks grow by deploying capital (raising deposits + equity → lending). More capital = more loans = more earnings. ROE (return on equity) directly drives sustainable P/B premium.</li>
+  <li>A bank with 18% ROE sustainably deserves P/B of ~2.5–3x. A bank with 10% ROE deserves ~1–1.5x.</li>
+  <li>The Gordon Growth Model links sustainable P/B = (ROE − g) / (Cost of equity − g), where g is growth rate.</li>
+</ul>
+
+<h2>P/B Limitations</h2>
+<ul>
+  <li>Historical cost accounting doesn't reflect current asset values (land bought 30 years ago at ₹1 Cr may be worth ₹100 Cr today)</li>
+  <li>Doesn't capture brand, customer relationships, or intellectual property</li>
+  <li>Useless for technology, services, pharma companies — their assets are people and IP, not physical balance sheet items</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Can book value be negative?",
+        a: "Yes. If a company has more liabilities than assets (technically insolvent), book value is negative. Common in heavily leveraged companies or those with accumulated losses exceeding paid-up capital. Negative book value companies are very high risk.",
+      },
+      {
+        q: "What is the difference between book value and intrinsic value?",
+        a: "Book value is accounting-based (net assets on balance sheet — backward looking). Intrinsic value is the present value of all future cash flows — a forward-looking concept. A software company can have minimal book value but massive intrinsic value if it generates high sustainable cash flows.",
+      },
+      {
+        q: "Which sectors should I use P/B for?",
+        a: "P/B is most useful for banks, NBFCs, insurance companies, and other asset-heavy businesses. Avoid relying on P/B alone for technology, pharma, or consumer brands — their value lies in intangibles not captured in the balance sheet.",
+      },
+      {
+        q: "Why do PSU banks trade below book value?",
+        a: "Markets distrust the stated book value of PSU bank assets — specifically loan books that may have understated NPAs. When investors doubt asset quality, they apply a discount to book value. As NPAs get resolved and provisioning improves, P/B typically recovers.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-eps",
+    title: "What is EPS (Earnings Per Share)? How to Read It for Indian Stocks",
+    description: "EPS measures how much profit a company earns per share. Learn the difference between basic vs diluted EPS, trailing vs forward EPS, and how EPS growth helps evaluate Indian stocks and IPOs.",
+    readingTime: 5,
+    publishedAt: "2026-05-21",
+    relatedSlugs: ["pe-ratio", "what-is-book-value", "how-to-read-quarterly-results"],
+    content: `
+<h2>What is EPS?</h2>
+<p><strong>Earnings Per Share (EPS)</strong> is the portion of a company's profit allocated to each outstanding share. It is the foundation of the most-used valuation metric — the P/E ratio.</p>
+<p><strong>EPS = Net Profit (PAT) / Total Shares Outstanding</strong></p>
+<p>Example: A company earns ₹100 crore PAT with 10 crore shares outstanding. EPS = ₹10. If the stock trades at ₹200, P/E ratio = 200/10 = 20x.</p>
+<p>EPS converts absolute profit (which varies by company size) into a per-share metric that allows comparison across companies. A ₹1,000 Cr PAT company with 100 Cr shares has lower EPS (₹10) than a ₹100 Cr PAT company with 5 Cr shares (₹20).</p>
+
+<h2>Basic EPS vs Diluted EPS</h2>
+<ul>
+  <li><strong>Basic EPS:</strong> Calculated using the actual shares currently outstanding. Simple and straightforward.</li>
+  <li><strong>Diluted EPS:</strong> Assumes all potentially dilutive instruments (stock options, warrants, convertible bonds) are exercised → more shares in denominator → lower EPS. This is the conservative measure.</li>
+</ul>
+<p><strong>Always use Diluted EPS for serious analysis.</strong> It shows the worst-case dilution scenario. BSE/NSE quarterly results report both — always check diluted EPS. Companies with large ESOP (Employee Stock Option) programs can show significantly lower diluted EPS than basic EPS.</p>
+
+<h2>Trailing EPS vs Forward EPS</h2>
+<ul>
+  <li><strong>Trailing EPS (TTM — Trailing Twelve Months):</strong> Sum of the last four quarters' actual earnings per share. Based on real numbers. More reliable but backward-looking.</li>
+  <li><strong>Forward EPS:</strong> Analyst estimates of next 12 months' EPS. More relevant for growth companies but depends on forecast accuracy. Often wrong — especially for cyclical businesses.</li>
+</ul>
+<p>Trailing P/E = Price / Trailing EPS. Forward P/E = Price / Forward EPS. Forward P/E is used extensively in IPO valuations (since the company's pre-IPO EPS may not reflect post-IPO share count).</p>
+
+<h2>Why EPS Growth Matters More Than EPS Level</h2>
+<p>The absolute level of EPS is less important than its growth trajectory. A stock with EPS of ₹5 growing at 30% annually will reach ₹50 EPS in approximately 9 years. At a P/E of 20x, that's a ₹1,000 stock from today's hypothetical ₹100 — a 10x return.</p>
+<p>Track EPS growth over 3–5 years:</p>
+<ul>
+  <li>15–20%+ annual EPS growth: Excellent compounding machine</li>
+  <li>10–15%: Good — above inflation and typical GDP growth</li>
+  <li>Below 5%: Concerning if you're paying a premium P/E</li>
+  <li>Declining EPS: Red flag — must understand if cyclical or structural</li>
+</ul>
+
+<h2>The Dilution Trap — EPS Can Fall Even as Profits Rise</h2>
+<p>If a company issues lots of new shares through a QIP, ESOP vesting, or preferential allotment, the share count increases. Even if PAT grew 20%, if shares grew 18%, EPS grew only ~1.7%.</p>
+<ul>
+  <li>Always track both PAT growth AND EPS growth. A divergence (PAT up, EPS flat) reveals dilution.</li>
+  <li>Companies with frequent equity raises (loss-making startups, aggressive acquirers) often show declining EPS despite revenue growth.</li>
+</ul>
+
+<h2>Adjusted EPS — Removing One-Time Items</h2>
+<p>Quarterly results often include exceptional items — asset sales, write-offs, legal settlements, tax reversals. These distort EPS:</p>
+<ul>
+  <li>A company reporting ₹500 Cr PAT may include a ₹300 Cr one-time gain. Core business EPS = only ₹200 Cr contribution.</li>
+  <li>Calculate <strong>Adjusted PAT</strong> = Reported PAT − Exceptional gains + Exceptional losses</li>
+  <li>Adjusted EPS = Adjusted PAT / Shares. Use this for true business profitability tracking.</li>
+</ul>
+
+<h2>EPS in IPO Analysis</h2>
+<p>Pre-IPO EPS is often higher because fewer shares are outstanding. Post-IPO, the fresh issue adds new shares, diluting EPS. Always check the <strong>post-IPO diluted EPS</strong> in the prospectus — the PE multiple at the issue price is calculated using this.</p>
+<p>Many IPOs from new-age tech companies (Zomato, Paytm) had negative EPS at listing. For loss-making companies, use EV/Revenue or EV/Gross Profit instead of P/E.</p>
+    `,
+    faq: [
+      {
+        q: "How much EPS growth is good for an Indian company?",
+        a: "15-20%+ annual diluted EPS growth sustained over 3-5 years is excellent. Consistent 10%+ EPS growth compounding over a decade creates significant wealth. Below 5% EPS growth in a company you're paying 25x P/E for is concerning.",
+      },
+      {
+        q: "Why do some companies report negative EPS despite positive EBITDA?",
+        a: "Because EBITDA excludes depreciation, interest, and taxes. Heavy depreciation (capital-intensive businesses like airlines, real estate, manufacturing) or high interest costs (leveraged companies) can wipe out EBITDA to produce a net loss and negative EPS.",
+      },
+      {
+        q: "Is EPS useful for bank stocks?",
+        a: "Yes, but supplement with ROE, NIM (Net Interest Margin), and asset quality ratios (GNPA, NNPA). Bank earnings are heavily influenced by provisioning decisions, which can distort single-quarter EPS significantly.",
+      },
+      {
+        q: "Can a company have negative EPS but still be a good investment?",
+        a: "Yes, if losses are deliberate investment in growth (customer acquisition, R&D, capacity expansion) and the path to profitability is clear. Zomato reported negative EPS for years before turning profitable. Always check cash flows and unit economics alongside EPS.",
+      },
+    ],
+  },
+  {
+    slug: "fd-vs-mutual-fund",
+    title: "FD vs Mutual Fund — Which is Better for Indian Investors in 2026?",
+    description: "Fixed deposits and mutual funds are both popular in India. Compare safety, returns, tax treatment, liquidity, and who should choose what in 2026 after the debt MF tax rule changes.",
+    readingTime: 6,
+    publishedAt: "2026-05-21",
+    relatedSlugs: ["sip-guide", "what-is-mutual-fund", "what-is-t-bill"],
+    content: `
+<h2>FD vs Mutual Fund — Two Very Different Risk Profiles</h2>
+<p>Fixed Deposits and Mutual Funds serve different purposes in a financial plan. An FD offers guaranteed returns with zero market risk. A mutual fund offers market-linked returns — potentially much higher over long periods, but with volatility. Comparing them head-to-head often misses the point: they solve different problems.</p>
+
+<h2>Safety</h2>
+<ul>
+  <li><strong>FD:</strong> DICGC (Deposit Insurance and Credit Guarantee Corporation) insures FDs up to <strong>₹5 lakh per bank per depositor</strong>. Beyond that, you rely on the bank's health. Large PSU and private bank FDs are practically very safe. Small cooperative/private bank FDs carry higher risk beyond ₹5 lakh.</li>
+  <li><strong>Equity Mutual Fund:</strong> SEBI-regulated, assets held by an independent custodian (not the AMC). No credit risk of AMC failure — your units are safe even if the fund house closes. However, market risk is real — value can fall.</li>
+  <li><strong>Debt Mutual Fund:</strong> Carries credit risk (quality of bonds held) and duration risk (interest rate movements). Well-managed debt funds with high-quality portfolios are quite safe.</li>
+</ul>
+
+<h2>Returns Comparison (2026 reference)</h2>
+<ul>
+  <li><strong>SBI FD, 1 year:</strong> ~6.8%. Senior citizens: ~7.3%</li>
+  <li><strong>Small finance bank FD:</strong> 8–9% (higher credit risk)</li>
+  <li><strong>Liquid Mutual Fund:</strong> ~6.5–7.5% (money market instruments, very short duration)</li>
+  <li><strong>Short Duration Debt Fund:</strong> ~7–8%</li>
+  <li><strong>Nifty 50 Index Fund (historical 15-year CAGR):</strong> ~12–13%</li>
+  <li><strong>Large-cap active equity MF (historical):</strong> ~12–15%</li>
+</ul>
+
+<h2>The Inflation Reality</h2>
+<p>India's average CPI inflation is approximately 5% over the last decade. FD at 6.8% gives a <strong>real return of ~1.8%</strong> after inflation. A Nifty 50 index fund at 12% CAGR gives ~7% real return. Over 20 years, this difference is enormous:</p>
+<ul>
+  <li>₹10 lakh in FD at 6.8% for 20 years: ~₹36 lakh</li>
+  <li>₹10 lakh in Nifty 50 index fund at 12% for 20 years: ~₹96 lakh</li>
+</ul>
+<p>The compounding advantage of equities over 15+ year horizons is why financial planners recommend equity for long-term goals.</p>
+
+<h2>Tax Treatment (Critical Difference)</h2>
+<ul>
+  <li><strong>FD interest:</strong> Fully taxable at slab rate (up to 30% for top bracket). TDS deducted at 10% if interest exceeds ₹40,000/year. No way to defer or reduce tax.</li>
+  <li><strong>Equity MF LTCG (held &gt;1 year):</strong> 12.5% on gains above ₹1.25 lakh/year. Significantly lower than slab rate for most investors.</li>
+  <li><strong>Equity MF STCG (held ≤1 year):</strong> 20%</li>
+  <li><strong>Debt MF (post April 2023):</strong> Taxed at income slab rate — like FD. The previous LTCG advantage with indexation has been removed. Debt MFs are now largely tax-equivalent to FDs.</li>
+</ul>
+
+<h2>Liquidity</h2>
+<ul>
+  <li><strong>FD:</strong> Premature withdrawal possible with 0.5–1% penalty and loss of promised interest rate. Tax-saving FDs (5-year lock-in): cannot break early.</li>
+  <li><strong>Liquid MF:</strong> Redeemable same day (T+0) for most AMCs. Excellent liquidity.</li>
+  <li><strong>Equity MF:</strong> Redeemable any business day, credited in T+2. ELSS: 3-year mandatory lock-in.</li>
+</ul>
+
+<h2>Who Should Choose FD</h2>
+<ul>
+  <li>Risk-averse individuals, senior citizens needing stable income</li>
+  <li>Short-term goals under 2-3 years</li>
+  <li>Emergency corpus (liquid FD or liquid MF)</li>
+  <li>Amounts below ₹5 lakh wanting guaranteed safety</li>
+  <li>Those in low tax brackets (20% or below) where FD tax is manageable</li>
+</ul>
+
+<h2>Who Should Choose Mutual Funds</h2>
+<ul>
+  <li>Young investors with 5+ year horizon seeking wealth creation</li>
+  <li>Those comfortable with short-term volatility for long-term gain</li>
+  <li>High tax bracket investors (30%) wanting efficient LTCG taxation</li>
+  <li>Those seeking inflation-beating returns</li>
+</ul>
+
+<h2>The Smart Hybrid Approach</h2>
+<p>Most financial planners recommend using both: 3–6 months expenses in FD/liquid fund (emergency corpus) + medium-term goals in short-duration debt MF + long-term wealth in equity MF. FD and equity MF are not competitors — they serve different parts of your financial plan.</p>
+    `,
+    faq: [
+      {
+        q: "Is FD 100% safe?",
+        a: "FDs are safe up to ₹5 lakh per bank per depositor under DICGC insurance. Beyond that, you rely on the bank's financial health. SBI/HDFC/ICICI FDs are practically very safe. Small cooperative bank FDs beyond DICGC limit carry higher risk.",
+      },
+      {
+        q: "Can mutual funds give negative returns?",
+        a: "Equity mutual funds can and do give negative returns in the short term (1-3 year periods in market downturns). Over 7-10 year periods, the probability of negative returns on a diversified equity MF is historically very low in India.",
+      },
+      {
+        q: "Are tax-saving FDs and ELSS the same?",
+        a: "Both offer ₹1.5 lakh deduction under Section 80C. Tax-saving FD: 5-year lock-in, guaranteed ~7% return, interest taxable as income. ELSS: 3-year lock-in, market-linked (historically 12-15%+), LTCG tax. ELSS typically beats tax-saver FD for wealth creation over long term.",
+      },
+      {
+        q: "After the 2023 debt MF tax change, is there any advantage of debt MF over FD?",
+        a: "The tax advantage for debt MFs over FDs is largely gone post-April 2023 (both taxed at slab rate). Debt MFs still offer potential yield advantage, better diversification, and liquidity without penalty. But for pure safety + guaranteed return, FD remains simpler.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-invest-in-nps",
+    title: "How to Invest in NPS — National Pension System Complete Guide 2026",
+    description: "NPS offers Section 80CCD tax deductions and market-linked pension savings. Learn Tier 1 vs Tier 2, asset allocation, ₹50,000 extra deduction under 80CCD(1B), withdrawal rules, and how to open NPS online.",
+    readingTime: 7,
+    publishedAt: "2026-05-21",
+    relatedSlugs: ["what-is-elss-ppf-nps", "fd-vs-mutual-fund", "what-is-mutual-fund"],
+    content: `
+<h2>What is NPS?</h2>
+<p>The <strong>National Pension System (NPS)</strong> is a government-run retirement savings scheme regulated by PFRDA (Pension Fund Regulatory and Development Authority). It is mandatory for Central Government employees joining after 2004, and voluntary for all others — private sector employees, self-employed professionals, and NRIs.</p>
+<p>NPS works by investing your contributions across equity, government bonds, and corporate bonds, accumulating a retirement corpus. At age 60, you withdraw 60% as a lump sum (tax-free) and use 40% to purchase an annuity (monthly pension — taxable as income).</p>
+
+<h2>Tier 1 vs Tier 2 Account</h2>
+<ul>
+  <li><strong>Tier 1 (Pension Account):</strong> Mandatory lock-in until age 60 (with limited partial withdrawal exceptions). Tax benefits available. 40% must be used for annuity at exit. Minimum ₹500 per contribution, ₹1,000/year minimum.</li>
+  <li><strong>Tier 2 (Savings Account):</strong> Voluntary addition to Tier 1. No lock-in — withdraw anytime like a mutual fund. No tax deduction (except for Central Government employees). Works as a flexible investment account.</li>
+</ul>
+
+<h2>Asset Allocation Choices</h2>
+<p>Choose where your NPS contributions are invested:</p>
+<ul>
+  <li><strong>E (Equity):</strong> Up to 75% — invests in Nifty 50-related stocks via fund managers like SBI Pension, LIC, HDFC, UTI, Kotak, ICICI Pru</li>
+  <li><strong>G (Government Bonds):</strong> Sovereign securities — zero credit risk, moderate returns</li>
+  <li><strong>C (Corporate Bonds):</strong> AAA-rated corporate debt — slightly higher yield than G</li>
+  <li><strong>A (Alternative):</strong> REITs, InvITs — capped at 5%</li>
+</ul>
+<p>You can choose one of two modes:</p>
+<ul>
+  <li><strong>Active Choice:</strong> You manually set the allocation. Maximum 75% in E (equity). Example aggressive mix: 75% E / 15% C / 10% G.</li>
+  <li><strong>Auto Choice (Lifecycle):</strong> Automatically shifts from equity-heavy to bonds as you age. Three variants: LC-75 (aggressive), LC-50 (moderate), LC-25 (conservative).</li>
+</ul>
+
+<h2>Tax Benefits — The Main Attraction</h2>
+<ul>
+  <li><strong>Section 80CCD(1):</strong> Contributions up to ₹1.5 lakh per year deductible — part of the overall ₹1.5L 80C limit</li>
+  <li><strong>Section 80CCD(1B):</strong> Additional ₹50,000 deduction <strong>over and above</strong> the ₹1.5L 80C limit. This is unique to NPS — no other instrument offers this extra ₹50,000 deduction.</li>
+  <li><strong>Combined potential:</strong> NPS can give you ₹2 lakh in total deductions. At 30% tax bracket: ₹60,000 in annual tax savings.</li>
+  <li><strong>Section 80CCD(2):</strong> Employer contributions to NPS — up to 10% of salary (14% for government employees) are fully deductible from income. This is additional, not part of the personal limits above.</li>
+</ul>
+
+<h2>Withdrawal Rules</h2>
+<ul>
+  <li><strong>Normal exit at 60:</strong> Withdraw up to 60% as tax-free lump sum. Remaining 40% must be used to purchase an annuity. Choose annuity plan from approved providers (LIC, SBI Life, HDFC Life etc).</li>
+  <li><strong>Premature exit before 60:</strong> Can exit after 3 years of NPS. Only 20% can be withdrawn as lump sum. 80% must go to annuity. Much less favourable than waiting till 60.</li>
+  <li><strong>Partial withdrawal:</strong> After 10 years of contribution, can withdraw up to 25% of own contributions (not employer's) for specific purposes: children's higher education/marriage, home purchase/construction, critical illness treatment.</li>
+  <li><strong>Death of subscriber:</strong> Entire corpus goes to nominee — no annuity requirement. Fully tax-free for nominee.</li>
+</ul>
+
+<h2>Expected Returns</h2>
+<ul>
+  <li>NPS equity (E fund) has historically delivered 10–12% CAGR</li>
+  <li>Corporate bond (C fund): approximately 7–8% CAGR</li>
+  <li>Government bond (G fund): approximately 6–7% CAGR</li>
+  <li>A blended 50E/30C/20G portfolio: approximately 9–11% CAGR long-term</li>
+</ul>
+<p>Returns vary by fund manager within the same asset class. The best-performing equity fund managers within NPS have delivered close to Nifty returns — choose based on 5-year track record available on PFRDA's website.</p>
+
+<h2>How to Open NPS Online</h2>
+<ul>
+  <li><strong>eNPS Portal (enps.nsdl.com):</strong> Register with Aadhaar e-KYC + PAN. Complete online. PRAN (Permanent Retirement Account Number) issued immediately. Link to bank account for contributions.</li>
+  <li><strong>Through your bank:</strong> Most major banks (SBI, HDFC, ICICI, Axis, Kotak) are registered as Points of Presence (PoP). Can open at branch or via internet banking. Simpler if you prefer guided process.</li>
+  <li><strong>Minimum investment:</strong> ₹500 per contribution. ₹1,000 per financial year for Tier 1 to keep account active.</li>
+</ul>
+
+<h2>NPS vs PPF vs ELSS</h2>
+<ul>
+  <li><strong>NPS:</strong> Lock-in till 60, ₹2L deduction possible (80CCD), forced annuity, equity up to 75%, pension focus</li>
+  <li><strong>PPF:</strong> 15-year lock-in, ₹1.5L deduction (80C), no annuity, no equity, 7.1% guaranteed, tax-free maturity</li>
+  <li><strong>ELSS:</strong> 3-year lock-in, ₹1.5L deduction (80C), no annuity, 100% equity, market-linked, LTCG tax on gains</li>
+</ul>
+<p>Best strategy: Use ELSS or PPF to max out the ₹1.5L 80C limit. Then invest in NPS Tier 1 for the additional ₹50,000 deduction under 80CCD(1B) — this exclusive extra deduction makes NPS compelling for high-bracket taxpayers.</p>
+    `,
+    faq: [
+      {
+        q: "Is NPS better than PPF?",
+        a: "For long-term wealth creation, NPS with 75% equity allocation typically beats PPF significantly over 20-30 years (equity returns ~12% vs PPF 7.1%). PPF is completely flexible (no forced annuity) and tax-free at maturity. Best strategy: max both where possible — PPF for 80C, NPS for the extra 80CCD(1B) ₹50,000 deduction.",
+      },
+      {
+        q: "Can I exit NPS before retirement?",
+        a: "Yes, after 3 years of NPS. But premature exit is very unfavourable: only 20% as lump sum, 80% must go to annuity. If you're likely to need the money before 60, PPF or ELSS are better options. NPS is best treated as long-term retirement savings.",
+      },
+      {
+        q: "What is an annuity and why is it required in NPS?",
+        a: "An annuity is a contract where you give a lump sum to an insurance company and receive a fixed monthly pension for life. NPS requires 40% (or 80% for premature exit) to go to an annuity to ensure you have guaranteed pension income. Annuity returns are typically 5-7% annually — lower than expected NPS investment returns — which is the main criticism of the mandatory annuity.",
+      },
+      {
+        q: "Can NRIs invest in NPS?",
+        a: "Yes. NRIs can open NPS Tier 1 accounts. Contributions must come from NRE or NRO accounts. The account closes if you lose Indian citizenship. Tax treatment depends on country of residence and applicable DTAA. Consult a tax advisor for NRI NPS specifics.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-trading-account",
+    title: "What is a Trading Account — How is it Different from Demat?",
+    description: "A trading account places buy/sell orders on NSE/BSE. Learn how it differs from a demat account, types of orders (market, limit, SL), brokerage charges, and how to choose between discount vs full-service brokers.",
+    readingTime: 5,
+    publishedAt: "2026-05-22",
+    relatedSlugs: ["what-is-demat-account", "how-to-apply-ipo", "what-is-market-cap"],
+    content: `
+<h2>What is a Trading Account?</h2>
+<p>A <strong>trading account</strong> is your interface to place buy and sell orders on stock exchanges (NSE and BSE). Without it, you cannot execute equity trades. Think of it as the door to the stock market — you need a key (trading account) to enter and transact.</p>
+
+<h2>Trading Account vs Demat Account — The Critical Difference</h2>
+<ul>
+  <li><strong>Trading Account:</strong> Places orders. Routes your buy/sell instructions to the exchange. Holds cash temporarily between trades.</li>
+  <li><strong>Demat Account:</strong> Stores securities electronically (shares, bonds, ETFs). Like a bank account for financial assets.</li>
+</ul>
+<p>They work together: When you buy shares, the trading account routes the order to the exchange. Once executed, shares are credited to your demat account. When you sell, shares debit from demat and cash credits to the trading account, which then transfers to your bank.</p>
+<p>Almost all brokers open both simultaneously — you apply for a "demat + trading account" together.</p>
+
+<h2>How Trades Work — Step by Step</h2>
+<ol>
+  <li>You place a buy order via the trading platform (app or website)</li>
+  <li>Broker routes the order to NSE/BSE</li>
+  <li>Order is matched with a seller at the exchange</li>
+  <li>Settlement happens T+1 (next business day after trade)</li>
+  <li>Shares are credited to your demat account</li>
+  <li>Cash is debited from your trading account / linked bank</li>
+</ol>
+
+<h2>Types of Orders You Can Place</h2>
+<ul>
+  <li><strong>Market Order:</strong> Buy or sell immediately at the best available price. Fast execution, but price not guaranteed in volatile markets. Best for liquid large-cap stocks.</li>
+  <li><strong>Limit Order:</strong> Set your price. Buy only at ₹X or lower; sell only at ₹X or higher. Order may not execute if price doesn't reach your level. Gives price certainty, not execution certainty.</li>
+  <li><strong>Stop-Loss (SL) Order:</strong> Triggers when stock falls to a set "trigger" price. Protects against big losses. Types: SL-Limit (safer price, may not execute) and SL-Market (executes immediately at market price when triggered).</li>
+  <li><strong>After Market Order (AMO):</strong> Place orders outside trading hours (3:30 PM – 9 AM). Executes at market open. Good for investors who cannot monitor markets during trading hours.</li>
+  <li><strong>Good Till Cancelled (GTC):</strong> Order stays active until executed or manually cancelled (up to 1 year on NSE).</li>
+</ul>
+
+<h2>Intraday vs Delivery Trading</h2>
+<ul>
+  <li><strong>Delivery (CNC — Cash and Carry):</strong> Buy and hold. Shares go to your demat account. Standard investing mode. T+1 settlement.</li>
+  <li><strong>Intraday (MIS — Margin Intraday Square-off):</strong> Buy and sell within the same trading day. No overnight position. Brokers offer leverage (1.5x to 5x for different stocks). Risk: If you forget to exit, broker auto-squares your position at ~3:20 PM. Taxed as speculative income (slab rate), not STCG.</li>
+</ul>
+
+<h2>Brokerage Structure</h2>
+<ul>
+  <li><strong>Full-service brokers</strong> (ICICI Direct, HDFC Securities, Kotak Securities, Axis Direct): 0.3–0.5% brokerage per trade. Include research reports, advisory, dedicated relationship manager. Best for new investors who need guidance.</li>
+  <li><strong>Discount brokers</strong> (Zerodha, Groww, Upstox, Angel One): ₹20 flat per order regardless of trade size. No research or advisory. Best for self-directed investors. At scale, dramatically cheaper.</li>
+</ul>
+<p>Example: Buying ₹1 lakh of ITC shares costs ₹20 brokerage at Zerodha vs ₹300–500 at a full-service broker. Over 10 years with 100 trades, this saves ₹28,000–48,000.</p>
+
+<h2>Other Charges Beyond Brokerage</h2>
+<ul>
+  <li><strong>STT (Securities Transaction Tax):</strong> 0.1% on delivery trades (both buy and sell), 0.025% on intraday. Levied by government, not broker.</li>
+  <li><strong>Exchange transaction charges:</strong> NSE levies 0.00322% (NSE) or 0.00375% (BSE)</li>
+  <li><strong>GST on brokerage:</strong> 18% of brokerage amount</li>
+  <li><strong>SEBI fees:</strong> ₹10 per crore of turnover — tiny</li>
+  <li><strong>DP charges:</strong> ₹13.5 + 18% GST per sell transaction debited from demat (charged by CDSL/NSDL). This applies to delivery sells, not intraday.</li>
+</ul>
+
+<h2>Choosing the Right Broker</h2>
+<ul>
+  <li><strong>Zerodha:</strong> Largest discount broker, excellent platform, ₹20 flat. Best for active traders and investors.</li>
+  <li><strong>Groww:</strong> Simple interface, good for beginners. Zero AMC demat for first year.</li>
+  <li><strong>Angel One:</strong> Research + execution combination, free for delivery trades (above threshold).</li>
+  <li><strong>ICICI Direct / HDFC Securities:</strong> Full-service, best if you want banking + investing in one ecosystem. Higher cost.</li>
+  <li><strong>Upstox:</strong> Fast mobile app, discount pricing, strong for derivatives traders.</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Can I have a trading account without a demat account?",
+        a: "For F&O trading (futures and options), positions settle in cash and don't require a demat account. But no broker will provide a trading account without opening a demat simultaneously. Demat is needed for equity delivery settlement.",
+      },
+      {
+        q: "Are my funds safe if my broker goes bankrupt?",
+        a: "Shares in your demat account (held at CDSL/NSDL, not the broker) are completely safe. Cash idle in your trading account could be at risk — keep minimum cash in the trading account. SEBI mandates client fund segregation but enforcement has historically had gaps.",
+      },
+      {
+        q: "Do I need to pay tax on intraday trading profits?",
+        a: "Yes. Intraday trading profits are classified as speculative business income — taxed at your income slab rate (up to 30%), not the preferential STCG rate. You must file ITR-3 if you have any speculative business income, even small amounts.",
+      },
+      {
+        q: "Can I place trades from a mobile app?",
+        a: "Yes. All major brokers have mobile apps for iOS and Android. Zerodha Kite, Groww App, Upstox App, Angel One App — all support full order placement, portfolio tracking, and charts. Most also have web platforms for desktop.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-dividend-yield",
+    title: "What is Dividend Yield? How to Find High Dividend Stocks in India",
+    description: "Dividend yield measures annual dividend income as a percentage of stock price. Learn what constitutes a good yield in India, how to identify sustainable dividends, and which sectors are India's best dividend payers.",
+    readingTime: 5,
+    publishedAt: "2026-05-22",
+    relatedSlugs: ["pe-ratio", "what-is-book-value", "what-is-eps"],
+    content: `
+<h2>What is Dividend Yield?</h2>
+<p><strong>Dividend Yield = Annual Dividend per Share / Current Market Price × 100</strong></p>
+<p>Example: A stock trades at ₹500 and pays an annual dividend of ₹15 per share. Dividend yield = (15/500) × 100 = 3%.</p>
+<p>Dividend yield tells you the annual cash income you receive per rupee invested in a stock — similar to the interest rate on an FD, but variable (both dividend and price can change).</p>
+
+<h2>How Dividends Work in India</h2>
+<ul>
+  <li>Companies pay dividends from profits. The Board of Directors recommends a dividend, shareholders approve at AGM (for final dividend).</li>
+  <li><strong>Interim dividend:</strong> Paid during the financial year, before accounts are finalized. Board can declare without shareholder approval.</li>
+  <li><strong>Final dividend:</strong> Declared at year-end along with annual results. Most companies have both — e.g., ₹5 interim + ₹10 final = ₹15 total annual dividend.</li>
+  <li><strong>Special/one-time dividend:</strong> Paid out of exceptional gains — asset sale proceeds, surplus cash. Not recurring.</li>
+</ul>
+
+<h2>Ex-Dividend Date — The Critical Date</h2>
+<p>To receive a dividend, you must own the stock <strong>before the ex-dividend date</strong>. On the ex-dividend date itself, the stock price theoretically falls by approximately the dividend amount (since that value is being distributed to prior holders). Those who buy on or after the ex-date don't receive the dividend.</p>
+<p>Timeline: Board announces → Ex-date announced (usually 1-2 weeks before record date) → Record date (who's eligible) → Payment date (actual cash in account, usually 30-45 days after record date for final dividends).</p>
+
+<h2>What is a Good Dividend Yield?</h2>
+<ul>
+  <li><strong>Below 1%:</strong> Very low — stock priced for capital appreciation, not income. Common in growth stocks (Bajaj Finance, Titan, Asian Paints)</li>
+  <li><strong>1–2%:</strong> Average for large-cap India. Acceptable for companies growing earnings.</li>
+  <li><strong>2–4%:</strong> Good yield — attracts income-seeking investors. Common in PSUs, MNCs, utilities.</li>
+  <li><strong>4%+:</strong> High yield — check carefully. Either the company is genuinely generous (Coal India, MOIL) OR the stock price has fallen significantly (making yield look high) — a potential value trap.</li>
+</ul>
+<p>Always compare dividend yield to the 10-year G-Sec yield (~7%) and FD rates (~7%). If dividend yield is 3% and you're in the 30% tax bracket, after-tax yield is 2.1% — FD would give more net income. Dividend yield investing only makes full sense when combined with capital appreciation expectations.</p>
+
+<h2>Top Dividend-Paying Sectors in India</h2>
+<ul>
+  <li><strong>Coal and mining:</strong> Coal India — consistently high dividends (often 5–8% yield), driven by government pressure for dividend income from PSU holdings</li>
+  <li><strong>Oil and Gas:</strong> ONGC, BPCL, IOC, HINDPETRO — high dividend payers, though yields fluctuate with oil prices and government policy</li>
+  <li><strong>IT Services:</strong> TCS, Infosys, HCL Tech — strong free cash flow generators. TCS also does regular buybacks. Combined dividend + buyback yield can be 4–6%.</li>
+  <li><strong>FMCG:</strong> HUL, Nestle, Colgate — steady, growing dividends over decades. Lower current yield (1–2%) but consistent growth.</li>
+  <li><strong>Power Utilities:</strong> PowerGrid, NTPC — regulated returns, stable dividends. Good for income-oriented portfolios.</li>
+  <li><strong>MNCs with royalty income:</strong> 3M, Honeywell, Abbott India, Pfizer India — repatriate profits via dividends to overseas parent. Often very high payout ratios.</li>
+</ul>
+
+<h2>Dividend Sustainability — How to Assess</h2>
+<p>Not all dividends are safe. Ask these questions before relying on dividend income:</p>
+<ul>
+  <li><strong>Is dividend &gt; EPS?</strong> Paying more than earnings means borrowing to pay dividends — unsustainable.</li>
+  <li><strong>Is free cash flow positive?</strong> Profit ≠ cash. A company can show profit but have negative cash flow. Dividend must be paid from real cash.</li>
+  <li><strong>Payout ratio:</strong> Dividend / EPS × 100. 30–60% is healthy. Above 80% for a cyclical business is risky — a bad year could force a dividend cut.</li>
+  <li><strong>History:</strong> Has the company paid dividends consistently for 5–10+ years? Companies that have never cut dividends are more reliable income sources.</li>
+</ul>
+
+<h2>Tax on Dividends (Post FY2020-21)</h2>
+<p>India's dividend taxation changed completely from FY2020-21. Dividends are now <strong>fully taxable in the hands of the recipient at their income slab rate</strong>:</p>
+<ul>
+  <li>TDS at 10% deducted for dividends above ₹5,000/year from a single company</li>
+  <li>If you're in the 30% tax bracket, your effective dividend yield is 70% of the stated yield</li>
+  <li>For high-bracket investors, growth stocks (with buybacks instead of dividends) are often more tax-efficient</li>
+</ul>
+    `,
+    faq: [
+      {
+        q: "Do mutual funds pay dividends?",
+        a: "Mutual funds pay IDCW (Income Distribution cum Capital Withdrawal) — formerly called 'dividend'. These are payouts from NAV, not from underlying company dividends. Since 2020, these are taxable. Most long-term investors prefer the 'Growth' option where all income is reinvested — better compounding, fewer tax events.",
+      },
+      {
+        q: "Are dividends a signal of financial health?",
+        a: "Often yes, but not always. Consistent dividend growth over 5+ years is a strong positive signal. One-time large dividends can come from asset sales rather than recurring earnings. Companies that suddenly cut dividends are a strong bearish signal — markets typically react sharply.",
+      },
+      {
+        q: "Which Indian company has the longest dividend track record?",
+        a: "Several MNC companies like Colgate-Palmolive, HUL, Abbott India, and Nestle India have paid uninterrupted dividends for decades. Castrol India and VST Industries also have long, consistent records. TCS, post its 2009 listing, has grown dividends every year.",
+      },
+      {
+        q: "Is a high dividend yield always better?",
+        a: "No. Very high dividend yield (6-8%+) on a stock often signals that the market expects earnings to fall or the dividend to be cut — causing the stock price to have already fallen. Always check payout ratio, earnings trend, and cash flows before assuming high yield = good investment.",
+      },
+    ],
+  },
+];
+
+// Merge all articles
+articles.push(...additionalArticles);
+
 export function getArticle(slug: string): Article | undefined {
   return articles.find((a) => a.slug === slug);
 }

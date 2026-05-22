@@ -112,6 +112,29 @@ export default function BestStocksHubPage() {
         </div>
       </section>
 
+      {/* By Strategy */}
+      <section className="mb-10">
+        <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <span className="w-1 h-5 bg-violet-500 rounded-full inline-block" />
+          By Strategy
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {bestStocksCategories.filter((c) => ["high-dividend", "low-pb", "multibagger-watchlist", "psu-stocks"].includes(c.slug)).map((c) => {
+            const Icon = ICON_MAP[c.icon] ?? Coins;
+            return (
+              <Link key={c.slug} href={`/best-stocks/${c.slug}`} className="card hover:border-indigo-300 hover:shadow-sm transition group">
+                <div className={`w-10 h-10 rounded-lg ${c.color} flex items-center justify-center mb-3`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-indigo-700 transition">{c.shortLabel}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{c.description}</p>
+                <div className="mt-3 text-xs font-medium text-indigo-600">View list →</div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Disclaimer */}
       <div className="card bg-amber-50 border-amber-200">
         <div className="flex items-start gap-2">

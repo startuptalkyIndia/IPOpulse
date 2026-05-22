@@ -66,7 +66,7 @@ const navGroups: NavGroup[] = [
         { href: "/mutual-funds/screener",           label: "MF Screener" },
         { href: "/shareholding",                    label: "Shareholding" },
         { href: "/screener/promoter",               label: "Promoter >45% Screen" },
-        { href: "/best-stocks",                     label: "Best Stocks Lists",     badge: "10" },
+        { href: "/best-stocks",                     label: "Best Stocks Lists",     badge: "14" },
         { href: "/dividend-yield",                  label: "Dividend Yield" },
         { href: "/corporate-actions",               label: "Corporate Actions" },
         { href: "/corporate-actions/rights-bonus",  label: "Rights & Bonus" },
@@ -125,7 +125,7 @@ const navGroups: NavGroup[] = [
     href: "/learn",
     items: [
       [
-        { href: "/learn",     label: "Learning Hub", badge: "55 guides" },
+        { href: "/learn",     label: "Learning Hub", badge: "65 guides" },
         { href: "/glossary",  label: "Financial Glossary", badge: "90+ terms" },
         { href: "/ipo/process",     label: "How IPO Works" },
         { href: "/market/holidays", label: "Market Holidays 2026" },

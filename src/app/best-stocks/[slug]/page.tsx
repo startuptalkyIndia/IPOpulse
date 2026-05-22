@@ -48,15 +48,18 @@ export default async function BestStocksCategoryPage({ params }: Props) {
   // Build company filter
   const companyWhere: Prisma.CompanyWhereInput = {
     active: true,
+    ...(cat.filter.nseSymbolIn && cat.filter.nseSymbolIn.length > 0 && { nseSymbol: { in: cat.filter.nseSymbolIn } }),
     ...(cat.filter.excludeSme && { isSme: false }),
     ...(cat.filter.marketCapMin && { marketCap: { gte: cat.filter.marketCapMin, ...(cat.filter.marketCapMax && { lte: cat.filter.marketCapMax }) } }),
     ...(cat.filter.marketCapMax && !cat.filter.marketCapMin && { marketCap: { lte: cat.filter.marketCapMax } }),
     ...(cat.filter.peMax && { peRatio: { gte: cat.filter.peMin ?? 0.1, lte: cat.filter.peMax } }),
     ...(cat.filter.roeMin && { roePercent: { gte: cat.filter.roeMin } }),
+    ...(cat.filter.dividendMin && { dividendYield: { gte: cat.filter.dividendMin } }),
+    ...(cat.filter.pbMax && { pbRatio: { gte: 0.05, lte: cat.filter.pbMax } }),
   };
 
-  // Fetch ~3x the limit to account for price filter (which is applied after join)
-  const candidateCount = cat.filter.limit * 5;
+  // Fetch ~5x the limit to account for price filter (which is applied after join)
+  const candidateCount = cat.filter.nseSymbolIn ? cat.filter.nseSymbolIn.length + 10 : cat.filter.limit * 5;
 
   // Order
   const orderBy: Prisma.CompanyOrderByWithRelationInput =
@@ -64,6 +67,7 @@ export default async function BestStocksCategoryPage({ params }: Props) {
     cat.filter.sortBy === "pe" ? { peRatio: cat.filter.sortOrder } :
     cat.filter.sortBy === "roe" ? { roePercent: cat.filter.sortOrder } :
     cat.filter.sortBy === "dividend" ? { dividendYield: cat.filter.sortOrder } :
+    cat.filter.sortBy === "pb" ? { pbRatio: cat.filter.sortOrder } :
     { marketCap: "desc" };
 
   const candidates = await prisma.company.findMany({
