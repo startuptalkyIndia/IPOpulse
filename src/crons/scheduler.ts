@@ -23,6 +23,7 @@ import { ingestHistoricalFiiDii } from "./jobs/nse-fii-dii-historical";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
 import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
+import { checkIpoAlerts } from "./jobs/check-alerts";
 
 let started = false;
 
@@ -153,6 +154,12 @@ export function startScheduler() {
     console.log(`[cron bse_listing_sync] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // IPO alert checker — every 2 hours, all days (alerts fire anytime)
+  cron.schedule("0 */2 * * *", async () => {
+    const result = await runIngestion("check_alerts", checkIpoAlerts);
+    console.log(`[cron check_alerts] ${result.ok ? "ok" : "failed"} fired=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Kite Connect real-time prices — every 5 min during market hours (requires daily token)
   // When token is active: updates 1000+ stocks with 0-delay live prices
   // When no token: skips (Yahoo v8 runs every 15 min as fallback)
@@ -171,7 +178,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -198,4 +205,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   nse_indices: ingestNseIndices,
   bhavcopy_historical: ingestHistoricalBhavcopy,
   fii_dii_historical: ingestHistoricalFiiDii,
+  check_alerts: checkIpoAlerts,
 };

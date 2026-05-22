@@ -175,3 +175,38 @@ last redeploy.
 ### Build verified
 
 `npx next build` ran clean post-changes — no errors, no warnings, all 80+ routes compile.
+
+---
+
+## [2026-05-23] IPO Alert Cron Job — check_alerts
+
+Built the missing cron job that checks user alert conditions and fires emails via Resend.
+
+### What was built
+
+- **`src/crons/jobs/check-alerts.ts`** — new cron job `checkIpoAlerts()`
+  - Queries all alerts where `isActive=true` AND `firedAt=null`
+  - Includes user (email, name) via Prisma relation
+  - Pre-fetches IPOs by slug (batch, no N+1)
+  - Pre-fetches latest GMP per IPO for `gmp_threshold` alerts
+  - Condition logic:
+    - `gmp_threshold` — fires when latest GMP >= `alert.threshold`
+    - `subscription_open/close`, `allotment`, `listing` — fires when IPO date is within ±1 day of today
+  - Sends HTML email via Resend from `alerts@ipopulse.talkytools.com`
+  - Gracefully handles: missing RESEND_API_KEY (marks fired, no email), stale ipoSlug (skips alert), email send failure (marks fired anyway to prevent infinite retries)
+  - Bulk-updates all fired alert IDs in a single `updateMany` call
+  - No user emails in console.log
+
+- **`src/crons/scheduler.ts`** — added:
+  - Import of `checkIpoAlerts`
+  - `cron.schedule("0 */2 * * *", ...)` — fires every 2 hours, all days, Asia/Kolkata timezone
+  - `check_alerts` entry in `availableJobs` (enables manual trigger via admin panel)
+
+### Session status table
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Create `src/crons/jobs/check-alerts.ts` | ✅ Done | All 5 alert types, Resend email, graceful error handling |
+| 2 | Register cron in `scheduler.ts` | ✅ Done | `"0 */2 * * *"`, added to `availableJobs` as `check_alerts` |
+| 3 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` clean |
+| 4 | Deploy | ⏭️ Skipped | Per task instructions — DO NOT DEPLOY |
