@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Check, Lock, Bell, Download, Filter, Star } from "lucide-react";
+import { WhatsAppBanner } from "@/components/WhatsAppBanner";
 
 export const metadata: Metadata = {
   title: "Pricing — IPOpulse",
@@ -41,6 +42,11 @@ export default function PricingPage() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             All IPO data is free. Upgrade to Premium for real-time alerts, exports, and advanced tools.
           </p>
+        </div>
+
+        {/* WhatsApp Channel CTA */}
+        <div className="mb-10">
+          <WhatsAppBanner />
         </div>
 
         {/* Plans grid */}

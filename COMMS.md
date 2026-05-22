@@ -1,6 +1,21 @@
 # IPOpulse — COMMS
 ---
 
+## 2026-05-23 — WhatsApp Channel CTA Banner (Task 3)
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | `WhatsAppBanner` component | ✅ Done | `src/components/WhatsAppBanner.tsx` — dismissible, localStorage key `whatsapp-banner-dismissed`, placeholder link `https://whatsapp.com/channel/ipopulse` |
+| 2 | Banner on homepage | ✅ Done | Below hero section, above sector performance strip — `src/app/page.tsx` |
+| 3 | Banner on IPO detail page | ✅ Done | Below main IPO data card — `src/app/ipo/[slug]/page.tsx` |
+| 4 | Banner on /pricing page | ✅ Done | Above pricing cards grid — `src/app/pricing/page.tsx` |
+| 5 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` clean |
+| 6 | Deployed to server | ⏭️ Skipped | DO NOT DEPLOY — Master Hub handles deploys |
+
+**TO-DO:** Replace `https://whatsapp.com/channel/ipopulse` in `src/components/WhatsAppBanner.tsx` (constant `WHATSAPP_URL`) when Shubham creates the WhatsApp channel from phone.
+
+---
+
 ## 2026-05-23 — Free vs Premium Tier (Task 1)
 
 | # | Task | Status | Notes |

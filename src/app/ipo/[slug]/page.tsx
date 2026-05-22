@@ -30,6 +30,7 @@ import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { IpoPollWrapper } from "@/components/community/IpoPollWrapper";
 import { ApplyIpoCtaRow } from "@/components/AffiliateCta";
 import { MobileStickyCta } from "@/components/MobileStickyCta";
+import { WhatsAppBanner } from "@/components/WhatsAppBanner";
 import { affiliateUrl } from "@/lib/affiliates";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
@@ -218,6 +219,9 @@ export default async function IpoDetailPage({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* WhatsApp Channel CTA */}
+      <WhatsAppBanner />
 
       {/* Listing countdown — only when closed/live and listing date in the future */}
       {(status === "closed" || status === "live") && ipo.listingDate && ipo.listingDate.getTime() > Date.now() ? (

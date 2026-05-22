@@ -22,6 +22,7 @@ import {
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { WhatsAppBanner } from "@/components/WhatsAppBanner";
 
 
 async function fetchLatestNews(): Promise<Array<{ title: string; link: string; source: string; pubDate: string }>> {
@@ -418,6 +419,11 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* WhatsApp Channel CTA */}
+      <div className="max-w-7xl mx-auto px-4 pt-6">
+        <WhatsAppBanner />
+      </div>
 
       {/* Sector performance strip */}
       {sectorPerf.length > 0 && (
