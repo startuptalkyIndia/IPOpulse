@@ -58,8 +58,15 @@ export default async function BestStocksCategoryPage({ params }: Props) {
     ...(cat.filter.pbMax && { pbRatio: { gte: 0.05, lte: cat.filter.pbMax } }),
   };
 
-  // Fetch ~5x the limit to account for price filter (which is applied after join)
-  const candidateCount = cat.filter.nseSymbolIn ? cat.filter.nseSymbolIn.length + 10 : cat.filter.limit * 5;
+  // Determine if a price filter is required (under-100, under-50, penny-stocks)
+  const needsPrice = cat.filter.priceMin != null || cat.filter.priceMax != null;
+
+  // Fetch more candidates: price-filtered pages need extra buffer; others need enough to reach limit
+  const candidateCount = cat.filter.nseSymbolIn
+    ? cat.filter.nseSymbolIn.length + 10
+    : needsPrice
+    ? cat.filter.limit * 8
+    : cat.filter.limit * 3;
 
   // Order
   const orderBy: Prisma.CompanyOrderByWithRelationInput =
@@ -91,9 +98,9 @@ export default async function BestStocksCategoryPage({ params }: Props) {
   const filtered = candidates
     .map((c) => ({ ...c, ltp: priceMap.get(c.id)?.close ?? null, volume: priceMap.get(c.id)?.volume ?? null }))
     .filter((c) => {
-      if (!c.ltp) return false;
-      if (cat.filter.priceMin != null && c.ltp < cat.filter.priceMin) return false;
-      if (cat.filter.priceMax != null && c.ltp > cat.filter.priceMax) return false;
+      if (needsPrice && !c.ltp) return false; // Price pages need LTP to apply the filter
+      if (cat.filter.priceMin != null && c.ltp != null && c.ltp < cat.filter.priceMin) return false;
+      if (cat.filter.priceMax != null && c.ltp != null && c.ltp > cat.filter.priceMax) return false;
       return true;
     })
     .slice(0, cat.filter.limit);
@@ -166,13 +173,13 @@ export default async function BestStocksCategoryPage({ params }: Props) {
           </div>
           <div className="card text-center">
             <div className="text-2xl font-bold text-violet-700">
-              {filtered.length > 0 ? `₹${Math.min(...filtered.map((c) => c.ltp ?? Infinity)).toFixed(0)}` : "—"}
+              {(() => { const ltps = filtered.map((c) => c.ltp).filter((v): v is number => v != null); return ltps.length > 0 ? `₹${Math.min(...ltps).toFixed(0)}` : "—"; })()}
             </div>
             <div className="text-xs text-gray-500 mt-1">Lowest price</div>
           </div>
           <div className="card text-center">
             <div className="text-2xl font-bold text-amber-600">
-              {filtered.length > 0 ? `₹${Math.max(...filtered.map((c) => c.ltp ?? 0)).toFixed(0)}` : "—"}
+              {(() => { const ltps = filtered.map((c) => c.ltp).filter((v): v is number => v != null); return ltps.length > 0 ? `₹${Math.max(...ltps).toFixed(0)}` : "—"; })()}
             </div>
             <div className="text-xs text-gray-500 mt-1">Highest price</div>
           </div>
