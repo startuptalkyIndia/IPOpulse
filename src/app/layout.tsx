@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   description:
     "Live IPO GMP, subscription status, allotment tracker, stock research, FII/DII flows, financial calculators — all in one clean, structured dashboard.",
   metadataBase: new URL("https://ipopulse.talkytools.com"),
+  alternates: { canonical: "/" },
   openGraph: {
     title: "IPOpulse — India's IPO, Stock & Market Data Hub",
     description:
