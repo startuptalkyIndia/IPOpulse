@@ -62,6 +62,12 @@ ENV PATH="/app/node_modules/.bin:${PATH}"
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
+# Drop to non-root user — security hardening. Done last so global npm install
+# (Claude CLI) above runs as root. App writes to /app (prisma migrations,
+# .next runtime cache), so own the whole WORKDIR.
+RUN useradd -m -u 1000 app && chown -R app:app /app
+USER app
+
 EXPOSE 3065
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
