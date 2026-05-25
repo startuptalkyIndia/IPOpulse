@@ -65,7 +65,7 @@ RUN chmod +x docker-entrypoint.sh
 # Drop to non-root user — security hardening. Done last so global npm install
 # (Claude CLI) above runs as root. App writes to /app (prisma migrations,
 # .next runtime cache), so own the whole WORKDIR.
-RUN useradd -m -u 1000 app && chown -R app:app /app
+RUN useradd -m -u 1001 app && chown -R app:app /app
 USER app
 
 EXPOSE 3065
