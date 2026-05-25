@@ -83,10 +83,12 @@ async function fetchQuoteSummary(yahooSymbol: string): Promise<{
   netMargin?: number;
 } | null> {
   try {
+    // v3 API requires `new YahooFinance()` instantiation
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const yf = require("yahoo-finance2").default as typeof import("yahoo-finance2").default;
+    const YahooFinance = require("yahoo-finance2").default;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = await yf.quoteSummary(yahooSymbol, {
+    const yf: any = new YahooFinance();
+    const result = await yf.quoteSummary(yahooSymbol, {
       modules: ["defaultKeyStatistics", "financialData"],
     });
     const ks = result?.defaultKeyStatistics ?? {};

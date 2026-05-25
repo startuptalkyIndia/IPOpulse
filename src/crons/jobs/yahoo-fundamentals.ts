@@ -42,8 +42,11 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
   let rowsError = 0;
 
   // Import yahoo-finance2 at function scope so Next.js doesn't bundle it for client
+  // v3 API requires `new YahooFinance()` instantiation
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const yf = require("yahoo-finance2").default as typeof import("yahoo-finance2").default;
+  const YahooFinance = require("yahoo-finance2").default;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yf: any = new YahooFinance();
 
   for (let i = 0; i < companies.length; i++) {
     const co = companies[i];
