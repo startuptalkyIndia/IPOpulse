@@ -1,5 +1,57 @@
 # Changelog — IPOpulse
 
+## 2026-05-25 · (sha 1b8cad9) fix(docker): use UID 1001 to avoid conflict with node user
+## 2026-05-25 · (sha a4be6a2) fix(lock): regenerate package-lock.json after @playwright/test add
+## 2026-05-25 · (sha 17bd41f) fix(docker): replace wget healthcheck with Node fetch probe
+## 2026-05-25 · (sha 0ee7a0c) feat(IPOpulse): add Playwright smoke test (homepage hydration + login)
+## 2026-05-25 · (sha 573acb9) security(IPOpulse): add auth endpoint rate limit
+## 2026-05-25 · (sha 64cd10f) feat(IPOpulse): add canonical URL meta for SEO
+## 2026-05-25 · (sha 165f261) security(ipopulse): drop to non-root user in container
+## 2026-05-23 · (sha 49a6ba9) Fix price-range pages: query bhavcopy first for under-100/50/penny
+## 2026-05-23 · (sha 22b9394) Fix: show non-price pages even when LTP is missing from bhavcopy
+## 2026-05-23 · (sha 7eb132c) fix: use prisma db push in entrypoint (no migration files in project)
+## 2026-05-23 · (sha f00c478) feat: add WhatsApp channel CTA banner to homepage, IPO pages, pricing
+## 2026-05-23 · (sha fa9777d) feat: add IPO alert cron — checks conditions every 2h, sends Resend email
+## 2026-05-23 · (sha cdd6883) feat: free vs premium tier — Plan enum, pricing page, PremiumGate, alert gate
+## 2026-05-21 · (sha de2af35) feat: Best Stocks SEO hub — 10 curated DB-driven lists
+## 2026-05-21 · (sha 887be7a) fix: rename middleware.ts → proxy.ts (Next.js 16 convention for standalone builds)
+## 2026-05-21 · (sha 0fc3e27) fix: Next.js 16 standalone + middleware build bug
+## 2026-05-21 · (sha 3ef37c4) fix: remove duplicate force-dynamic exports from page files
+## 2026-05-21 · (sha 45f2128) fix: force-dynamic on / to prevent build-time DB query failures
+## 2026-05-19 · (sha 9d1e426) feat: user accounts + IPO alerts (Auth.js v5 + Alert model)
+## 2026-05-19 · (sha e013dbd) fix: use Claude CLI for all AI features
+## 2026-05-18 · (sha a88198a) fix: use native fetch in byok.ts — removes @anthropic-ai/sdk and openai import deps
+## 2026-05-18 · (sha 88f9608) fix: lazy ENCRYPTION_KEY init + force-dynamic on AI settings route
+## 2026-05-18 · (sha db96851) feat: add BYOK AI settings (Anthropic + OpenAI + Gemini)
+## 2026-05-18 · (sha 76bb1d4) fix: guard IPO slug undefined Prisma error + add 4 new pages to sitemap (news, promoter screener, FORE calc, dividend yield)
+## 2026-05-18 · (sha 4259593) fix: upgrade Next.js to 16.2.6 (0 high vulns)
+## 2026-05-17 · (sha 87f4f62) fix: remove illegal metadata export from client component + add layout.tsx for screener/promoter SEO
+## 2026-05-17 · (sha 414952e) feat: dividend stocks page + daily summary enrichment + 50 more company descriptions
+## 2026-05-17 · (sha 52c5136) feat: 10 more learn articles (55 total) — CIBIL, SWP, ITR, NFO, Arbitrage, ELSS vs PPF vs NPS, T-Bill, Contra Fund, Quarterly Results, International Funds
+## 2026-05-17 · (sha 64227ea) feat: promoter >45% screener page + nav link
+## 2026-05-17 · (sha d247435) feat: add live news feed + fetchLatestNews() to homepage — shows 6 latest headlines from Google News RSS in 2-column card
+## 2026-05-17 · (sha ff71b85) feat: add Market News, FORE Calculator, Dividend Stocks, Financial Twitter to homepage module grid; update calc shortcuts and stats
+## 2026-05-17 · (sha d63e2e9) feat: screener preset screens + FORE calculator + 52W Low/High sort
+## 2026-05-17 · (sha 89e129d) feat: news hub with 6 category RSS feeds + Financial Twitter India directory
+## 2026-05-17 · (sha 0336880) feat: add security standard to CLAUDE.md — 8 non-negotiable rules + weekly scan
+## 2026-05-17 · (sha a1f55e7) feat: add online research task to CLAUDE.md — agents research competitor feedback before building
+## 2026-05-17 · (sha 105a8a3) feat: add Apify scraping standard to CLAUDE.md
+## 2026-05-16 · (sha fee7208) feat: add autosave standard to CLAUDE.md — platform-wide mandate
+## 2026-05-16 · (sha 691389d) feat: real-time data enrichment — Kite live prices + Yahoo v8 fix + faster crons
+## 2026-05-16 · (sha d960c3e) fix: add force-dynamic to learn/[slug] so new articles work without rebuild
+## 2026-05-16 · (sha ab3f947) feat: 8 new learn articles (45 total) — stocks beginner guide, circuit limits, EPS, candlesticks, smallcase, pledge shares, SEBI, diversification
+## 2026-05-16 · (sha 0f40ba7) fix: Lighthouse issues — contrast ratio, robots.txt host directive removed, add llms.txt for AI crawlers
+## 2026-05-11 · (sha 169650e) feat: super-investor smart money activity feed + conviction buys + fix seed data labels
+## 2026-05-10 · (sha 26d96dd) fix: .claude mount :ro → :rw so CLI can auto-refresh OAuth token
+## 2026-05-09 · (sha 1b75f45) fix: exclude scripts/ from Next.js TS compilation (seed scripts use null)
+## 2026-05-09 · (sha fe701ce) fix: replace all dev-speak placeholder messages with professional empty states
+## 2026-05-09 · (sha dbb526f) feat: add /api/health + robots.txt + sitemap/privacy where missing
+## 2026-05-09 · (sha e917f3a) fix: screener sort — replace Infinity with concrete fallbacks to avoid JS comparison edge cases
+## 2026-05-09 · (sha 02cc845) feat: stock comparison, MF screener, rights/bonus tracker, shareholding
+## 2026-05-09 · (sha cbd554d) feat: REIT/InvIT tracker, SGB tracker, NCD tracker
+## 2026-05-09 · (sha 030a142) feat: capital gains calculator, F&O expiry calendar, economic calendar
+
+
 > **Read last 10 entries before starting any work. Every fix and root cause is documented here.**
 
 
