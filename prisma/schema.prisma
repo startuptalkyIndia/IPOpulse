@@ -889,3 +889,15 @@ model Setting {
 
   @@map("settings")
 }
+
+
+model Feedback {
+  id        String   @id @default(cuid())
+  rating    String
+  message   String?
+  path      String?
+  product   String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+

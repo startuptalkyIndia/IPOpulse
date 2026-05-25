@@ -4,6 +4,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { MarketTicker } from "@/components/MarketTicker";
 import { CookieConsent } from "@/components/CookieConsent";
+import { FeedbackWidget } from "@/components/shared/FeedbackWidget";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
@@ -106,6 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1">{children}</main>
         <Footer />
         <CookieConsent />
+        <FeedbackWidget productName="IPOpulse" />
       </body>
     </html>
   );
