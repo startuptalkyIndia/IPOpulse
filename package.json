@@ -14,7 +14,8 @@
     "db:studio": "prisma studio",
     "db:seed": "npx prisma db seed",
     "db:seed-ipos": "tsx scripts/seed-ipos.ts",
-    "prepare": "husky 2>/dev/null || true"
+    "prepare": "husky 2>/dev/null || true",
+    "test:smoke": "playwright test"
   },
   "prisma": {
     "seed": "tsx scripts/seed.ts"
@@ -61,7 +62,8 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@playwright/test": "^1.48.0"
   },
   "overrides": {
     "esbuild": "^0.25.0"
