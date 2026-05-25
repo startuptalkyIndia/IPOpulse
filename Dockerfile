@@ -1,5 +1,5 @@
 # Stage 1: Install dependencies
-FROM node:20-alpine AS deps
+FROM node:26-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 COPY package.json package-lock.json ./
@@ -7,7 +7,7 @@ COPY prisma ./prisma
 RUN npm install --legacy-peer-deps
 
 # Stage 2: Build
-FROM node:20-alpine AS builder
+FROM node:26-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache openssl
 COPY --from=deps /app/node_modules ./node_modules
@@ -29,7 +29,7 @@ RUN NODE_OPTIONS="--max-old-space-size=2048" npm run build
 # Stage 3: Production runner
 # node:20-slim (Debian/glibc) instead of Alpine — required for Claude CLI
 # which is a glibc binary and cannot run on Alpine's musl libc.
-FROM node:20-slim AS runner
+FROM node:26-slim AS runner
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
