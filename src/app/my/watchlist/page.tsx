@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { IpoStatusBadge } from "@/components/ipo/IpoStatusBadge";
 import { computeIpoStatus, formatPriceBand, formatDate } from "@/lib/ipo";
+import { OnboardingChecklist } from "@/components/shared/OnboardingChecklist";
 
 export default async function WatchlistPage() {
   const session = await auth();
@@ -21,17 +22,51 @@ export default async function WatchlistPage() {
   const ipoSlugs = items.filter((i) => i.type === "ipo").map((i) => i.targetSlug);
   const stockSlugs = items.filter((i) => i.type === "stock").map((i) => i.targetSlug);
 
-  const [ipos, stocks] = await Promise.all([
+  const [ipos, stocks, gmpAlertsCount, userRecord] = await Promise.all([
     ipoSlugs.length
       ? prisma.ipo.findMany({ where: { slug: { in: ipoSlugs } }, include: { listing: true } })
       : Promise.resolve([]),
     stockSlugs.length
       ? prisma.company.findMany({ where: { slug: { in: stockSlugs } } })
       : Promise.resolve([]),
+    // gmp_threshold alerts = user opted in to GMP daily nudges
+    prisma.alert.count({ where: { userId, type: "gmp_threshold" } }).catch(() => 0),
+    prisma.user.findUnique({ where: { id: userId }, select: { name: true } }).catch(() => null),
   ]);
+
+  // Onboarding completeness checks for the dashboard checklist below.
+  const ipoCountInWatchlist = ipoSlugs.length;
 
   return (
     <div className="space-y-6">
+      <OnboardingChecklist
+        storageKey="ipopulse.onboardingChecklist.dismissed"
+        title="Set up IPOpulse"
+        steps={[
+          {
+            key: "profile",
+            label: "Complete your profile",
+            description: "Add your name so we can personalise alerts and digests.",
+            href: "/my/account",
+            done: Boolean(userRecord?.name),
+          },
+          {
+            key: "watchlist",
+            label: "Set your watchlist (5 IPOs)",
+            description: "Track upcoming IPOs — open, allotment, and listing dates flow into your dashboard.",
+            href: "/ipo",
+            done: ipoCountInWatchlist >= 5,
+          },
+          {
+            key: "gmp_alerts",
+            label: "Enable GMP daily alerts",
+            description: "Get the latest grey-market premium on tracked IPOs each morning.",
+            href: "/my/account",
+            done: gmpAlertsCount > 0,
+          },
+        ]}
+      />
+
       <div className="flex items-center gap-2">
         <Bookmark className="w-5 h-5 text-indigo-600" />
         <h1 className="text-2xl font-bold text-gray-900">Watchlist</h1>
