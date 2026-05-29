@@ -250,7 +250,7 @@ model AnnualFinancial {
   opm         Decimal? @db.Decimal(6, 2)
   netProfit   Decimal? @map("net_profit") @db.Decimal(18, 2)
   eps         Decimal? @db.Decimal(10, 2)
-  dividendPayout Decimal? @map("dividend_payout") @db.Decimal(6, 2)
+  dividendPayout Decimal? @map("dividend_payout") @db.Decimal(12, 2)
   // Balance sheet (₹ Cr)
   equityCapital Decimal? @map("equity_capital") @db.Decimal(18, 2)
   reserves    Decimal? @db.Decimal(18, 2)
@@ -266,8 +266,8 @@ model AnnualFinancial {
   cashFromFinancing Decimal? @map("cash_from_fin") @db.Decimal(18, 2)
   netCashFlow Decimal? @map("net_cash_flow") @db.Decimal(18, 2)
   // Ratios
-  roe         Decimal? @db.Decimal(6, 2)
-  roce        Decimal? @db.Decimal(6, 2)
+  roe         Decimal? @db.Decimal(10, 2)
+  roce        Decimal? @db.Decimal(10, 2)
   source      String   @default("screener")
   capturedAt  DateTime @default(now()) @map("captured_at")
 
