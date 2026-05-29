@@ -62,6 +62,32 @@ export default async function ScreenerPage() {
     low52w: r._min.low ? Number(r._min.low) : null,
   }]));
 
+  // ─── YoY growth from annual_financials latest 2 years per company ────────
+  const companyIds = companies.map((c) => c.id);
+  const annuals = await prisma.annualFinancial.findMany({
+    where: { companyId: { in: companyIds } },
+    orderBy: [{ companyId: "asc" }, { yearEnd: "desc" }],
+    select: { companyId: true, sales: true, netProfit: true },
+  });
+  const byCo = new Map<number, typeof annuals>();
+  for (const a of annuals) {
+    const arr = byCo.get(a.companyId) ?? [];
+    if (arr.length < 2) { arr.push(a); byCo.set(a.companyId, arr); }
+  }
+  const yoyMap = new Map<number, { revYoy: number | null; profitYoy: number | null }>();
+  for (const [cid, rows] of byCo.entries()) {
+    if (rows.length < 2) continue;
+    const [cur, prev] = rows;
+    const lS = cur.sales ? Number(cur.sales) : null;
+    const pS = prev.sales ? Number(prev.sales) : null;
+    const lP = cur.netProfit ? Number(cur.netProfit) : null;
+    const pP = prev.netProfit ? Number(prev.netProfit) : null;
+    yoyMap.set(cid, {
+      revYoy: lS && pS && pS > 0 ? ((lS - pS) / pS) * 100 : null,
+      profitYoy: lP && pP && Math.abs(pP) > 0 ? ((lP - pP) / Math.abs(pP)) * 100 : null,
+    });
+  }
+
   const seed: ScreenerCompany[] = companies.map((c) => {
     const today = todayMap.get(c.id);
     const prevClose = prevMap.get(c.id) ?? null;
@@ -85,6 +111,8 @@ export default async function ScreenerPage() {
       debtToEquity: c.debtToEquity ? Number(c.debtToEquity) : null,
       dividendYield: c.dividendYield ? Number(c.dividendYield) : null,
       eps: c.eps ? Number(c.eps) : null,
+      revYoy: yoyMap.get(c.id)?.revYoy ?? null,
+      profitYoy: yoyMap.get(c.id)?.profitYoy ?? null,
     };
   });
 

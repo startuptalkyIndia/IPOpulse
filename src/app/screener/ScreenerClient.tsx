@@ -24,6 +24,8 @@ export interface ScreenerCompany {
   debtToEquity?: number | null;
   dividendYield?: number | null;
   eps?: number | null;
+  revYoy?: number | null;
+  profitYoy?: number | null;
 }
 
 const MCAP_BANDS: Array<{ key: string; label: string; min: number | null; max: number | null }> = [
@@ -312,6 +314,8 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                 <th className="px-3 py-3 text-right">52W Range</th>
                 <th className="px-3 py-3 text-right">P/E</th>
                 <th className="px-3 py-3 text-right">ROE %</th>
+                <th className="px-3 py-3 text-right" title="Year-on-year revenue growth from annual financials">Rev YoY</th>
+                <th className="px-3 py-3 text-right" title="Year-on-year net profit growth from annual financials">Profit YoY</th>
               </tr>
             </thead>
             <tbody>
@@ -352,11 +356,21 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                   </td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.peRatio != null ? c.peRatio.toFixed(1) : "—"}</td>
                   <td className="px-3 py-2.5 text-xs text-right tabular-nums text-gray-700">{c.roePercent != null ? c.roePercent.toFixed(1) : "—"}</td>
+                  <td className={`px-3 py-2.5 text-xs text-right tabular-nums ${
+                    c.revYoy != null ? (c.revYoy >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium") : "text-gray-400"
+                  }`}>
+                    {c.revYoy != null ? `${c.revYoy >= 0 ? "+" : ""}${c.revYoy.toFixed(1)}%` : "—"}
+                  </td>
+                  <td className={`px-3 py-2.5 text-xs text-right tabular-nums ${
+                    c.profitYoy != null ? (c.profitYoy >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium") : "text-gray-400"
+                  }`}>
+                    {c.profitYoy != null ? `${c.profitYoy >= 0 ? "+" : ""}${c.profitYoy.toFixed(1)}%` : "—"}
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={11} className="px-3 py-12 text-center text-sm text-gray-500">
                     No companies match these filters. Reset to see all.
                   </td>
                 </tr>
