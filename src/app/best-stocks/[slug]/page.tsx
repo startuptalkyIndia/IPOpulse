@@ -144,6 +144,40 @@ export default async function BestStocksCategoryPage({ params }: Props) {
 
   const Icon = ICON_MAP[cat.icon] ?? Coins;
 
+  // ─── Fetch YoY growth from latest 2 annual financials per company ────────
+  // Pull the most recent 2 fiscal years for each company in the filtered list
+  const filteredIds = filtered.map((f) => f.id);
+  const yoyGrowth = new Map<number, { revGrowth: number | null; profitGrowth: number | null }>();
+  if (filteredIds.length > 0) {
+    const annuals = await prisma.annualFinancial.findMany({
+      where: { companyId: { in: filteredIds } },
+      orderBy: [{ companyId: "asc" }, { yearEnd: "desc" }],
+      select: { companyId: true, sales: true, netProfit: true, yearEnd: true },
+    });
+    // Group by company, take latest 2 rows per company
+    const byCompany = new Map<number, typeof annuals>();
+    for (const a of annuals) {
+      const arr = byCompany.get(a.companyId) ?? [];
+      if (arr.length < 2) {
+        arr.push(a);
+        byCompany.set(a.companyId, arr);
+      }
+    }
+    for (const [companyId, rows] of byCompany.entries()) {
+      if (rows.length < 2) continue;
+      const [latest, prior] = rows; // sorted desc
+      const latestSales = latest.sales ? Number(latest.sales) : null;
+      const priorSales = prior.sales ? Number(prior.sales) : null;
+      const latestProfit = latest.netProfit ? Number(latest.netProfit) : null;
+      const priorProfit = prior.netProfit ? Number(prior.netProfit) : null;
+      const revGrowth = latestSales && priorSales && priorSales > 0
+        ? ((latestSales - priorSales) / priorSales) * 100 : null;
+      const profitGrowth = latestProfit && priorProfit && Math.abs(priorProfit) > 0
+        ? ((latestProfit - priorProfit) / Math.abs(priorProfit)) * 100 : null;
+      yoyGrowth.set(companyId, { revGrowth, profitGrowth });
+    }
+  }
+
   // JSON-LD ItemList schema
   const jsonLd = {
     "@context": "https://schema.org",
@@ -235,10 +269,14 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                   <th className="px-3 py-3 text-right">Market Cap</th>
                   <th className="px-3 py-3 text-right">P/E</th>
                   <th className="px-3 py-3 text-right">ROE %</th>
+                  <th className="px-3 py-3 text-right" title="Year-on-year revenue growth from latest annual results">Rev YoY</th>
+                  <th className="px-3 py-3 text-right" title="Year-on-year net profit growth from latest annual results">Profit YoY</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((c, i) => (
+                {filtered.map((c, i) => {
+                  const growth = yoyGrowth.get(c.id);
+                  return (
                   <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-3 py-3 text-xs text-gray-400">{i + 1}</td>
                     <td className="px-3 py-3 text-sm">
@@ -260,11 +298,26 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                     <td className="px-3 py-3 text-xs text-right tabular-nums text-gray-700">
                       {c.roePercent != null ? `${Number(c.roePercent).toFixed(1)}%` : "—"}
                     </td>
+                    <td className={`px-3 py-3 text-xs text-right tabular-nums ${
+                      growth?.revGrowth != null
+                        ? growth.revGrowth >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium"
+                        : "text-gray-400"
+                    }`}>
+                      {growth?.revGrowth != null ? `${growth.revGrowth >= 0 ? "+" : ""}${growth.revGrowth.toFixed(1)}%` : "—"}
+                    </td>
+                    <td className={`px-3 py-3 text-xs text-right tabular-nums ${
+                      growth?.profitGrowth != null
+                        ? growth.profitGrowth >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium"
+                        : "text-gray-400"
+                    }`}>
+                      {growth?.profitGrowth != null ? `${growth.profitGrowth >= 0 ? "+" : ""}${growth.profitGrowth.toFixed(1)}%` : "—"}
+                    </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-12 text-center text-sm text-gray-500">
+                    <td colSpan={9} className="px-3 py-12 text-center text-sm text-gray-500">
                       No companies match the filter criteria for this category yet. Data populates as bhavcopy and fundamentals are updated.
                     </td>
                   </tr>

@@ -38,9 +38,27 @@ export default async function CompanyPage({ params }: Props) {
     ? await prisma.company.findMany({
         where: { sector: company.sector, id: { not: company.id } },
         orderBy: { marketCap: "desc" },
-        take: 6,
+        take: 8,
+        select: {
+          id: true, slug: true, name: true, nseSymbol: true,
+          marketCap: true, peRatio: true, pbRatio: true,
+          roePercent: true, dividendYield: true,
+        },
       })
     : [];
+
+  // Get latest price for current company + peers in one bhavcopy query
+  const allCompanyIds = [company.id, ...peers.map((p) => p.id)];
+  const latestBhav = await prisma.bhavcopyDaily.findFirst({
+    orderBy: { date: "desc" }, select: { date: true },
+  });
+  const peerPrices = latestBhav
+    ? await prisma.bhavcopyDaily.findMany({
+        where: { companyId: { in: allCompanyIds }, date: latestBhav.date },
+        select: { companyId: true, close: true },
+      })
+    : [];
+  const priceMap = new Map(peerPrices.map((p) => [p.companyId, Number(p.close)]));
 
   // Fetch latest bhavcopy for real price data + 52W range + financial history
   const cutoff52w = new Date(); cutoff52w.setFullYear(cutoff52w.getFullYear() - 1);
@@ -207,23 +225,86 @@ export default async function CompanyPage({ params }: Props) {
 
       {peers.length > 0 ? (
         <section>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">Peers in {company.sector}</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {peers.map((p) => (
-              <Link
-                key={p.id}
-                href={`/ticker/${p.slug}`}
-                className="card text-center hover:border-indigo-300 transition"
-              >
-                <div className="text-xs font-medium text-gray-900 truncate">{p.name}</div>
-                <div className="text-[10px] text-gray-400 mt-0.5 font-mono">{p.nseSymbol}</div>
-                {p.marketCap ? (
-                  <div className="text-[10px] text-gray-500 mt-1 tabular-nums">
-                    {formatCurrency(Number(p.marketCap) * 10000000)}
-                  </div>
-                ) : null}
-              </Link>
-            ))}
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900">Peers in {company.sector}</h2>
+            <span className="text-[10px] text-gray-400">Top 8 by market cap</span>
+          </div>
+          <div className="card overflow-hidden p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-left text-[10px] font-semibold text-gray-500 uppercase">
+                    <th className="px-3 py-2">Company</th>
+                    <th className="px-3 py-2 text-right">LTP</th>
+                    <th className="px-3 py-2 text-right">Market Cap</th>
+                    <th className="px-3 py-2 text-right">P/E</th>
+                    <th className="px-3 py-2 text-right">P/B</th>
+                    <th className="px-3 py-2 text-right">ROE %</th>
+                    <th className="px-3 py-2 text-right">Div Yld %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Current company row — highlighted */}
+                  <tr className="bg-indigo-50/40 border-b border-gray-100 font-semibold">
+                    <td className="px-3 py-2">
+                      <span className="text-gray-900">{company.name}</span>
+                      <span className="text-[10px] text-indigo-600 ml-2">(this stock)</span>
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-900">
+                      {ltp != null ? `₹${ltp.toLocaleString("en-IN")}` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                      {company.marketCap ? formatCurrency(Number(company.marketCap) * 10000000) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                      {company.peRatio ? Number(company.peRatio).toFixed(1) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                      {company.pbRatio ? Number(company.pbRatio).toFixed(1) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                      {company.roePercent ? `${Number(company.roePercent).toFixed(1)}%` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                      {company.dividendYield ? `${Number(company.dividendYield).toFixed(2)}%` : "—"}
+                    </td>
+                  </tr>
+                  {peers.map((p) => {
+                    const peerLtp = priceMap.get(p.id);
+                    return (
+                      <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-3 py-2">
+                          <Link href={`/ticker/${p.slug}`} className="text-gray-900 hover:text-indigo-600 font-medium">
+                            {p.name}
+                          </Link>
+                          {p.nseSymbol && (
+                            <span className="text-[10px] text-gray-400 ml-2 font-mono">{p.nseSymbol}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-900">
+                          {peerLtp != null ? `₹${peerLtp.toLocaleString("en-IN")}` : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                          {p.marketCap ? formatCurrency(Number(p.marketCap) * 10000000) : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                          {p.peRatio ? Number(p.peRatio).toFixed(1) : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                          {p.pbRatio ? Number(p.pbRatio).toFixed(1) : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                          {p.roePercent ? `${Number(p.roePercent).toFixed(1)}%` : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                          {p.dividendYield ? `${Number(p.dividendYield).toFixed(2)}%` : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       ) : null}
