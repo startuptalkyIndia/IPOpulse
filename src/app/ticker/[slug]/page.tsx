@@ -12,6 +12,7 @@ import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { PriceChart } from "@/components/PriceChart";
 import { StockNews } from "@/components/StockNews";
 import { CompanyFinancials, type QuarterlyRow, type AnnualRow } from "@/components/CompanyFinancials";
+import { Sparkline } from "@/components/Sparkline";
 import { getCompanyDescription } from "@/lib/company-descriptions";
 
 interface Props {
@@ -59,6 +60,20 @@ export default async function CompanyPage({ params }: Props) {
       })
     : [];
   const priceMap = new Map(peerPrices.map((p) => [p.companyId, Number(p.close)]));
+
+  // 30-day price history for sparklines (current company + peers)
+  const sparkCutoff = new Date(); sparkCutoff.setDate(sparkCutoff.getDate() - 35);
+  const sparkRows = await prisma.bhavcopyDaily.findMany({
+    where: { companyId: { in: allCompanyIds }, date: { gte: sparkCutoff } },
+    orderBy: [{ companyId: "asc" }, { date: "asc" }],
+    select: { companyId: true, close: true },
+  });
+  const sparklineMap = new Map<number, number[]>();
+  for (const r of sparkRows) {
+    const arr = sparklineMap.get(r.companyId) ?? [];
+    arr.push(Number(r.close));
+    sparklineMap.set(r.companyId, arr);
+  }
 
   // Fetch latest bhavcopy for real price data + 52W range + financial history
   const cutoff52w = new Date(); cutoff52w.setFullYear(cutoff52w.getFullYear() - 1);
@@ -236,6 +251,7 @@ export default async function CompanyPage({ params }: Props) {
                   <tr className="bg-gray-50 border-b border-gray-200 text-left text-[10px] font-semibold text-gray-500 uppercase">
                     <th className="px-3 py-2">Company</th>
                     <th className="px-3 py-2 text-right">LTP</th>
+                    <th className="px-3 py-2 text-center">30D</th>
                     <th className="px-3 py-2 text-right">Market Cap</th>
                     <th className="px-3 py-2 text-right">P/E</th>
                     <th className="px-3 py-2 text-right">P/B</th>
@@ -252,6 +268,9 @@ export default async function CompanyPage({ params }: Props) {
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums text-gray-900">
                       {ltp != null ? `₹${ltp.toLocaleString("en-IN")}` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      <Sparkline values={sparklineMap.get(company.id) ?? []} width={64} height={20} />
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums text-gray-700">
                       {company.marketCap ? formatCurrency(Number(company.marketCap) * 10000000) : "—"}
@@ -283,6 +302,9 @@ export default async function CompanyPage({ params }: Props) {
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums text-gray-900">
                           {peerLtp != null ? `₹${peerLtp.toLocaleString("en-IN")}` : "—"}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <Sparkline values={sparklineMap.get(p.id) ?? []} width={64} height={20} />
                         </td>
                         <td className="px-3 py-2 text-right tabular-nums text-gray-700">
                           {p.marketCap ? formatCurrency(Number(p.marketCap) * 10000000) : "—"}

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { bestStocksCategories, getCategoryBySlug } from "@/lib/best-stocks-categories";
 import { formatCurrency } from "@/lib/format";
+import { Sparkline } from "@/components/Sparkline";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -144,6 +145,21 @@ export default async function BestStocksCategoryPage({ params }: Props) {
 
   const Icon = ICON_MAP[cat.icon] ?? Coins;
 
+  // ─── Fetch 30-day price history per company for sparklines ────────────────
+  const sparklineCutoff = new Date(latestBhav.date);
+  sparklineCutoff.setDate(sparklineCutoff.getDate() - 35); // 35 days to ensure ~30 trading days
+  const sparkPrices = filtered.length > 0 ? await prisma.bhavcopyDaily.findMany({
+    where: { companyId: { in: filtered.map((c) => c.id) }, date: { gte: sparklineCutoff } },
+    orderBy: [{ companyId: "asc" }, { date: "asc" }],
+    select: { companyId: true, close: true },
+  }) : [];
+  const sparklineMap = new Map<number, number[]>();
+  for (const p of sparkPrices) {
+    const arr = sparklineMap.get(p.companyId) ?? [];
+    arr.push(Number(p.close));
+    sparklineMap.set(p.companyId, arr);
+  }
+
   // ─── Fetch YoY growth from latest 2 annual financials per company ────────
   // Pull the most recent 2 fiscal years for each company in the filtered list
   const filteredIds = filtered.map((f) => f.id);
@@ -266,6 +282,7 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                   <th className="px-3 py-3">Company</th>
                   <th className="px-3 py-3">Sector</th>
                   <th className="px-3 py-3 text-right">LTP</th>
+                  <th className="px-3 py-3 text-center" title="30-day price trend">30D Trend</th>
                   <th className="px-3 py-3 text-right">Market Cap</th>
                   <th className="px-3 py-3 text-right">P/E</th>
                   <th className="px-3 py-3 text-right">ROE %</th>
@@ -288,6 +305,9 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                     <td className="px-3 py-3 text-xs text-gray-600">{c.sector ?? "—"}</td>
                     <td className="px-3 py-3 text-sm text-right tabular-nums font-semibold text-gray-900">
                       {c.ltp != null ? `₹${c.ltp.toLocaleString("en-IN")}` : "—"}
+                    </td>
+                    <td className="px-3 py-3 text-center text-gray-500">
+                      <Sparkline values={sparklineMap.get(c.id) ?? []} width={70} height={22} />
                     </td>
                     <td className="px-3 py-3 text-sm text-right tabular-nums text-gray-700">
                       {c.marketCap ? formatCurrency(Number(c.marketCap) * 10000000) : "—"}
@@ -317,7 +337,7 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-3 py-12 text-center text-sm text-gray-500">
+                    <td colSpan={10} className="px-3 py-12 text-center text-sm text-gray-500">
                       No companies match the filter criteria for this category yet. Data populates as bhavcopy and fundamentals are updated.
                     </td>
                   </tr>
