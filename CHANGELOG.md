@@ -1,5 +1,7 @@
 # Changelog — IPOpulse
 
+## 2026-05-30 · (sha ae76f32) fix(sec): patch HIGH axios vuln 1.15.2→1.16.1 — root cause: 4 axios advisories (NO_PROXY bypass + prototype-pollution header injection/DoS/MITM). Non-force `npm audit fix`, within ^1 semver, build green.
+
 ## 2026-05-25 · (sha 1b8cad9) fix(docker): use UID 1001 to avoid conflict with node user
 ## 2026-05-25 · (sha a4be6a2) fix(lock): regenerate package-lock.json after @playwright/test add
 ## 2026-05-25 · (sha 17bd41f) fix(docker): replace wget healthcheck with Node fetch probe
