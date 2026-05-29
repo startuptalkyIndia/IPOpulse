@@ -71,6 +71,52 @@ export default async function IpoDetailPage({ params }: Props) {
 
   if (!ipo) notFound();
   const status = computeIpoStatus(ipo);
+
+  // ─── Find listed peers in same sector ──────────────────────────────────
+  // 1) Try matching by nseSymbol (post-listing). 2) Fall back to normalized name.
+  const stripSuffix = (s: string) =>
+    s.replace(/\b(limited|ltd|pvt|private|public|company|industries|holdings|corp|corporation)\b\.?/gi, "")
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .trim()
+      .toLowerCase();
+  const ipoNameStem = stripSuffix(ipo.name).split(" ")[0]; // first word, normalized
+  let matchedCompany = null;
+  if (ipo.nseSymbol) {
+    matchedCompany = await prisma.company.findFirst({
+      where: { nseSymbol: ipo.nseSymbol, active: true },
+      select: { id: true, slug: true, name: true, sector: true, industry: true },
+    });
+  }
+  if (!matchedCompany && ipoNameStem.length > 2) {
+    matchedCompany = await prisma.company.findFirst({
+      where: { active: true, name: { contains: ipoNameStem, mode: "insensitive" } },
+      orderBy: { marketCap: "desc" },
+      select: { id: true, slug: true, name: true, sector: true, industry: true },
+    });
+  }
+
+  // Find peers by sector when we have one
+  type PeerRow = { id: number; slug: string; name: string; nseSymbol: string | null; marketCap: import("@prisma/client").Prisma.Decimal | null; peRatio: import("@prisma/client").Prisma.Decimal | null; pbRatio: import("@prisma/client").Prisma.Decimal | null; roePercent: import("@prisma/client").Prisma.Decimal | null; dividendYield: import("@prisma/client").Prisma.Decimal | null };
+  let listedPeers: PeerRow[] = [];
+  let peerSector: string | null = null;
+  if (matchedCompany?.sector) {
+    peerSector = matchedCompany.sector;
+    listedPeers = await prisma.company.findMany({
+      where: {
+        active: true,
+        sector: matchedCompany.sector,
+        id: { not: matchedCompany.id },
+        marketCap: { not: null },
+      },
+      orderBy: { marketCap: "desc" },
+      take: 6,
+      select: {
+        id: true, slug: true, name: true, nseSymbol: true,
+        marketCap: true, peRatio: true, pbRatio: true,
+        roePercent: true, dividendYield: true,
+      },
+    });
+  }
   const latestSub = ipo.subscriptions[0];
   const session = await auth();
   const userId = (session?.user as { id?: string } | undefined)?.id;
@@ -338,6 +384,64 @@ export default async function IpoDetailPage({ params }: Props) {
           riskBand={ipo.drhpAnalysis.riskBand}
           riskRationale={ipo.drhpAnalysis.riskRationale as never}
         />
+      ) : null}
+
+      {/* Listed peers in same sector — for valuation context */}
+      {listedPeers.length > 0 && peerSector ? (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900">
+              Listed peers in {peerSector}
+            </h2>
+            <span className="text-[10px] text-gray-400">For valuation context · top 6 by market cap</span>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-left text-[10px] font-semibold text-gray-500 uppercase">
+                    <th className="px-3 py-2">Company</th>
+                    <th className="px-3 py-2 text-right">Market Cap</th>
+                    <th className="px-3 py-2 text-right">P/E</th>
+                    <th className="px-3 py-2 text-right">P/B</th>
+                    <th className="px-3 py-2 text-right">ROE %</th>
+                    <th className="px-3 py-2 text-right">Div Yld %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listedPeers.map((p) => (
+                    <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-3 py-2">
+                        <Link href={`/ticker/${p.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                          {p.name}
+                        </Link>
+                        {p.nseSymbol && <span className="text-[10px] text-gray-400 ml-2 font-mono">{p.nseSymbol}</span>}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                        {p.marketCap ? formatCurrency(Number(p.marketCap) * 10000000) : "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                        {p.peRatio ? Number(p.peRatio).toFixed(1) : "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                        {p.pbRatio ? Number(p.pbRatio).toFixed(1) : "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                        {p.roePercent ? `${Number(p.roePercent).toFixed(1)}%` : "—"}
+                      </td>
+                      <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                        {p.dividendYield ? `${Number(p.dividendYield).toFixed(2)}%` : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 mt-2">
+            Compare this IPO&apos;s asking price to the P/E, P/B, ROE of established listed peers in the same sector. Substantially higher valuation than peers needs justification.
+          </p>
+        </section>
       ) : null}
 
       {/* Subscription velocity over time — only renders if 2+ snapshots */}
