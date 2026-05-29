@@ -25,6 +25,7 @@ import { syncIpoListings } from "./jobs/bse-listing-sync";
 import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
 import { checkIpoAlerts } from "./jobs/check-alerts";
 import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals";
+import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
 
 let started = false;
 
@@ -77,6 +78,13 @@ export function startScheduler() {
   cron.schedule("0 2 * * 0", async () => {
     const result = await runIngestion("yahoo_fundamentals", runYahooFundamentals);
     console.log(`[cron yahoo_fundamentals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Screener.in deep fundamentals (10-year quarterly + annual + BS + CF + ratios)
+  // Sunday 5:00 AM IST — top 200 companies by market cap, ~10 min/run at 3s/req
+  cron.schedule("0 5 * * 0", async () => {
+    const result = await runIngestion("screener_deep", ingestScreenerDeepFundamentals);
+    console.log(`[cron screener_deep] ${result.ok ? "ok" : "failed"} upserted=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // BSE corporate announcements — every 30 min during market hours, hourly outside
@@ -219,4 +227,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   fii_dii_historical: ingestHistoricalFiiDii,
   check_alerts: checkIpoAlerts,
   yahoo_fundamentals: runYahooFundamentals,
+  screener_deep: ingestScreenerDeepFundamentals,
 };

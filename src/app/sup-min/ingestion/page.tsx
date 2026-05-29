@@ -89,6 +89,11 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
     schedule: "Sunday at 2:00 AM IST",
     desc: "Full fundamentals refresh via yahoo-finance2 (handles crumb auth). Gets sharesOutstanding, ROE, D/E, operatingMargin, netMargin for ALL active NSE companies. ~45 min runtime at 1 req/1.2s. Ends with market_cap recalc. Run manually to bootstrap data.",
   },
+  screener_deep: {
+    label: "Screener.in Deep Fundamentals (Sunday 5:00 AM IST)",
+    schedule: "Sunday at 5:00 AM IST",
+    desc: "Scrapes screener.in/company/{SYMBOL} HTML for 10-year quarterly results, annual P&L, balance sheet, cash flow, ROE/ROCE trends. Top 200 companies by market cap. ~10 min runtime at 3s/req. Powers historical trend charts and quarterly results pages. Override count via SCREENER_TOP_N env.",
+  },
   nse_indices: {
     label: "NSE Index daily data — Nifty 50 + 70 indices (Mon–Fri 16:00 IST)",
     schedule: "Mon–Fri at 16:00 IST",

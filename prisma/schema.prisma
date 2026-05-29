@@ -195,12 +195,85 @@ model Company {
   announcements         Announcement[]
   corporateActions      CorporateAction[]
   superInvestorHoldings SuperInvestorHolding[]
+  quarterlyResults      QuarterlyResult[]
+  annualFinancials      AnnualFinancial[]
 
   @@index([sector])
   @@index([marketCap])
   @@index([peRatio])
   @@index([roePercent])
   @@map("companies")
+}
+
+// ============================================================
+// Deep Fundamentals — Quarterly + Annual P&L (from Screener.in)
+// ============================================================
+
+model QuarterlyResult {
+  id          Int      @id @default(autoincrement())
+  companyId   Int      @map("company_id")
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // Quarter label like "Mar 2026" / "Q4FY26"
+  quarter     String   // e.g. "Mar 2026"
+  quarterEnd  DateTime @map("quarter_end")
+  // Core P&L fields — all in ₹ Cr (Crore)
+  sales       Decimal? @db.Decimal(18, 2)
+  expenses    Decimal? @db.Decimal(18, 2)
+  operatingProfit Decimal? @map("op_profit") @db.Decimal(18, 2)
+  opm         Decimal? @db.Decimal(6, 2)        // Operating profit margin %
+  otherIncome Decimal? @map("other_income") @db.Decimal(18, 2)
+  interest    Decimal? @db.Decimal(18, 2)
+  depreciation Decimal? @db.Decimal(18, 2)
+  profitBeforeTax Decimal? @map("pbt") @db.Decimal(18, 2)
+  tax         Decimal? @db.Decimal(18, 2)
+  netProfit   Decimal? @map("net_profit") @db.Decimal(18, 2)
+  eps         Decimal? @db.Decimal(10, 2)
+  source      String   @default("screener")
+  capturedAt  DateTime @default(now()) @map("captured_at")
+
+  @@unique([companyId, quarter])
+  @@index([companyId, quarterEnd])
+  @@map("quarterly_results")
+}
+
+model AnnualFinancial {
+  id          Int      @id @default(autoincrement())
+  companyId   Int      @map("company_id")
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // Fiscal year ending — e.g. "Mar 2026"
+  fiscalYear  String   @map("fiscal_year")  // "FY26" or "Mar 2026"
+  yearEnd     DateTime @map("year_end")
+  // P&L
+  sales       Decimal? @db.Decimal(18, 2)
+  expenses    Decimal? @db.Decimal(18, 2)
+  operatingProfit Decimal? @map("op_profit") @db.Decimal(18, 2)
+  opm         Decimal? @db.Decimal(6, 2)
+  netProfit   Decimal? @map("net_profit") @db.Decimal(18, 2)
+  eps         Decimal? @db.Decimal(10, 2)
+  dividendPayout Decimal? @map("dividend_payout") @db.Decimal(6, 2)
+  // Balance sheet (₹ Cr)
+  equityCapital Decimal? @map("equity_capital") @db.Decimal(18, 2)
+  reserves    Decimal? @db.Decimal(18, 2)
+  borrowings  Decimal? @db.Decimal(18, 2)
+  otherLiabilities Decimal? @map("other_liabilities") @db.Decimal(18, 2)
+  fixedAssets Decimal? @map("fixed_assets") @db.Decimal(18, 2)
+  investments Decimal? @db.Decimal(18, 2)
+  otherAssets Decimal? @map("other_assets") @db.Decimal(18, 2)
+  totalAssets Decimal? @map("total_assets") @db.Decimal(18, 2)
+  // Cash flow
+  cashFromOps Decimal? @map("cash_from_ops") @db.Decimal(18, 2)
+  cashFromInvesting Decimal? @map("cash_from_inv") @db.Decimal(18, 2)
+  cashFromFinancing Decimal? @map("cash_from_fin") @db.Decimal(18, 2)
+  netCashFlow Decimal? @map("net_cash_flow") @db.Decimal(18, 2)
+  // Ratios
+  roe         Decimal? @db.Decimal(6, 2)
+  roce        Decimal? @db.Decimal(6, 2)
+  source      String   @default("screener")
+  capturedAt  DateTime @default(now()) @map("captured_at")
+
+  @@unique([companyId, fiscalYear])
+  @@index([companyId, yearEnd])
+  @@map("annual_financials")
 }
 
 // ============================================================
