@@ -37,6 +37,7 @@ const navGroups: NavGroup[] = [
         { href: "/ipo/performance",  label: "Performance Tracker", badge: "New" },
         { href: "/ipo/merchant-bankers", label: "Merchant Bankers", badge: "New" },
         { href: "/ipo/by-sector",    label: "IPOs by Sector",     badge: "New" },
+        { href: "/ipo/by-size",      label: "IPOs by Size",       badge: "New" },
         { href: "/ipo/process",      label: "IPO Process Guide" },
         { href: "/ipo/gmp-accuracy", label: "GMP Accuracy" },
         { href: "/ipo/drhp",         label: "DRHP AI Search" },
