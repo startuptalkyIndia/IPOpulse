@@ -11,6 +11,7 @@ import { WatchlistButton } from "@/components/WatchlistButton";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { PriceChart } from "@/components/PriceChart";
 import { StockNews } from "@/components/StockNews";
+import { CompanyFinancials, type QuarterlyRow, type AnnualRow } from "@/components/CompanyFinancials";
 import { getCompanyDescription } from "@/lib/company-descriptions";
 
 interface Props {
@@ -41,9 +42,9 @@ export default async function CompanyPage({ params }: Props) {
       })
     : [];
 
-  // Fetch latest bhavcopy for real price data + 52W range
+  // Fetch latest bhavcopy for real price data + 52W range + financial history
   const cutoff52w = new Date(); cutoff52w.setFullYear(cutoff52w.getFullYear() - 1);
-  const [latestPrice, yearStats] = await Promise.all([
+  const [latestPrice, yearStats, quarterlyResults, annualFinancials] = await Promise.all([
     prisma.bhavcopyDaily.findFirst({
       where: { companyId: company.id },
       orderBy: { date: "desc" },
@@ -54,7 +55,56 @@ export default async function CompanyPage({ params }: Props) {
       _max: { high: true },
       _min: { low: true },
     }),
+    prisma.quarterlyResult.findMany({
+      where: { companyId: company.id },
+      orderBy: { quarterEnd: "asc" },
+      take: 16,
+    }),
+    prisma.annualFinancial.findMany({
+      where: { companyId: company.id },
+      orderBy: { yearEnd: "asc" },
+      take: 12,
+    }),
   ]);
+
+  // Convert Prisma Decimal → number for client component
+  const num = (v: unknown): number | null => {
+    if (v == null) return null;
+    const n = Number(v);
+    return isFinite(n) ? n : null;
+  };
+
+  const quarterRows: QuarterlyRow[] = quarterlyResults.map((q) => ({
+    quarter: q.quarter,
+    sales: num(q.sales),
+    operatingProfit: num(q.operatingProfit),
+    opm: num(q.opm),
+    netProfit: num(q.netProfit),
+    eps: num(q.eps),
+  }));
+
+  const annualRows: AnnualRow[] = annualFinancials.map((a) => ({
+    fiscalYear: a.fiscalYear,
+    sales: num(a.sales),
+    operatingProfit: num(a.operatingProfit),
+    opm: num(a.opm),
+    netProfit: num(a.netProfit),
+    eps: num(a.eps),
+    dividendPayout: num(a.dividendPayout),
+    equityCapital: num(a.equityCapital),
+    reserves: num(a.reserves),
+    borrowings: num(a.borrowings),
+    fixedAssets: num(a.fixedAssets),
+    investments: num(a.investments),
+    otherAssets: num(a.otherAssets),
+    totalAssets: num(a.totalAssets),
+    cashFromOps: num(a.cashFromOps),
+    cashFromInvesting: num(a.cashFromInvesting),
+    cashFromFinancing: num(a.cashFromFinancing),
+    netCashFlow: num(a.netCashFlow),
+    roe: num(a.roe),
+    roce: num(a.roce),
+  }));
   const ltp = latestPrice ? Number(latestPrice.close) : null;
   const high52w = yearStats._max.high ? Number(yearStats._max.high) : null;
   const low52w = yearStats._min.low ? Number(yearStats._min.low) : null;
@@ -184,6 +234,9 @@ export default async function CompanyPage({ params }: Props) {
       ) : company.bseCode ? (
         <PriceChart symbol={`${company.bseCode}.BO`} name={company.name} />
       ) : null}
+
+      {/* Deep Financials — Quarterly, Annual P&L, Balance Sheet, Cash Flow, Ratios */}
+      <CompanyFinancials quarters={quarterRows} annual={annualRows} />
 
       {/* News & BSE filings */}
       <StockNews
