@@ -66,6 +66,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/research`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/research/next-day`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/ipo/sme-risk`, lastModified: now, priority: 0.8, changeFrequency: "daily" },
+    { url: `${BASE}/ipo/performance`, lastModified: now, priority: 0.9, changeFrequency: "daily" },
+    { url: `${BASE}/ipo/merchant-bankers`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/ipo/anchor-lock-in`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
     { url: `${BASE}/ipo/compare`, lastModified: now, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/ipo/allotment-probability`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
