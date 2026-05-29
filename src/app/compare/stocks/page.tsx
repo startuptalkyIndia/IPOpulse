@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Sparkline } from "@/components/Sparkline";
 
 export const metadata: Metadata = {
   title: "Compare Stocks India — HDFC Bank vs ICICI Bank, TCS vs Infosys | IPOpulse",
@@ -182,6 +183,60 @@ export default async function CompareStocksPage({
     }),
   ]);
 
+  // 30-day sparkline prices + 10-year annual financials for YoY/CAGR
+  const sparkCutoff = new Date(); sparkCutoff.setDate(sparkCutoff.getDate() - 35);
+  const [sparkA, sparkB, annualA, annualB] = await Promise.all([
+    prisma.bhavcopyDaily.findMany({
+      where: { companyId: compA.id, date: { gte: sparkCutoff } },
+      orderBy: { date: "asc" }, select: { close: true },
+    }),
+    prisma.bhavcopyDaily.findMany({
+      where: { companyId: compB.id, date: { gte: sparkCutoff } },
+      orderBy: { date: "asc" }, select: { close: true },
+    }),
+    prisma.annualFinancial.findMany({
+      where: { companyId: compA.id },
+      orderBy: { yearEnd: "desc" }, take: 5,
+      select: { sales: true, netProfit: true, eps: true, roe: true, roce: true },
+    }),
+    prisma.annualFinancial.findMany({
+      where: { companyId: compB.id },
+      orderBy: { yearEnd: "desc" }, take: 5,
+      select: { sales: true, netProfit: true, eps: true, roe: true, roce: true },
+    }),
+  ]);
+  const sparkValuesA = sparkA.map(p => Number(p.close));
+  const sparkValuesB = sparkB.map(p => Number(p.close));
+
+  // Helpers: YoY growth (last 2 yrs) and 3Y CAGR (last 4 yrs latest vs 3-yrs-ago)
+  function yoyPct(rows: { sales?: import("@prisma/client").Prisma.Decimal | null; netProfit?: import("@prisma/client").Prisma.Decimal | null }[], field: "sales" | "netProfit"): number | null {
+    if (rows.length < 2) return null;
+    const cur = rows[0][field] ? Number(rows[0][field]) : null;
+    const prev = rows[1][field] ? Number(rows[1][field]) : null;
+    if (cur == null || prev == null || Math.abs(prev) < 0.01) return null;
+    return ((cur - prev) / Math.abs(prev)) * 100;
+  }
+  function cagr3y(rows: { sales?: import("@prisma/client").Prisma.Decimal | null; netProfit?: import("@prisma/client").Prisma.Decimal | null }[], field: "sales" | "netProfit"): number | null {
+    if (rows.length < 4) return null;
+    const cur = rows[0][field] ? Number(rows[0][field]) : null;
+    const old = rows[3][field] ? Number(rows[3][field]) : null;
+    if (cur == null || old == null || old <= 0) return null;
+    return (Math.pow(cur / old, 1 / 3) - 1) * 100;
+  }
+
+  const revYoyA = yoyPct(annualA, "sales");
+  const revYoyB = yoyPct(annualB, "sales");
+  const profitYoyA = yoyPct(annualA, "netProfit");
+  const profitYoyB = yoyPct(annualB, "netProfit");
+  const revCagrA = cagr3y(annualA, "sales");
+  const revCagrB = cagr3y(annualB, "sales");
+  const profitCagrA = cagr3y(annualA, "netProfit");
+  const profitCagrB = cagr3y(annualB, "netProfit");
+
+  // 30-day price return %
+  const ret30A = sparkValuesA.length >= 2 ? ((sparkValuesA[sparkValuesA.length - 1] - sparkValuesA[0]) / sparkValuesA[0]) * 100 : null;
+  const ret30B = sparkValuesB.length >= 2 ? ((sparkValuesB[sparkValuesB.length - 1] - sparkValuesB[0]) / sparkValuesB[0]) * 100 : null;
+
   const ltpA = latestA ? Number(latestA.close) : null;
   const ltpB = latestB ? Number(latestB.close) : null;
   const high52A = yearA._max.high ? Number(yearA._max.high) : null;
@@ -276,6 +331,41 @@ export default async function CompareStocksPage({
       valB: fmt(epsB, "₹"),
       better: betterHigher(epsA, epsB),
     },
+    {
+      label: "30-Day Return",
+      hint: "Stock price change over the last 30 trading days",
+      valA: ret30A != null ? `${ret30A >= 0 ? "+" : ""}${ret30A.toFixed(1)}%` : "—",
+      valB: ret30B != null ? `${ret30B >= 0 ? "+" : ""}${ret30B.toFixed(1)}%` : "—",
+      better: betterHigher(ret30A, ret30B),
+    },
+    {
+      label: "Revenue YoY Growth",
+      hint: "Latest annual revenue vs prior year",
+      valA: revYoyA != null ? `${revYoyA >= 0 ? "+" : ""}${revYoyA.toFixed(1)}%` : "—",
+      valB: revYoyB != null ? `${revYoyB >= 0 ? "+" : ""}${revYoyB.toFixed(1)}%` : "—",
+      better: betterHigher(revYoyA, revYoyB),
+    },
+    {
+      label: "Profit YoY Growth",
+      hint: "Latest annual net profit vs prior year",
+      valA: profitYoyA != null ? `${profitYoyA >= 0 ? "+" : ""}${profitYoyA.toFixed(1)}%` : "—",
+      valB: profitYoyB != null ? `${profitYoyB >= 0 ? "+" : ""}${profitYoyB.toFixed(1)}%` : "—",
+      better: betterHigher(profitYoyA, profitYoyB),
+    },
+    {
+      label: "Revenue 3Y CAGR",
+      hint: "Compounded annual growth in revenue over the last 3 years",
+      valA: revCagrA != null ? `${revCagrA >= 0 ? "+" : ""}${revCagrA.toFixed(1)}%` : "—",
+      valB: revCagrB != null ? `${revCagrB >= 0 ? "+" : ""}${revCagrB.toFixed(1)}%` : "—",
+      better: betterHigher(revCagrA, revCagrB),
+    },
+    {
+      label: "Profit 3Y CAGR",
+      hint: "Compounded annual growth in net profit over the last 3 years",
+      valA: profitCagrA != null ? `${profitCagrA >= 0 ? "+" : ""}${profitCagrA.toFixed(1)}%` : "—",
+      valB: profitCagrB != null ? `${profitCagrB >= 0 ? "+" : ""}${profitCagrB.toFixed(1)}%` : "—",
+      better: betterHigher(profitCagrA, profitCagrB),
+    },
   ];
 
   return (
@@ -298,9 +388,9 @@ export default async function CompareStocksPage({
       {/* Company header cards */}
       <div className="grid grid-cols-2 gap-4">
         {[
-          { comp: compA, ltp: ltpA, high52: high52A, low52: low52A },
-          { comp: compB, ltp: ltpB, high52: high52B, low52: low52B },
-        ].map(({ comp, ltp, high52, low52 }) => (
+          { comp: compA, ltp: ltpA, high52: high52A, low52: low52A, spark: sparkValuesA, ret30: ret30A },
+          { comp: compB, ltp: ltpB, high52: high52B, low52: low52B, spark: sparkValuesB, ret30: ret30B },
+        ].map(({ comp, ltp, high52, low52, spark, ret30 }) => (
           <div key={comp.id} className="card p-4 text-center space-y-1">
             <Link
               href={`/ticker/${comp.slug}`}
@@ -317,6 +407,14 @@ export default async function CompareStocksPage({
             {high52 !== null && low52 !== null && (
               <div className="text-xs text-gray-400">
                 52W: ₹{low52.toFixed(0)} – ₹{high52.toFixed(0)}
+              </div>
+            )}
+            {spark.length >= 2 && (
+              <div className="pt-2 border-t border-gray-100 mt-2">
+                <Sparkline values={spark} width={180} height={36} />
+                <div className={`text-xs font-semibold mt-1 ${ret30 != null && ret30 >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  30D: {ret30 != null ? `${ret30 >= 0 ? "+" : ""}${ret30.toFixed(1)}%` : "—"}
+                </div>
               </div>
             )}
           </div>
