@@ -278,3 +278,17 @@ Before ANY work, read CHANGELOG.md (in this project root).
 Rule: If you fix a bug, document the root cause so the next agent doesn't repeat it.
 
 Deploy rule: Use `bash /home/ubuntu/scripts/safe-deploy.sh FOLDER PORT` — includes smoke tests + auto-rollback.
+
+## Token Efficiency (read first — applies to every session in this project)
+
+Every message re-sends the whole chat, so long sessions get expensive. Keep context small.
+
+- **New, unrelated task → `/clear`.** Don't drag old history into a fresh job.
+- **One long task getting big → `/compact`** (summarizes and continues). Use `/context` to check how full the chat is.
+- **Work in bounded slices**, not "fix everything at once" — one file / route / bug per pass, verify, then expand.
+- **Read surgically**: grep/glob to the exact lines, don't slurp whole files.
+- **Filter shell output**: pipe to `grep`/`head`/`tail`; never `cat` large files or dump full logs.
+- **Reuse `_shared/` templates** instead of re-deriving boilerplate from scratch.
+- **Prefer the right agent** for the job (deploy, security, health, etc.) over doing everything inline.
+
+**Never cut these to save tokens:** reading the real source (no guessing from snippets), verification (run the test / fetch the real URL), research-before-planning, and accuracy. If a shortcut skips work needed to be *right*, don't take it.
