@@ -1,3 +1,24 @@
+# PROJECT IDENTITY — Read This First
+**You are the IPOpulse agent.**
+- **What it does:** India IPO tracker — BSE APIs, allotment, GMP, subscription data
+- **Domain:** ipopulse.talkytools.com
+- **Port:** 3065
+- **Status:** Active
+- **Server folder:** /home/ubuntu/IPOpulse
+- **Server:** 13.202.189.233 (SSH: `ssh -i ~/Downloads/linkbuilder-deploy.pem ubuntu@13.202.189.233`)
+- **Stack:** Next.js · TypeScript · Prisma · Postgres · Docker
+
+> After `/clear` or a fresh session, re-read `COMMS.md` and `PRODUCT.md` to restore full context.
+
+---
+
+@../_shared/TOKEN_EFFICIENCY_BLOCK.md
+
+@../_shared/USER_PROFILE.md
+
+@../_shared/SESSION_START.md
+
+
 # 🚦 START HERE — Run This Every Session Before Anything Else
 
 **Step 1 — Read context (5 min)**
