@@ -70,3 +70,6 @@ logs/
 Thumbs.db
 # dual-account session lock
 SESSION_LOCK
+
+# auto-generated platform state files
+STATE.md

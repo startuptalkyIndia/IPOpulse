@@ -1,4 +1,6 @@
 # IPOpulse — COMMS
+
+<!-- AUTO: last commit `5900cbd` — chore: platform-standards housekeeping — CLAUDE.md identity block + SESSION_LOCK gitignore + COMMS entry — 2026-06-06 05:12 IST -->
 ---
 
 ## 2026-05-23 — WhatsApp Channel CTA Banner (Task 3)
