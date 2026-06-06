@@ -32,7 +32,8 @@ interface Check {
 const CHECKS: Check[] = [
   { name: "EOD prices (bhavcopy)", cron: "nse_bhavcopy", maxAgeDays: 5, minRows: 1000,
     sql: `SELECT MAX(date) AS latest, COUNT(*) AS rows FROM bhavcopy_daily` },
-  { name: "Company fundamentals", cron: "screener_fundamentals", maxAgeDays: 9, minRows: 1000,
+  // Fundamentals refresh weekly (yahoo_fundamentals, Sun) — allow 10d for weekend slack
+  { name: "Company fundamentals", cron: "yahoo_fundamentals", maxAgeDays: 10, minRows: 1000,
     sql: `SELECT MAX(fundamentals_at) AS latest, COUNT(*) FILTER (WHERE fundamentals_at IS NOT NULL) AS rows FROM companies` },
   { name: "Signals (RSI/stage/moat)", cron: "compute_signals", maxAgeDays: 5, minRows: 1000,
     sql: `SELECT MAX(signals_at) AS latest, COUNT(*) FILTER (WHERE signals_at IS NOT NULL) AS rows FROM companies` },
