@@ -9,12 +9,10 @@ import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { DiscussionThread } from "@/components/community/DiscussionThread";
-import nextDynamic from "next/dynamic";
 import { StockNews } from "@/components/StockNews";
 import type { QuarterlyRow, AnnualRow } from "@/components/CompanyFinancials";
-
-const PriceChart = nextDynamic(() => import("@/components/PriceChart").then(m => m.PriceChart), { ssr: false });
-const CompanyFinancials = nextDynamic(() => import("@/components/CompanyFinancials").then(m => m.CompanyFinancials), { ssr: false });
+import { PriceChart } from "@/components/PriceChartLoader";
+import { CompanyFinancials } from "@/components/CompanyFinancialsLoader";
 import { StockTechnicals } from "@/components/StockTechnicals";
 import { QualitySignals } from "@/components/QualitySignals";
 import { Sparkline } from "@/components/Sparkline";

@@ -3,9 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
-import nextDynamic from "next/dynamic";
-
-const FiiDiiChart = nextDynamic(() => import("@/components/fii-dii/FiiDiiChart").then(m => m.FiiDiiChart), { ssr: false });
+import { FiiDiiChart } from "@/components/fii-dii/FiiDiiChartLoader";
 import { ArrowDownRight, ArrowUpRight, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
