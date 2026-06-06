@@ -12,6 +12,22 @@ export const metadata: Metadata = {
   title: "FII DII Activity Today — daily flows, F&O participation, FPI AUC",
   description:
     "FII and DII daily cash activity, F&O client-type OI, and monthly FPI AUC from NSE & NSDL. 20-year history with sector-wise FPI flows.",
+  alternates: { canonical: "/fii-dii" },
+  openGraph: {
+    title: "FII / DII Activity Today — IPOpulse",
+    description:
+      "Daily FII and DII flows in Indian equities from NSE provisional data. 30-day chart, 20-year history.",
+    url: "https://ipopulse.talkytools.com/fii-dii",
+    siteName: "IPOpulse",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FII / DII Activity Today — IPOpulse",
+    description:
+      "Daily FII and DII flows in Indian equities. Sourced from NSE + NSDL.",
+  },
 };
 
 interface DayRow {

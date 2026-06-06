@@ -11,6 +11,22 @@ export const metadata: Metadata = {
   title: "IPO Dashboard — live, upcoming, closed & recently listed IPOs",
   description:
     "Track every Indian IPO in one place. Live subscription, GMP, allotment status, listing gains. Mainboard + SME. Updated in real time.",
+  alternates: { canonical: "/ipo" },
+  openGraph: {
+    title: "IPO Dashboard — India IPO tracker",
+    description:
+      "Live subscription, GMP, allotment status, listing gains. Mainboard + SME IPOs in one place.",
+    url: "https://ipopulse.talkytools.com/ipo",
+    siteName: "IPOpulse",
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "IPO Dashboard — India IPO tracker",
+    description:
+      "Live subscription, GMP, allotment status, listing gains for every Indian IPO.",
+  },
 };
 
 export const revalidate = 60;
