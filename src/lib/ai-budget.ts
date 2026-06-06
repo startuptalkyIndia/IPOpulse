@@ -11,6 +11,11 @@
 import { prisma } from "@/lib/db";
 
 const MONTHLY_CAP_INR      = parseInt(process.env.AI_BUDGET_INR        ?? "1500",     10);
+
+// Superadmin exemption — these emails bypass the monthly AI budget cap
+const SUPERADMIN_EMAILS = (
+  process.env.AI_BUDGET_EXEMPT_EMAILS ?? "shubham@startuptalky.com,superadmin@startuptalky.com"
+).split(",").map((s) => s.trim().toLowerCase());
 const INR_PER_INPUT_TOKEN  = parseFloat(process.env.AI_BUDGET_INR_INPUT ?? "0.000021");
 const INR_PER_OUTPUT_TOKEN = parseFloat(process.env.AI_BUDGET_INR_OUTPUT ?? "0.000105");
 
@@ -31,6 +36,12 @@ export async function checkBudget(userId: string): Promise<{
   remainingInr: number;
   capInr: number;
 }> {
+  // EXEMPTION: superadmin/team emails are never capped
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  if (user?.email && SUPERADMIN_EMAILS.includes(user.email.toLowerCase())) {
+    return { allowed: true, spentInr: 0, remainingInr: Number.MAX_SAFE_INTEGER, capInr: MONTHLY_CAP_INR };
+  }
+
   const logs = await prisma.aiSpendLog.findMany({
     where: { userId, createdAt: { gte: monthStart() } },
     select: { costInr: true },
