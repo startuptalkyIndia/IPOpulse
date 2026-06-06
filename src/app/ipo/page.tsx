@@ -50,8 +50,20 @@ export default async function IpoHub() {
     { label: "Recently listed", value: recentlyListed.length, icon: CheckCircle2, color: "text-purple-600 bg-purple-50" },
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": "https://ipopulse.talkytools.com/ipo",
+    name: "Indian IPO Dashboard — IPOpulse",
+    description: "Track every Indian IPO — live subscription, GMP, allotment, listing gains. Mainboard + SME.",
+    url: "https://ipopulse.talkytools.com/ipo",
+    isPartOf: { "@id": "https://ipopulse.talkytools.com/#website" },
+    inLanguage: "en-IN",
+  };
+
   return (
     <div className="space-y-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <IpoHubOnboarding />
 
       <section>

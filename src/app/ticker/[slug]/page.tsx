@@ -215,8 +215,25 @@ export default async function CompanyPage({ params }: Props) {
     inWatchlist = !!w;
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `https://ipopulse.talkytools.com/ticker/${company.slug}`,
+    name: `${company.name} — share price, financials, shareholding & research`,
+    description: `${company.name} (${company.nseSymbol ?? company.bseCode ?? ""}) stock research page — ${company.sector ?? ""} sector.`,
+    url: `https://ipopulse.talkytools.com/ticker/${company.slug}`,
+    isPartOf: { "@id": "https://ipopulse.talkytools.com/#website" },
+    about: {
+      "@type": "Corporation",
+      name: company.name,
+      tickerSymbol: company.nseSymbol ?? company.bseCode ?? undefined,
+      ...(company.sector ? { industry: company.sector } : {}),
+    },
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link href="/ticker" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-indigo-600">
         <ArrowLeft className="w-4 h-4" /> Back to Ticker
       </Link>

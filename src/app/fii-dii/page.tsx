@@ -74,8 +74,20 @@ export default async function FiiDiiPage() {
     diiNet: Number(r.diiNet ?? 0),
   }));
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://ipopulse.talkytools.com/fii-dii",
+    name: "FII DII Activity Today — IPOpulse",
+    description: "Daily FII and DII flows in Indian equities from NSE provisional data.",
+    url: "https://ipopulse.talkytools.com/fii-dii",
+    isPartOf: { "@id": "https://ipopulse.talkytools.com/#website" },
+    inLanguage: "en-IN",
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">FII / DII Activity</h1>
         <p className="text-sm text-gray-600 max-w-3xl">
