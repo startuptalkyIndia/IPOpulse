@@ -247,36 +247,40 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {SITE_MAP.map((section) => {
             const SecIcon = HOME_ICONS[section.icon] ?? Compass;
             const color = HOME_COLORS[section.key] ?? "text-indigo-600 bg-indigo-50";
-            // Flatten this section's links and take the top 6 for the homepage
             const links = section.groups.flatMap((g) => g.links).slice(0, 6);
             return (
-              <div key={section.key}>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center`}>
-                    <SecIcon className="w-4 h-4" />
+              <div key={section.key} className="card p-5 hover:shadow-md transition-shadow duration-200">
+                {/* Section header */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center flex-shrink-0`}>
+                    <SecIcon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-base font-bold text-gray-900">
-                    {section.href ? <Link href={section.href} className="hover:text-indigo-700">{section.label}</Link> : section.label}
-                  </h3>
-                  <span className="text-xs text-gray-400 hidden sm:inline">· {section.blurb}</span>
-                  <div className="h-px flex-1 bg-gray-100" />
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold text-gray-900">
+                      {section.href ? <Link href={section.href} className="hover:text-indigo-700">{section.label}</Link> : section.label}
+                    </h3>
+                    <p className="text-xs text-gray-500 truncate">{section.blurb}</p>
+                  </div>
+                  {section.href && (
+                    <Link href={section.href} className="text-xs font-medium text-indigo-600 hover:text-indigo-800 whitespace-nowrap flex items-center gap-0.5">
+                      All <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                {/* Links as clean rows */}
+                <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
                   {links.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group p-3"
+                      className="group flex items-center gap-1.5 py-1.5 px-2 -mx-2 rounded-lg hover:bg-gray-50 transition"
                     >
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-xs font-semibold text-gray-900 group-hover:text-indigo-700 leading-snug">{link.label}</h4>
-                        {link.badge && <span className="text-[9px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded font-semibold">{link.badge}</span>}
-                      </div>
-                      {link.desc && <p className="text-[11px] text-gray-500 leading-snug mt-1 line-clamp-2">{link.desc}</p>}
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-700 truncate">{link.label}</span>
+                      {link.badge && <span className="text-[9px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded font-semibold flex-shrink-0">{link.badge}</span>}
                     </Link>
                   ))}
                 </div>

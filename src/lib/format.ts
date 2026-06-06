@@ -1,8 +1,15 @@
 export function formatCurrency(n: number): string {
   if (!isFinite(n)) return "—";
   const abs = Math.abs(Math.round(n));
-  if (abs >= 10000000) return `₹${(n / 10000000).toFixed(2)} Cr`;
-  if (abs >= 100000) return `₹${(n / 100000).toFixed(2)} L`;
+  if (abs >= 1e12) return `₹${(n / 1e12).toFixed(2)} L Cr`;        // lakh crore
+  if (abs >= 1e7) {
+    const cr = n / 1e7;
+    // Large crore values: no decimals + Indian thousands separators
+    return cr >= 1000
+      ? `₹${Math.round(cr).toLocaleString("en-IN")} Cr`
+      : `₹${cr.toFixed(2)} Cr`;
+  }
+  if (abs >= 1e5) return `₹${(n / 1e5).toFixed(2)} L`;
   return `₹${Math.round(n).toLocaleString("en-IN")}`;
 }
 
