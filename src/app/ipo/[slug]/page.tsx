@@ -579,11 +579,11 @@ function Stat({
   valueClass?: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
-      <div className="text-xs text-gray-500 flex items-center gap-1">
+    <div className="bg-gray-50/70 rounded-2xl px-4 py-3.5">
+      <div className="text-[11px] font-medium text-gray-500 tracking-wide flex items-center gap-1.5">
         {icon} {label}
       </div>
-      <div className={`text-sm font-semibold mt-0.5 tabular-nums ${valueClass}`}>{value}</div>
+      <div className={`text-lg font-bold mt-1 tabular-nums ${valueClass}`}>{value}</div>
     </div>
   );
 }
