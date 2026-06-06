@@ -130,14 +130,14 @@ export function PriceChart({ symbol, name }: { symbol: string; name: string }) {
                 contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: "#e5e7eb", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                 formatter={(v) => [`₹${Number(v).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, "Close"] as [string, string]}
               />
-              <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill={`url(#gradient-${symbol})`} dot={false} />
+              <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill={`url(#gradient-${symbol})`} dot={false} isAnimationActive={false} />
             </AreaChart>
           </ResponsiveContainer>
 
           {/* Volume chart */}
           <ResponsiveContainer width="100%" height={50}>
             <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-              <Bar dataKey="volume" fill="#e0e7ff" radius={[1, 1, 0, 0]} />
+              <Bar dataKey="volume" fill="#e0e7ff" radius={[1, 1, 0, 0]} isAnimationActive={false} />
               <XAxis dataKey="date" hide />
               <YAxis hide />
               <Tooltip

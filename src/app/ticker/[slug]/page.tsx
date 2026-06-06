@@ -15,6 +15,8 @@ import { CompanyFinancials, type QuarterlyRow, type AnnualRow } from "@/componen
 import { StockTechnicals } from "@/components/StockTechnicals";
 import { QualitySignals } from "@/components/QualitySignals";
 import { Sparkline } from "@/components/Sparkline";
+import { StatTile } from "@/components/ui/StatTile";
+import { PriceChange } from "@/components/ui/PriceChange";
 import { getCompanyDescription } from "@/lib/company-descriptions";
 import { getMoat } from "@/lib/moats";
 import { computeTechnicals } from "@/lib/technicals";
@@ -217,87 +219,73 @@ export default async function CompanyPage({ params }: Props) {
       </Link>
 
       <div className="card">
+        {/* Top row: name + symbols on left, watchlist on right */}
         <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{company.name}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
-              {company.nseSymbol ? <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">NSE:{company.nseSymbol}</span> : null}
-              {company.bseCode ? <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">BSE:{company.bseCode}</span> : null}
-              {company.sector ? (
-                <span className="inline-flex items-center gap-0.5">
-                  <Layers className="w-3 h-3" /> {company.sector}
-                </span>
-              ) : null}
-              {company.industry ? (
-                <span className="inline-flex items-center gap-0.5">
-                  <Building2 className="w-3 h-3" /> {company.industry}
-                </span>
-              ) : null}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{company.name}</h1>
+              {company.nseSymbol && <span className="text-[11px] font-mono font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">NSE: {company.nseSymbol}</span>}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-gray-500">
+              {company.sector && <span className="inline-flex items-center gap-1"><Layers className="w-3 h-3" /> {company.sector}</span>}
+              {company.industry && <span className="inline-flex items-center gap-1"><Building2 className="w-3 h-3" /> {company.industry}</span>}
             </div>
           </div>
           <WatchlistButton type="stock" targetSlug={company.slug} initial={inWatchlist} authed={!!userId} />
         </div>
 
-        {moat && (
-          <div className="mt-3 inline-flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            <Castle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <span className="text-xs font-semibold text-amber-800">Economic Moat: </span>
-              <span className="text-xs text-amber-900">{moat}</span>
-            </div>
+        {/* Big price + daily change — the Groww hero treatment */}
+        <div className="flex items-end flex-wrap gap-x-4 gap-y-1 mt-4">
+          <div className="text-4xl font-bold text-gray-900 tabular-nums">
+            {ltp ? `₹${ltp.toLocaleString("en-IN")}` : "—"}
           </div>
-        )}
-
-        {description && (
-          <p className="mt-3 text-sm text-gray-600 leading-relaxed border-l-2 border-indigo-200 pl-3">
-            {description}
-          </p>
-        )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">LTP (EOD)</div>
-            <div className={`text-sm font-semibold tabular-nums mt-0.5 ${ltp ? "text-gray-900" : "text-gray-400"}`}>
-              {ltp ? `₹${ltp.toLocaleString("en-IN")}` : "—"}
-            </div>
-            {latestPrice?.date && <div className="text-[10px] text-gray-400 mt-0.5">{new Date(latestPrice.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</div>}
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Market cap</div>
-            <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
-              {company.marketCap ? formatCurrency(Number(company.marketCap) * 10000000) : "—"}
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">52W High / Low</div>
-            <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
-              {high52w && low52w ? `₹${high52w.toFixed(0)} / ₹${low52w.toFixed(0)}` : "—"}
-            </div>
-            {ltp && high52w && low52w && (
-              <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-500 rounded-full"
-                  style={{ width: `${Math.min(100, Math.max(0, ((ltp - low52w) / (high52w - low52w)) * 100))}%` }}
-                />
-              </div>
-            )}
-          </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="text-xs text-gray-500">Volume · Delivery</div>
-            <div className="text-sm font-semibold text-gray-900 tabular-nums mt-0.5">
-              {latestPrice?.volume ? (Number(latestPrice.volume) / 1000).toFixed(0) + "K" : "—"}
-            </div>
-            {latestPrice?.deliveryPct && <div className="text-[10px] text-gray-500 mt-0.5">{Number(latestPrice.deliveryPct).toFixed(1)}% delivery</div>}
-          </div>
+          {technicals?.ret1d != null && <PriceChange pct={technicals.ret1d} size="lg" />}
+          {latestPrice?.date && (
+            <span className="text-xs text-gray-400 mb-1">
+              EOD · {new Date(latestPrice.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+            </span>
+          )}
         </div>
 
-        {/* P/E and other fundamentals if available */}
-        {(company.peRatio || company.roePercent || company.debtToEquity) && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-            {company.peRatio && <div className="bg-indigo-50 rounded-lg p-3"><div className="text-xs text-gray-500">P/E</div><div className="text-sm font-semibold text-indigo-700">{Number(company.peRatio).toFixed(1)}</div></div>}
-            {company.pbRatio && <div className="bg-indigo-50 rounded-lg p-3"><div className="text-xs text-gray-500">P/B</div><div className="text-sm font-semibold text-indigo-700">{Number(company.pbRatio).toFixed(1)}</div></div>}
-            {company.roePercent && <div className="bg-emerald-50 rounded-lg p-3"><div className="text-xs text-gray-500">ROE %</div><div className="text-sm font-semibold text-emerald-700">{Number(company.roePercent).toFixed(1)}%</div></div>}
-            {company.debtToEquity && <div className="bg-gray-50 rounded-lg p-3"><div className="text-xs text-gray-500">D/E</div><div className="text-sm font-semibold text-gray-700">{Number(company.debtToEquity).toFixed(2)}</div></div>}
+        {/* Moat + description as a tidy row */}
+        {moat && (
+          <div className="mt-3 inline-flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+            <Castle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <span className="text-xs text-amber-900"><span className="font-semibold">Economic Moat:</span> {moat}</span>
+          </div>
+        )}
+        {description && (
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">{description}</p>
+        )}
+
+        {/* Key stats — soft Groww tiles */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5">
+          <StatTile label="Market Cap" value={company.marketCap ? formatCurrency(Number(company.marketCap) * 10000000) : "—"} />
+          <StatTile
+            label="52W Range"
+            value={high52w && low52w ? `₹${high52w.toFixed(0)} / ₹${low52w.toFixed(0)}` : "—"}
+            sub={ltp && high52w && low52w ? (
+              <div className="mt-1.5 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min(100, Math.max(0, ((ltp - low52w) / (high52w - low52w)) * 100))}%` }} />
+              </div>
+            ) : undefined}
+          />
+          <StatTile
+            label="Volume"
+            value={latestPrice?.volume ? `${(Number(latestPrice.volume) / 1000).toFixed(0)}K` : "—"}
+            sub={latestPrice?.deliveryPct ? `${Number(latestPrice.deliveryPct).toFixed(1)}% delivery` : undefined}
+          />
+          <StatTile label="1Y Return" value={technicals?.ret1y != null ? `${technicals.ret1y >= 0 ? "+" : ""}${technicals.ret1y.toFixed(1)}%` : "—"}
+            valueColor={technicals?.ret1y != null ? (technicals.ret1y >= 0 ? "text-emerald-600" : "text-red-600") : "text-gray-900"} />
+        </div>
+
+        {/* Fundamentals tiles */}
+        {(company.peRatio || company.roePercent || company.debtToEquity || company.pbRatio) && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-2.5">
+            {company.peRatio && <StatTile label="P/E Ratio" value={Number(company.peRatio).toFixed(1)} valueColor="text-indigo-700" tint="indigo" />}
+            {company.pbRatio && <StatTile label="P/B Ratio" value={Number(company.pbRatio).toFixed(1)} valueColor="text-indigo-700" tint="indigo" />}
+            {company.roePercent && <StatTile label="ROE" value={`${Number(company.roePercent).toFixed(1)}%`} valueColor="text-emerald-700" tint="emerald" />}
+            {company.debtToEquity && <StatTile label="Debt / Equity" value={Number(company.debtToEquity).toFixed(2)} />}
           </div>
         )}
       </div>
