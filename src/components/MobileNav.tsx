@@ -4,60 +4,17 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, TrendingUp, ChevronRight } from "lucide-react";
+import { SITE_MAP } from "@/lib/site-map";
 
-const sections = [
-  {
-    title: "IPO",
-    links: [
-      { href: "/ipo", label: "All IPOs" },
-      { href: "/ipo/live", label: "Live IPOs" },
-      { href: "/ipo/upcoming", label: "Upcoming" },
-      { href: "/ipo/listed", label: "Listed" },
-      { href: "/ipo/sme", label: "SME IPOs" },
-      { href: "/ipo/gmp-accuracy", label: "GMP Accuracy" },
-      { href: "/ipo/allotment", label: "Allotment Check" },
-      { href: "/ipo/drhp", label: "DRHP AI Search" },
-    ],
-  },
-  {
-    title: "Markets",
-    links: [
-      { href: "/ticker", label: "Stock Ticker" },
-      { href: "/screener", label: "Screener" },
-      { href: "/movers", label: "Gainers / Losers" },
-      { href: "/daily-summary", label: "Daily Market Wrap" },
-      { href: "/research", label: "Research Hub" },
-      { href: "/research/next-day", label: "Tomorrow's Watch List" },
-      { href: "/sectors", label: "Sectors" },
-      { href: "/indices", label: "Nifty Indices" },
-      { href: "/fii-dii", label: "FII / DII" },
-      { href: "/market/breadth", label: "Market Breadth" },
-      { href: "/super-investor", label: "Super Investor" },
-      { href: "/deals/bulk", label: "Bulk Deals" },
-      { href: "/deals/block", label: "Block Deals" },
-      { href: "/insider-trading", label: "Insider Trading" },
-      { href: "/corporate-actions", label: "Corporate Actions" },
-      { href: "/unlisted-shares", label: "Unlisted Shares" },
-    ],
-  },
-  {
-    title: "US & Tools",
-    links: [
-      { href: "/learn", label: "Learning Hub" },
-      { href: "/glossary", label: "Glossary" },
-      { href: "/us-ipo", label: "US IPO Tracker" },
-      { href: "/us-listing", label: "Indian ADRs" },
-      { href: "/calculators", label: "All Calculators" },
-      { href: "/calculators/sip", label: "SIP Calculator" },
-      { href: "/calculators/lrs-tcs", label: "LRS / TCS" },
-      { href: "/tools/concall-summary", label: "Concall AI" },
-      { href: "/tools/promoter-check", label: "Promoter Check" },
-      { href: "/compare/brokers", label: "Compare Brokers" },
-      { href: "/compare/credit-cards", label: "Credit Cards" },
-      { href: "/compare/insurance", label: "Insurance Plans" },
-    ],
-  },
-];
+// Mobile drawer sections — derived from the canonical site map (single source of truth).
+// Flatten each top-level section's sub-groups into one link list per section.
+const sections = SITE_MAP.map((s) => ({
+  title: s.label,
+  links: [
+    ...(s.href ? [{ href: s.href, label: `All ${s.label}` }] : []),
+    ...s.groups.flatMap((g) => g.links.map((l) => ({ href: l.href, label: l.label }))),
+  ],
+}));
 
 export function MobileNav({ authed }: { authed: boolean }) {
   const [open, setOpen] = useState(false);
@@ -120,6 +77,13 @@ export function MobileNav({ authed }: { authed: boolean }) {
 
         {/* Scrollable content */}
         <div className="overflow-y-auto h-[calc(100%-56px-56px)]">
+          <Link
+            href="/explore"
+            className="flex items-center justify-between px-4 py-3 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-b border-indigo-100"
+          >
+            🧭 Explore all tools
+            <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
+          </Link>
           {sections.map((section) => (
             <div key={section.title} className="border-b border-gray-100">
               <div className="px-4 py-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
