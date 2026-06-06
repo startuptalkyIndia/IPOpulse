@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Building2, Layers } from "lucide-react";
+import { ArrowLeft, Building2, Layers, Castle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
@@ -12,8 +12,11 @@ import { DiscussionThread } from "@/components/community/DiscussionThread";
 import { PriceChart } from "@/components/PriceChart";
 import { StockNews } from "@/components/StockNews";
 import { CompanyFinancials, type QuarterlyRow, type AnnualRow } from "@/components/CompanyFinancials";
+import { StockTechnicals } from "@/components/StockTechnicals";
 import { Sparkline } from "@/components/Sparkline";
 import { getCompanyDescription } from "@/lib/company-descriptions";
+import { getMoat } from "@/lib/moats";
+import { computeTechnicals } from "@/lib/technicals";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -100,6 +103,31 @@ export default async function CompanyPage({ params }: Props) {
     }),
   ]);
 
+  // ─── Technical indicators — full price history + Nifty for relative strength ──
+  const techCutoff = new Date(); techCutoff.setDate(techCutoff.getDate() - 400);
+  const [techHistory, niftyHistory] = await Promise.all([
+    prisma.bhavcopyDaily.findMany({
+      where: { companyId: company.id, date: { gte: techCutoff } },
+      orderBy: { date: "asc" },
+      select: { close: true, high: true, low: true },
+    }),
+    prisma.niftyIndex.findMany({
+      where: { indexName: "Nifty 50", date: { gte: techCutoff } },
+      orderBy: { date: "asc" },
+      select: { close: true },
+    }),
+  ]);
+  const technicals = techHistory.length >= 20
+    ? computeTechnicals(
+        techHistory.map(r => Number(r.close)),
+        techHistory.map(r => Number(r.high)),
+        techHistory.map(r => Number(r.low)),
+        niftyHistory.length > 0 ? niftyHistory.map(r => Number(r.close)) : undefined,
+      )
+    : null;
+
+  const moat = getMoat(company.nseSymbol);
+
   // Convert Prisma Decimal → number for client component
   const num = (v: unknown): number | null => {
     if (v == null) return null;
@@ -183,6 +211,16 @@ export default async function CompanyPage({ params }: Props) {
           </div>
           <WatchlistButton type="stock" targetSlug={company.slug} initial={inWatchlist} authed={!!userId} />
         </div>
+
+        {moat && (
+          <div className="mt-3 inline-flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <Castle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <span className="text-xs font-semibold text-amber-800">Economic Moat: </span>
+              <span className="text-xs text-amber-900">{moat}</span>
+            </div>
+          </div>
+        )}
 
         {description && (
           <p className="mt-3 text-sm text-gray-600 leading-relaxed border-l-2 border-indigo-200 pl-3">
@@ -337,6 +375,9 @@ export default async function CompanyPage({ params }: Props) {
       ) : company.bseCode ? (
         <PriceChart symbol={`${company.bseCode}.BO`} name={company.name} />
       ) : null}
+
+      {/* Technical Indicators — objective math from price history */}
+      {technicals && <StockTechnicals t={technicals} />}
 
       {/* Deep Financials — Quarterly, Annual P&L, Balance Sheet, Cash Flow, Ratios */}
       <CompanyFinancials quarters={quarterRows} annual={annualRows} />
