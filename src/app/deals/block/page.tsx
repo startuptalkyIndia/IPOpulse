@@ -28,7 +28,10 @@ export default async function BlockDealsPage() {
         <p className="text-sm text-gray-600 max-w-3xl">Block deals are pre-negotiated large trades executed in a 15-minute window at 9:15am IST. Minimum order ₹10 Cr. Reveals institutional accumulation and distribution. <Link href="/deals/bulk" className="text-indigo-600 hover:underline">Bulk deals →</Link></p>
       </div>
       {deals.length === 0 ? (
-        <div className="card text-center py-10 text-sm text-gray-500">No block deals (pre-negotiated institutional trades of ₹10 Cr or more) have been reported in the last 30 days. Block deal data is sourced from NSE/BSE end-of-day disclosures.</div>
+        <div className="card text-center py-10">
+          <p className="text-sm font-medium text-gray-700">No block deals in the last 30 days</p>
+          <p className="text-sm text-gray-500 mt-1">Block deals — pre-negotiated institutional trades of ₹10 Cr or more — are published by NSE/BSE after market hours when they occur.</p>
+        </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <div className="overflow-x-auto">

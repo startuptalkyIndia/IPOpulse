@@ -68,14 +68,15 @@ export default async function FiiDiiPage() {
 
       {today ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card title="FII net (today)" value={Number(today.fiiNet ?? 0)} />
-          <Card title="DII net (today)" value={Number(today.diiNet ?? 0)} />
-          <Card title="FII net (30d)" value={monthFiiNet} />
-          <Card title="DII net (30d)" value={monthDiiNet} />
+          <Card title="Foreign (FII) net today" value={Number(today.fiiNet ?? 0)} />
+          <Card title="Domestic (DII) net today" value={Number(today.diiNet ?? 0)} />
+          <Card title="Foreign (FII) net 30d" value={monthFiiNet} />
+          <Card title="Domestic (DII) net 30d" value={monthDiiNet} />
         </div>
       ) : (
-        <div className="card text-center py-10 text-sm text-gray-500">
-          FII/DII data is sourced from NSE provisional figures. Data for the latest trading session typically appears after 7 PM IST.
+        <div className="card text-center py-10">
+          <p className="text-sm font-medium text-gray-700">Today's data isn't available yet</p>
+          <p className="text-sm text-gray-500 mt-1">FII and DII provisional figures from NSE are usually published after 7 PM IST on trading days.</p>
         </div>
       )}
 

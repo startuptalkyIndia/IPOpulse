@@ -2,12 +2,13 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Bookmark, ArrowRight } from "lucide-react";
+import { Bookmark, ArrowRight, Star } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { IpoStatusBadge } from "@/components/ipo/IpoStatusBadge";
 import { computeIpoStatus, formatPriceBand, formatDate } from "@/lib/ipo";
 import { OnboardingChecklist } from "@/components/shared/OnboardingChecklist";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function WatchlistPage() {
   const session = await auth();
@@ -76,12 +77,13 @@ export default async function WatchlistPage() {
       <section>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Saved IPOs ({ipos.length})</h2>
         {ipos.length === 0 ? (
-          <div className="card text-center py-8">
-            <p className="text-sm text-gray-500">No IPOs saved yet. Tap the <span className="font-semibold">Save</span> button on any IPO page.</p>
-            <Link href="/ipo" className="btn-primary inline-flex items-center gap-1 mt-3 text-sm">
-              Browse IPOs <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
+          <EmptyState
+            icon={Bookmark}
+            title="No IPOs saved yet"
+            description="Save an IPO and we'll track its allotment date, listing day, and GMP for you — in one place."
+            action={{ label: "Browse open & upcoming IPOs", href: "/ipo" }}
+            className="rounded-xl border border-gray-200"
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {ipos.map((ipo) => (
@@ -106,9 +108,13 @@ export default async function WatchlistPage() {
       <section>
         <h2 className="text-base font-semibold text-gray-900 mb-3">Saved stocks ({stocks.length})</h2>
         {stocks.length === 0 ? (
-          <div className="card text-center py-6">
-            <p className="text-sm text-gray-500">No stocks saved yet.</p>
-          </div>
+          <EmptyState
+            icon={Star}
+            title="No stocks saved yet"
+            description="Open any stock page and tap Save to track it here."
+            action={{ label: "Explore stocks", href: "/screener" }}
+            className="rounded-xl border border-gray-200 py-8"
+          />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {stocks.map((s) => (

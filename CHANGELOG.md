@@ -1,5 +1,46 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · feat(ux): Stage 4 customer polish — empty states, loading states, error boundaries, onboarding, mobile, microcopy
+
+### Hypothesis: users hitting empty/loading/error states with no direction will drop. Polished states reduce bounce and increase first-session depth.
+### Metric to watch: pages/session on first visit, signup-from-IPO-hub rate.
+
+**Empty states (12 instances improved):**
+- `IpoTable` — replaced generic `<p>` with `EmptyState` component (icon, description, CTA to /ipo). Applies to live, upcoming, closed, listed, SME sections.
+- `my/watchlist` — IPOs section: EmptyState with "Save an IPO and we'll track its allotment date, listing day, and GMP." Stocks section: EmptyState with CTA to screener. Previously both were bare `<p>` with no CTA.
+- `deals/bulk`, `deals/block` — replaced bare text with structured empty state (bold title + plain-English explanation of when data appears).
+- `fii-dii` — "Today's data isn't available yet" + explains 7 PM IST publishing schedule.
+- `insider-trading` — "No insider trades reported this period" + explains 1-2 day disclosure lag.
+- `news/NewsClient` — uses shared `EmptyState` component instead of bare text.
+
+**Loading states (8 added):**
+- `ipo/loading.tsx` — skeleton for stats row + 3 table sections.
+- `fii-dii/loading.tsx` — skeleton for stat cards + chart placeholder.
+- `insider-trading/loading.tsx` — skeleton for stat cards + two table sections.
+- `deals/bulk/loading.tsx`, `deals/block/loading.tsx` — table skeleton.
+- `my/watchlist/loading.tsx` — card grid skeleton.
+- `my/applications/loading.tsx` — stat cards + table rows skeleton.
+- `news/NewsClient` — replaced manual pulse divs with shared `SkeletonLoader`.
+
+**Error boundaries:**
+- `src/components/AsyncErrorBoundary.tsx` — new reusable React class error boundary. Shows "We couldn't load [section]. Try again" with Retry button. No stack traces exposed.
+- `src/app/error.tsx` — removed `error.message` leak (was exposing internal error text). Now shows reference digest only. Indigo Tailwind buttons.
+
+**Onboarding:**
+- `IpoHubOnboarding` — 3-step dismissible checklist added to IPO hub page. Steps: Browse open IPOs → Save to watchlist → Check allotment. Persisted in localStorage, hidden once dismissed.
+- Watchlist page already had `OnboardingChecklist` — preserved.
+
+**Mobile (375px):**
+- `my/applications` — added mobile card view (`sm:hidden`) alongside desktop table (`hidden sm:block`). Cards show name, status badge, applied date, lots, allotment date, and allotment link. Table was 6 columns — unreadable on mobile.
+
+**Microcopy:**
+- `insider-trading` — expanded SAST → "Substantial Acquisition of Shares and Takeovers (SAST)"; KMP → "Key Managerial Personnel (KMP)".
+- `fii-dii` — stat card titles: "FII net (today)" → "Foreign (FII) net today" for first-time users.
+- `error.tsx` — removed "500" banner number, replaced with human copy.
+- Removed emoji from insider trading section headers (B2B rule).
+
+**0 TypeScript errors after all changes.**
+
 ## 2026-06-06 · test: add Vitest unit + integration test suite — 89 tests, 0 failures
 - Installed vitest + @vitest/coverage-v8 as devDeps. Added vitest.config.ts with @/* path alias.
 - Added `npm test` and `npm run test:coverage` scripts to package.json.

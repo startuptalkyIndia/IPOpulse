@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ExternalLink, RefreshCw, Clock } from "lucide-react";
+import { ExternalLink, RefreshCw, Clock, Newspaper } from "lucide-react";
+import { SkeletonLoader } from "@/components/shared/SkeletonLoader";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 interface NewsItem {
   title: string;
@@ -47,18 +49,22 @@ export function NewsClient() {
   const [tab, setTab] = useState("all");
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [fetchedAt, setFetchedAt] = useState<string>("");
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async (category: string, isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     else setLoading(true);
+    setFetchError(false);
     try {
       const res = await fetch(`/api/news?category=${category}&_=${isRefresh ? Date.now() : ""}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setItems(data.items ?? []);
       setFetchedAt(data.fetchedAt ?? "");
     } catch {
+      setFetchError(true);
       setItems([]);
     } finally {
       setLoading(false);
@@ -107,16 +113,30 @@ export function NewsClient() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="card animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-1/3" />
+            <div key={i} className="card">
+              <SkeletonLoader lines={2} height="h-3" widths={["w-3/4", "w-1/3"]} />
             </div>
           ))}
         </div>
-      ) : items.length === 0 ? (
-        <div className="card text-center py-10 text-sm text-gray-500">
-          No news found. Try refreshing or check back later.
+      ) : fetchError ? (
+        <div className="card text-center py-10">
+          <p className="text-sm font-medium text-gray-700">We couldn't load the news feed</p>
+          <p className="text-sm text-gray-500 mt-1">This is usually a brief glitch. Try refreshing.</p>
+          <button
+            type="button"
+            onClick={() => load(tab, true)}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </button>
         </div>
+      ) : items.length === 0 ? (
+        <EmptyState
+          icon={Newspaper}
+          title="No news in this category right now"
+          description="Google News RSS updates every 15 minutes. Try a different tab or refresh."
+          action={{ label: "Refresh", onClick: () => load(tab, true) }}
+        />
       ) : (
         <div className="space-y-0 bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden divide-y divide-gray-100">
           {items.map((item, i) => (

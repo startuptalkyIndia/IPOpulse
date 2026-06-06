@@ -3,6 +3,8 @@ import type { Ipo, IpoListing, IpoDrhpAnalysis } from "@prisma/client";
 import { formatPriceBand, formatIssueSize, formatDateRange, formatDate, computeIpoStatus } from "@/lib/ipo";
 import { IpoStatusBadge } from "./IpoStatusBadge";
 import { RiskScoreBadge } from "./RiskScoreBadge";
+import { TrendingUp } from "lucide-react";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 type IpoWithListing = Ipo & { listing?: IpoListing | null; drhpAnalysis?: IpoDrhpAnalysis | null };
 
@@ -15,9 +17,17 @@ interface Props {
 export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here right now." }: Props) {
   if (!ipos || ipos.length === 0) {
     return (
-      <div className="card text-center py-12">
-        <p className="text-sm text-gray-500">{emptyText}</p>
-      </div>
+      <EmptyState
+        icon={TrendingUp}
+        title={emptyText}
+        description={
+          variant === "listed"
+            ? "Listed IPOs will appear here once they start trading on BSE / NSE."
+            : "Check back soon — IPOs are added as SEBI approves them."
+        }
+        action={{ label: "See all IPOs", href: "/ipo" }}
+        className="rounded-xl border border-gray-200 py-12"
+      />
     );
   }
 

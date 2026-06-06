@@ -76,8 +76,9 @@ export default async function IpoCalendarPage() {
               })}
               {ipos.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-3 py-12 text-center text-sm text-gray-500">
-                    No IPOs in the calendar window.
+                  <td colSpan={7} className="px-3 py-12 text-center">
+                    <p className="text-sm font-medium text-gray-700">No IPOs in the next 90 days</p>
+                    <p className="text-sm text-gray-500 mt-1">New IPOs are added as SEBI approves them — check back soon.</p>
                   </td>
                 </tr>
               ) : null}

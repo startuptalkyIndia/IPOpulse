@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { IpoTable } from "@/components/ipo/IpoTable";
+import { IpoHubOnboarding } from "@/components/ipo/IpoHubOnboarding";
 import { TrendingUp, Clock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -35,6 +36,8 @@ export default async function IpoHub() {
 
   return (
     <div className="space-y-8">
+      <IpoHubOnboarding />
+
       <section>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Indian IPO Dashboard</h1>
         <p className="text-sm text-gray-600 max-w-3xl">
@@ -69,7 +72,7 @@ export default async function IpoHub() {
             View all <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
-        <IpoTable ipos={live} emptyText="No IPOs are open for subscription right now." />
+        <IpoTable ipos={live} emptyText="No IPOs open right now — check Upcoming for what's coming next." />
       </section>
 
       {/* Upcoming */}

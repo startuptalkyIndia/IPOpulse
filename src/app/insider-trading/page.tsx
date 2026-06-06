@@ -62,7 +62,7 @@ export default async function InsiderTradingPage() {
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Insider Trading Disclosures</h1>
-        <p className="text-sm text-gray-600 max-w-3xl">Promoter, director, and KMP buy/sell disclosures under SEBI SAST regulations. Promoter buying at market price = highest conviction signal in Indian markets. Last 30 days.</p>
+        <p className="text-sm text-gray-600 max-w-3xl">Promoter, director, and Key Managerial Personnel (KMP) buy/sell disclosures under SEBI's Substantial Acquisition of Shares and Takeovers (SAST) rules. When a promoter buys at market price — no discount, no ESOP — it is the highest-conviction signal in Indian markets. Last 30 days.</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -73,12 +73,15 @@ export default async function InsiderTradingPage() {
       </div>
 
       {buys.length === 0 && sells.length === 0 ? (
-        <div className="card text-center py-10 text-sm text-gray-500">No insider trades (promoter/director buying or selling) have been reported in the current period. Data sourced from NSE SAST disclosures.</div>
+        <div className="card text-center py-10">
+          <p className="text-sm font-medium text-gray-700">No insider trades reported this period</p>
+          <p className="text-sm text-gray-500 mt-1">Promoter and director buy/sell disclosures from NSE SAST filings will appear here as they are published — usually 1-2 trading days after the trade.</p>
+        </div>
       ) : (
         <>
-          <section><h2 className="text-lg font-semibold text-green-800 mb-2">🟢 Insider Buys — promoters & directors buying their own stock</h2><TradeTable rows={buys} type="Buy" /></section>
-          <section><h2 className="text-lg font-semibold text-red-800 mb-2">🔴 Insider Sells</h2><TradeTable rows={sells} type="Sell" /></section>
-          {pledges.length > 0 && <section><h2 className="text-lg font-semibold text-orange-800 mb-2">⚠️ Pledges &amp; Revocations</h2><TradeTable rows={pledges} type="Pledge" /></section>}
+          <section><h2 className="text-lg font-semibold text-green-800 mb-2">Insider buys — promoters and directors buying their own stock</h2><TradeTable rows={buys} type="Buy" /></section>
+          <section><h2 className="text-lg font-semibold text-red-800 mb-2">Insider sells</h2><TradeTable rows={sells} type="Sell" /></section>
+          {pledges.length > 0 && <section><h2 className="text-lg font-semibold text-orange-800 mb-2">Pledges and revocations</h2><TradeTable rows={pledges} type="Pledge" /></section>}
         </>
       )}
 

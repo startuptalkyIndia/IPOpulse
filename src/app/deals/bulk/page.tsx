@@ -26,7 +26,12 @@ export default async function BulkDealsPage() {
   const past = deals.filter((d) => d.date.toDateString() !== new Date().toDateString());
 
   function DealTable({ rows }: { rows: typeof deals }) {
-    if (!rows.length) return <div className="card text-center py-8 text-sm text-gray-500">No bulk deals in this period.</div>;
+    if (!rows.length) return (
+      <div className="card text-center py-8">
+        <p className="text-sm font-medium text-gray-700">No bulk deals in this period</p>
+        <p className="text-sm text-gray-500 mt-1">Bulk deals are published by NSE after market close. Check back after 5 PM on trading days.</p>
+      </div>
+    );
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
         <div className="overflow-x-auto">
