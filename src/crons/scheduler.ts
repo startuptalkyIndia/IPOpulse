@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { runIngestion } from "./runIngestion";
 import { ingestNseFiiDii } from "./jobs/nse-fii-dii";
 import { ingestBseIposFromHtml } from "./jobs/bse-ipo-html";
+import { ingestNseIpos } from "./jobs/nse-ipos";
 import { ingestAmfiNavs } from "./jobs/amfi-navs";
 import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
@@ -51,10 +52,11 @@ export function startScheduler() {
     console.log(`[cron nse_fii_dii] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // BSE IPOs — every 4 hours
-  cron.schedule("0 */4 * * *", async () => {
-    const result = await runIngestion("bse_ipos", ingestBseIposFromHtml);
-    console.log(`[cron bse_ipos] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  // NSE IPOs — every 2 hours (primary source; BSE page is now an Akamai-blocked SPA)
+  // NSE all-upcoming-issues API works from cloud and returns live/upcoming with dates + symbol
+  cron.schedule("0 */2 * * *", async () => {
+    const result = await runIngestion("nse_ipos", ingestNseIpos);
+    console.log(`[cron nse_ipos] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // AMFI Mutual Fund NAVs — daily at 11:00 PM IST (after AMFI publishes ~10 PM)
@@ -216,6 +218,7 @@ export function startScheduler() {
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
   nse_fii_dii: ingestNseFiiDii,
   bse_ipos: ingestBseIposFromHtml,
+  nse_ipos: ingestNseIpos,
   amfi_navs: ingestAmfiNavs,
   nse_bhavcopy: ingestNseBhavcopy,
   bse_announcements: ingestBseAnnouncements,
