@@ -1,5 +1,7 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · Root cause: Pass 1 perf agent called nextDynamic({ssr:false}) inside Server Components — Next 16 build fails. Fix: extracted 6 Client Component loader files; pages import from loaders instead.
+
 ## 2026-06-06 · perf + seo: Stage 5 — performance optimizations + SEO improvements
 
 ### Performance
