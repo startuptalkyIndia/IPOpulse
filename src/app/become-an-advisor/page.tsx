@@ -95,7 +95,7 @@ export default async function BecomeAdvisorLanding() {
       {/* Commission rates */}
       <section className="max-w-7xl mx-auto px-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Commission rates by product</h2>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">

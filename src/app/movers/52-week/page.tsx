@@ -76,7 +76,7 @@ function Table({ title, rows, accent }: { title: string; rows: Row[]; accent: "h
           52-week high/low data requires 12 months of price history. Daily prices are being collected — this page will populate fully by November 2026.
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

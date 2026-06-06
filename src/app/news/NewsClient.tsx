@@ -118,7 +118,7 @@ export function NewsClient() {
           No news found. Try refreshing or check back later.
         </div>
       ) : (
-        <div className="space-y-0 bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+        <div className="space-y-0 bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden divide-y divide-gray-100">
           {items.map((item, i) => (
             <a
               key={i}

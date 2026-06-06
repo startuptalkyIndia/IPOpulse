@@ -39,7 +39,7 @@ export default async function EarningsCalendarPage() {
           <p className="text-sm text-gray-500">No board meetings or AGMs are scheduled in the next 60 days. Check back closer to quarterly results season (Jan, Apr, Jul, Oct).</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">

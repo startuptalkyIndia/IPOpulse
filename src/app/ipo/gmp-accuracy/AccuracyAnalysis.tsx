@@ -153,7 +153,7 @@ export function AccuracyAnalysis({ rows }: { rows: Row[] }) {
           <p className="text-sm text-gray-500">No IPOs match these filters.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

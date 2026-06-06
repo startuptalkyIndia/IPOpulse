@@ -93,7 +93,7 @@ export default function MarketHolidaysPage() {
             <Clock className="w-4 h-4 text-indigo-500" />
             Upcoming Holidays
           </h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">
@@ -132,7 +132,7 @@ export default function MarketHolidaysPage() {
       {passed.length > 0 && (
         <section className="mb-8">
           <h2 className="text-base font-semibold text-gray-500 mb-3">Passed Holidays</h2>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden opacity-70">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden opacity-70">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-400 uppercase">

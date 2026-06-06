@@ -203,7 +203,7 @@ export default async function MerchantBankersPage() {
       {/* Main table — by volume */}
       <section>
         <h2 className="text-lg font-semibold text-gray-900 mb-3">All Active Merchant Bankers (Min 3 IPOs)</h2>
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

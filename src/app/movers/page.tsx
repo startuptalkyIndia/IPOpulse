@@ -80,7 +80,7 @@ function MoverTable({ title, rows, accent }: { title: string; rows: Row[]; accen
       {rows.length === 0 ? (
         <div className="card text-center py-6 text-sm text-gray-500">No data available yet.</div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_1px_3px_rgba(16,24,40,0.06)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
