@@ -20,12 +20,12 @@ export async function GET() {
 
   const watchlist = await prisma.watchlistItem.findMany({
     where: { userId },
-    select: { ipoId: true, createdAt: true },
+    select: { type: true, targetSlug: true, createdAt: true },
   });
 
   const applications = await prisma.ipoApplication.findMany({
     where: { userId },
-    select: { id: true, ipoId: true, lots: true, status: true, createdAt: true },
+    select: { id: true, ipoId: true, lotsApplied: true, status: true, createdAt: true },
   });
 
   const aiUsage = await prisma.aiSpendLog.findMany({
