@@ -2,25 +2,19 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import {
-  TrendingUp,
-  Calendar,
-  Users,
   Calculator,
   Activity,
   ArrowRight,
   LineChart,
-  PieChart,
-  FileText,
-  Filter,
-  Coins,
-  Globe,
   Newspaper,
-  Scale,
-  CreditCard,
-  Shield,
+  Rocket,
+  PiggyBank,
+  GraduationCap,
+  Compass,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
+import { SITE_MAP } from "@/lib/site-map";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { WhatsAppBanner } from "@/components/WhatsAppBanner";
 
@@ -46,232 +40,19 @@ async function fetchLatestNews(): Promise<Array<{ title: string; link: string; s
   } catch { return []; }
 }
 
-const moduleCards = [
-  {
-    title: "IPO Center",
-    icon: TrendingUp,
-    href: "/ipo",
-    color: "bg-emerald-50 text-emerald-600",
-    accent: "group-hover:text-emerald-700",
-    lines: ["Upcoming · Live · Closed · Listed", "GMP · Subscription · Allotment"],
-  },
-  {
-    title: "Screener",
-    icon: Filter,
-    href: "/screener",
-    color: "bg-indigo-50 text-indigo-600",
-    accent: "group-hover:text-indigo-800",
-    lines: ["Filter 2,500+ stocks", "P/E · ROE · D/E · sector · market cap"],
-  },
-  {
-    title: "Super Investor",
-    icon: Users,
-    href: "/super-investor",
-    color: "bg-violet-50 text-violet-600",
-    accent: "group-hover:text-violet-800",
-    lines: ["Track 40+ big-name portfolios", "Rekha · Damani · Kacholia · Kedia"],
-  },
-  {
-    title: "FII / DII",
-    icon: Activity,
-    href: "/fii-dii",
-    color: "bg-rose-50 text-rose-600",
-    accent: "group-hover:text-rose-800",
-    lines: ["Daily cash + F&O flows", "20-year history & trends"],
-  },
-  {
-    title: "Insider Trading",
-    icon: Users,
-    href: "/insider-trading",
-    color: "bg-orange-50 text-orange-600",
-    accent: "group-hover:text-orange-800",
-    lines: ["Promoter buy/sell disclosures", "SEBI SAST filings daily"],
-  },
-  {
-    title: "Bulk & Block Deals",
-    icon: Activity,
-    href: "/deals/bulk",
-    color: "bg-amber-50 text-amber-600",
-    accent: "group-hover:text-amber-800",
-    lines: ["Large institutional trades", "NSE bulk + block deals daily"],
-  },
-  {
-    title: "US Markets",
-    icon: Globe,
-    href: "/us-ipo",
-    color: "bg-sky-50 text-sky-600",
-    accent: "group-hover:text-sky-800",
-    lines: ["US IPO tracker", "Indian ADRs · LRS calculator"],
-  },
-  {
-    title: "Market Breadth",
-    icon: LineChart,
-    href: "/market/breadth",
-    color: "bg-teal-50 text-teal-600",
-    accent: "group-hover:text-teal-800",
-    lines: ["Advance / decline ratio", "52-week highs · Circuit breakers"],
-  },
-  {
-    title: "Ticker",
-    icon: LineChart,
-    href: "/ticker",
-    color: "bg-blue-50 text-blue-600",
-    accent: "group-hover:text-blue-800",
-    lines: ["2,500+ listed companies", "Price, volume, market cap"],
-  },
-  {
-    title: "Sectors",
-    icon: PieChart,
-    href: "/sectors",
-    color: "bg-purple-50 text-purple-600",
-    accent: "group-hover:text-purple-800",
-    lines: ["Sectoral indices & heatmaps", "FII flows by sector"],
-  },
-  {
-    title: "Gainers / Losers",
-    icon: TrendingUp,
-    href: "/movers",
-    color: "bg-lime-50 text-lime-600",
-    accent: "group-hover:text-lime-800",
-    lines: ["Today's top movers", "Delivery %, 52-week highs/lows"],
-  },
-  {
-    title: "Calendar",
-    icon: Calendar,
-    href: "/corporate-actions",
-    color: "bg-fuchsia-50 text-fuchsia-600",
-    accent: "group-hover:text-fuchsia-800",
-    lines: ["Dividends, splits, bonus, rights", "Board meetings & AGMs"],
-  },
-  {
-    title: "Calculators",
-    icon: Calculator,
-    href: "/calculators",
-    color: "bg-cyan-50 text-cyan-600",
-    accent: "group-hover:text-cyan-800",
-    lines: ["SIP, EMI, Tax, FD, Brokerage", "20+ tools, all free"],
-  },
-  {
-    title: "DRHP Library",
-    icon: FileText,
-    href: "/ipo/drhp",
-    color: "bg-slate-100 text-slate-600",
-    accent: "group-hover:text-slate-800",
-    lines: ["Every IPO prospectus", "AI-powered risk analysis"],
-  },
-  {
-    title: "Unlisted Shares",
-    icon: Coins,
-    href: "/unlisted-shares",
-    color: "bg-yellow-50 text-yellow-600",
-    accent: "group-hover:text-yellow-800",
-    lines: ["Pre-IPO grey market prices", "Multi-dealer median index"],
-  },
-  {
-    title: "Daily Wrap",
-    icon: Newspaper,
-    href: "/daily-summary",
-    color: "bg-pink-50 text-pink-600",
-    accent: "group-hover:text-pink-800",
-    lines: ["AI market summary at 4:30 PM", "Gainers · losers · FII/DII · IPOs"],
-  },
-  {
-    title: "Tomorrow's Picks",
-    icon: TrendingUp,
-    href: "/research/next-day",
-    color: "bg-rose-50 text-rose-600",
-    accent: "group-hover:text-rose-800",
-    lines: ["AI pre-market watch list", "Stocks · sector · FII signal · events"],
-  },
-  {
-    title: "Research Hub",
-    icon: FileText,
-    href: "/research",
-    color: "bg-indigo-50 text-indigo-600",
-    accent: "group-hover:text-indigo-800",
-    lines: ["AI tools in one place", "DRHP · Concall · Promoter · Previews"],
-  },
-  {
-    title: "Compare Brokers",
-    icon: Scale,
-    href: "/compare/brokers",
-    color: "bg-indigo-50 text-indigo-600",
-    accent: "group-hover:text-indigo-800",
-    lines: ["Zerodha · Groww · Upstox · Angel", "Fees, platforms, API access"],
-  },
-  {
-    title: "Credit Cards",
-    icon: CreditCard,
-    href: "/compare/credit-cards",
-    color: "bg-green-50 text-green-600",
-    accent: "group-hover:text-green-800",
-    lines: ["Top 6 Indian credit cards", "Rewards · lounge · annual fee"],
-  },
-  {
-    title: "Insurance",
-    icon: Shield,
-    href: "/compare/insurance",
-    color: "bg-blue-50 text-blue-600",
-    accent: "group-hover:text-blue-800",
-    lines: ["Term life & health plans", "Premium · claim ratio · features"],
-  },
-  {
-    title: "Learn",
-    icon: FileText,
-    href: "/learn",
-    color: "bg-emerald-50 text-emerald-600",
-    accent: "group-hover:text-emerald-800",
-    lines: ["IPO guides · GMP · DRHP", "Calculators · ratios · strategies"],
-  },
-  {
-    title: "IPO Stats 2026",
-    icon: LineChart,
-    href: "/ipo/stats",
-    color: "bg-orange-50 text-orange-600",
-    accent: "group-hover:text-orange-800",
-    lines: ["All IPO listing gains", "Best · worst · monthly trends"],
-  },
-  {
-    title: "Market News",
-    icon: Newspaper,
-    href: "/news",
-    color: "bg-sky-50 text-sky-600",
-    accent: "group-hover:text-sky-800",
-    lines: ["Finance · IPO · FII · Deals", "Aggregated every 15 minutes"],
-  },
-  {
-    title: "FORE Calculator",
-    icon: Calculator,
-    href: "/calculators/stock-forecast",
-    color: "bg-violet-50 text-violet-600",
-    accent: "group-hover:text-violet-800",
-    lines: ["Forecasted Returns Estimator", "EPS growth × Exit P/E formula"],
-  },
-  {
-    title: "Dividend Stocks",
-    icon: Coins,
-    href: "/dividend-yield",
-    color: "bg-amber-50 text-amber-600",
-    accent: "group-hover:text-amber-800",
-    lines: ["High yield PSU & private stocks", "Coal India · Infosys · ITC · HUL"],
-  },
-  {
-    title: "Financial Twitter",
-    icon: Users,
-    href: "/news/twitter",
-    color: "bg-cyan-50 text-cyan-600",
-    accent: "group-hover:text-cyan-800",
-    lines: ["Top investors on X/Twitter", "20 curated Indian finance voices"],
-  },
-  {
-    title: "Best Stocks Lists",
-    icon: TrendingUp,
-    href: "/best-stocks",
-    color: "bg-rose-50 text-rose-600",
-    accent: "group-hover:text-rose-800",
-    lines: ["Under ₹100 · PSU · Dividend · Multibagger", "14 curated lists, live data"],
-  },
-];
+// Icon + color maps for homepage category sections (from SITE_MAP)
+const HOME_ICONS: Record<string, React.ElementType> = {
+  Rocket, LineChart, Activity, PiggyBank, Calculator, Newspaper, GraduationCap,
+};
+const HOME_COLORS: Record<string, string> = {
+  ipo: "text-rose-600 bg-rose-50",
+  stocks: "text-indigo-600 bg-indigo-50",
+  markets: "text-violet-600 bg-violet-50",
+  funds: "text-emerald-600 bg-emerald-50",
+  tools: "text-amber-600 bg-amber-50",
+  research: "text-blue-600 bg-blue-50",
+  learn: "text-teal-600 bg-teal-50",
+};
 
 const calcShortcuts = [
   { href: "/calculators/sip", label: "SIP Calculator", color: "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200" },
@@ -454,34 +235,52 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Module grid */}
+      {/* Categorized sections — driven by canonical site map */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Everything in one place</h2>
-          <div className="h-px flex-1 bg-gradient-to-r from-indigo-200 to-transparent" />
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Everything in one place</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Organized by what you want to do — IPOs, stocks, markets, funds, tools and more.</p>
+          </div>
+          <Link href="/explore" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-800 whitespace-nowrap">
+            <Compass className="w-4 h-4" /> Explore all →
+          </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {moduleCards.map((m) => {
-            const Icon = m.icon;
+
+        <div className="space-y-8">
+          {SITE_MAP.map((section) => {
+            const SecIcon = HOME_ICONS[section.icon] ?? Compass;
+            const color = HOME_COLORS[section.key] ?? "text-indigo-600 bg-indigo-50";
+            // Flatten this section's links and take the top 6 for the homepage
+            const links = section.groups.flatMap((g) => g.links).slice(0, 6);
             return (
-              <Link
-                key={m.title}
-                href={m.href}
-                className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group"
-              >
-                <div className={`w-9 h-9 rounded-lg ${m.color} flex items-center justify-center mb-2.5`}>
-                  <Icon className="w-4.5 h-4.5" />
+              <div key={section.key}>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center`}>
+                    <SecIcon className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900">
+                    {section.href ? <Link href={section.href} className="hover:text-indigo-700">{section.label}</Link> : section.label}
+                  </h3>
+                  <span className="text-xs text-gray-400 hidden sm:inline">· {section.blurb}</span>
+                  <div className="h-px flex-1 bg-gray-100" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{m.title}</h3>
-                {m.lines.map((line) => (
-                  <p key={line} className="text-xs text-gray-500 leading-relaxed">
-                    {line}
-                  </p>
-                ))}
-                <div className={`mt-3 text-xs font-medium text-indigo-500 ${m.accent} flex items-center gap-1`}>
-                  Open <ArrowRight className="w-3 h-3" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  {links.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="card hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 group p-3"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-xs font-semibold text-gray-900 group-hover:text-indigo-700 leading-snug">{link.label}</h4>
+                        {link.badge && <span className="text-[9px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded font-semibold">{link.badge}</span>}
+                      </div>
+                      {link.desc && <p className="text-[11px] text-gray-500 leading-snug mt-1 line-clamp-2">{link.desc}</p>}
+                    </Link>
+                  ))}
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
