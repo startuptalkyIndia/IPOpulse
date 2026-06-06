@@ -1,5 +1,12 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · fix(types): clear all 14 TS errors — stale Prisma client + field name mismatches
+- Root cause: Prisma client was never regenerated after DataDeletionLog, AiSpendLog, and User.deletedAt were added to the schema. Server Dockerfile already runs `prisma generate` so prod was unaffected.
+- Fix 1 (HIGH): account/export/route.ts — WatchlistItem has no `ipoId` field; replaced with `type + targetSlug`. IpoApplication field `lots` → `lotsApplied`.
+- Fix 2 (refactor): ipo/[slug]/page.tsx — replaced 10x unsafe `as never` casts on Prisma Json? fields with explicit `as unknown as DrhpAnalysis[field]|null` (imports DrhpAnalysis + EnrichedPeer types).
+- Fix 3 (refactor): ai-budget.ts — added explicit `(s: number, l: { costInr: number })` types to reduce() callbacks.
+- TS before: 14 errors. TS after: 0 errors. npm run lint: pre-existing circular JSON error in ESLint config (not introduced here).
+
 ## 2026-06-06 · feat(ai-budget): superadmin email exemption from ₹1.5K/month AI cap
 - Root cause gap: superadmin/founder emails were hitting the same budget cap as regular users.
 - Fix: `checkBudget()` does `prisma.user.findUnique` first; if email is in `AI_BUDGET_EXEMPT_EMAILS` env var, returns `{allowed:true, remaining:MAX_SAFE_INTEGER}` unconditionally.
