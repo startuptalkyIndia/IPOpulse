@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, TrendingUp, TrendingDown, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { MonthlyIpoChart } from "./MonthlyChart";
+import nextDynamic from "next/dynamic";
+
+const MonthlyIpoChart = nextDynamic(() => import("./MonthlyChart").then(m => m.MonthlyIpoChart), { ssr: false });
 
 export const metadata: Metadata = {
   title: "Indian IPO Market Statistics 2026 — Performance, Trends & Data",

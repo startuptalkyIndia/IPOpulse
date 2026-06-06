@@ -14,9 +14,12 @@ import {
   statusBadgeClass,
   statusLabel,
 } from "@/lib/ipo";
-import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
+import nextDynamic from "next/dynamic";
+import type { GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
-import { SubscriptionVelocity } from "@/components/ipo/SubscriptionVelocity";
+
+const GmpChart = nextDynamic(() => import("@/components/ipo/GmpChart").then(m => m.GmpChart), { ssr: false });
+const SubscriptionVelocity = nextDynamic(() => import("@/components/ipo/SubscriptionVelocity").then(m => m.SubscriptionVelocity), { ssr: false });
 import { DrhpAnalysisCard } from "@/components/ipo/DrhpAnalysisCard";
 import type { DrhpAnalysis } from "@/lib/drhp-analyzer";
 import type { EnrichedPeer } from "@/lib/drhp-peer-enrichment";
