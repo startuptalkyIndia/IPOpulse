@@ -26,6 +26,7 @@ import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
 import { checkIpoAlerts } from "./jobs/check-alerts";
 import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals";
 import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
+import { backfillIpoSymbols } from "./jobs/ipo-symbol-backfill";
 
 let started = false;
 
@@ -172,6 +173,9 @@ export function startScheduler() {
   cron.schedule("0 20 * * 1-5", async () => {
     const result = await runIngestion("bse_listing_sync", syncIpoListings);
     console.log(`[cron bse_listing_sync] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    // After listing sync, backfill nse_symbol for newly listed IPOs (unlocks post-listing returns)
+    const bf = await runIngestion("ipo_symbol_backfill", backfillIpoSymbols);
+    console.log(`[cron ipo_symbol_backfill] matched=${bf.rowsIn ?? 0}`);
   }, { timezone: "Asia/Kolkata" });
 
   // IPO alert checker — every 2 hours, all days (alerts fire anytime)
@@ -228,4 +232,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   check_alerts: checkIpoAlerts,
   yahoo_fundamentals: runYahooFundamentals,
   screener_deep: ingestScreenerDeepFundamentals,
+  ipo_symbol_backfill: backfillIpoSymbols,
 };
