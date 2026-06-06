@@ -133,8 +133,7 @@ export default async function ScreenerPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Stock Screener</h1>
         <p className="text-sm text-gray-600 max-w-3xl">
-          {seed.filter(s => s.ltp).length.toLocaleString()} companies with today&apos;s prices ·
-          {" "}{sectors.length} sectors · 52-week highs/lows from 12 months of price history.
+          {`${seed.filter(s => s.ltp).length.toLocaleString()} companies with today's prices · ${sectors.length} sectors · 52-week highs/lows from 12 months of price history.`}
         </p>
       </div>
       <ScreenerClient seed={seed} sectors={sectors} />
