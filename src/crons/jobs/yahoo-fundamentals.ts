@@ -119,7 +119,7 @@ export async function recalcMarketCap(): Promise<IngestionResult> {
   const n = await prisma.$executeRaw`
     UPDATE companies c
     SET market_cap = ROUND((c.shares_outstanding::numeric * b.close) / 10000000, 2),
-        updated_at = now()
+        "updatedAt" = now()
     FROM bhavcopy_daily b
     WHERE b.company_id = c.id
       AND b.date = ${latestBhav.date}
