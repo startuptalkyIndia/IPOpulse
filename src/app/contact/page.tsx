@@ -15,8 +15,8 @@ export default function ContactPage() {
       <div className="card space-y-4">
         <div>
           <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Email</div>
-          <a href="mailto:hello@ipopulse.talkytools.com" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-            hello@ipopulse.talkytools.com
+          <a href="mailto:shubham@startuptalky.com" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            shubham@startuptalky.com
           </a>
         </div>
         <div>

@@ -242,3 +242,8 @@ Built the missing cron job that checks user alert conditions and fires emails vi
 | 2 | Register cron in `scheduler.ts` | ✅ Done | `"0 */2 * * *"`, added to `availableJobs` as `check_alerts` |
 | 3 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` clean |
 | 4 | Deploy | ⏭️ Skipped | Per task instructions — DO NOT DEPLOY |
+
+---
+## 2026-06-06: Parity fix — talkytools-parity agent
+Added /about and/or /contact pages using DIYPR shell + product-specific copy. Rewrote bare health endpoints to canonical 3-state shape where needed (Boxhub, ToolsTalky, BankTalky). No deploy.
+  Updated: IPOpulse
