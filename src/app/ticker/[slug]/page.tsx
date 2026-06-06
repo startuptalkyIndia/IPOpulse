@@ -13,10 +13,12 @@ import { PriceChart } from "@/components/PriceChart";
 import { StockNews } from "@/components/StockNews";
 import { CompanyFinancials, type QuarterlyRow, type AnnualRow } from "@/components/CompanyFinancials";
 import { StockTechnicals } from "@/components/StockTechnicals";
+import { QualitySignals } from "@/components/QualitySignals";
 import { Sparkline } from "@/components/Sparkline";
 import { getCompanyDescription } from "@/lib/company-descriptions";
 import { getMoat } from "@/lib/moats";
 import { computeTechnicals } from "@/lib/technicals";
+import { computeQualitySignals, readCyclical } from "@/lib/quality-signals";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -127,6 +129,30 @@ export default async function CompanyPage({ params }: Props) {
     : null;
 
   const moat = getMoat(company.nseSymbol);
+
+  // ─── Quality signals (multi-year) — annualFinancials is ascending, reverse for newest-first ──
+  const annualNewestFirst = [...annualFinancials].reverse();
+  const qualitySignals = computeQualitySignals(
+    annualNewestFirst.map(a => ({
+      sales: a.sales != null ? Number(a.sales) : null,
+      netProfit: a.netProfit != null ? Number(a.netProfit) : null,
+      roe: a.roe != null ? Number(a.roe) : null,
+      cashFromOps: a.cashFromOps != null ? Number(a.cashFromOps) : null,
+    }))
+  );
+
+  // Cyclical read — latest YoY revenue growth from the two most recent annual rows
+  const latestRevGrowth = annualNewestFirst.length >= 2 && annualNewestFirst[0].sales && annualNewestFirst[1].sales && Number(annualNewestFirst[1].sales) > 0
+    ? ((Number(annualNewestFirst[0].sales) - Number(annualNewestFirst[1].sales)) / Number(annualNewestFirst[1].sales)) * 100
+    : null;
+  const cyclicalRead = readCyclical(
+    company.sector,
+    company.industry,
+    latestRevGrowth,
+    technicals?.ret6m ?? null,
+    technicals?.ret3m ?? null,
+    technicals?.stage ?? null,
+  );
 
   // Convert Prisma Decimal → number for client component
   const num = (v: unknown): number | null => {
@@ -378,6 +404,9 @@ export default async function CompanyPage({ params }: Props) {
 
       {/* Technical Indicators — objective math from price history */}
       {technicals && <StockTechnicals t={technicals} />}
+
+      {/* Quality Signals — multi-year ROE consistency, revenue CAGR, cash-backed earnings, cyclical read */}
+      <QualitySignals q={qualitySignals} cyclical={cyclicalRead} />
 
       {/* Deep Financials — Quarterly, Annual P&L, Balance Sheet, Cash Flow, Ratios */}
       <CompanyFinancials quarters={quarterRows} annual={annualRows} />
