@@ -105,6 +105,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/calculators/stock-forecast`, lastModified: now, priority: 0.8, changeFrequency: "yearly" },
     { url: `${BASE}/dividend-yield`, lastModified: now, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/best-stocks`, lastModified: now, priority: 0.9, changeFrequency: "weekly" },
+    { url: `${BASE}/buybacks`, lastModified: now, priority: 0.7, changeFrequency: "daily" },
+    { url: `${BASE}/pricing`, lastModified: now, priority: 0.5, changeFrequency: "monthly" },
   ];
 
   const bestStocksPages: MetadataRoute.Sitemap = bestStocksCategories.map((c) => ({

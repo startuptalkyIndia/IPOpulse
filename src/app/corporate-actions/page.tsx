@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Corporate Actions Calendar — dividends, splits, bonus, rights, buybacks",
   description:
     "Complete calendar of Indian corporate actions. Ex-dates, record dates, and purposes for every BSE/NSE listed company.",
+  alternates: { canonical: "/corporate-actions" },
 };
 
 const typeLabels: Record<string, string> = {
