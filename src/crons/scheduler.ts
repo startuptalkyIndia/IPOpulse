@@ -29,6 +29,7 @@ import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals
 import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
 import { backfillIpoSymbols } from "./jobs/ipo-symbol-backfill";
 import { computeSignals } from "./jobs/compute-signals";
+import { runCrawlerHealth } from "./jobs/crawler-health";
 
 let started = false;
 
@@ -96,6 +97,13 @@ export function startScheduler() {
   cron.schedule("30 23 * * 1-5", async () => {
     const result = await runIngestion("compute_signals", computeSignals);
     console.log(`[cron compute_signals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Crawler Health Heartbeat — daily 9:30 AM IST. Alerts via ntfy if any data
+  // source is stale/empty (catches silently-dead crawlers).
+  cron.schedule("30 9 * * *", async () => {
+    const result = await runIngestion("crawler_health", runCrawlerHealth);
+    console.log(`[cron crawler_health] healthy=${result.rowsIn ?? 0} stale=${result.rowsError ?? 0} — ${result.notes ?? ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // BSE corporate announcements — every 30 min during market hours, hourly outside
@@ -245,4 +253,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   screener_deep: ingestScreenerDeepFundamentals,
   ipo_symbol_backfill: backfillIpoSymbols,
   compute_signals: computeSignals,
+  crawler_health: runCrawlerHealth,
 };
