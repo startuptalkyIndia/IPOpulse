@@ -107,5 +107,8 @@ export async function GET(request: Request) {
     // DB unreachable at build — fine
   }
 
-  return NextResponse.json({ hits: hits.slice(0, 24) });
+  const res = NextResponse.json({ hits: hits.slice(0, 24) });
+  // Search results are stable for a session; allow private caching for 60s
+  res.headers.set("Cache-Control", "private, max-age=60");
+  return res;
 }

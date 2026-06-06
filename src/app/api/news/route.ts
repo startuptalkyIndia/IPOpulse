@@ -81,5 +81,8 @@ export async function GET(req: NextRequest) {
     items = await fetchFeed(query, cat);
   }
 
-  return NextResponse.json({ items, fetchedAt: new Date().toISOString() });
+  const res = NextResponse.json({ items, fetchedAt: new Date().toISOString() });
+  // News is public and changes every ~15 min; cache at CDN + browser
+  res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+  return res;
 }
