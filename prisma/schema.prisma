@@ -55,7 +55,40 @@ model User {
   aiKeyVerified Boolean   @default(false)
   aiKeyAddedAt  DateTime?
 
+  // DPDP Act 2023 §12 — soft-delete
+  deletedAt     DateTime?
+
   @@map("users")
+}
+
+model DataDeletionLog {
+  id           Int       @id @default(autoincrement())
+  userId       String
+  emailHash    String
+  requestedAt  DateTime  @default(now())
+  requesterIp  String?
+  note         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([requestedAt])
+  @@map("data_deletion_logs")
+}
+
+model AiSpendLog {
+  id            BigInt   @id @default(autoincrement())
+  userId        String
+  model         String   @default("claude-cli")
+  inputTokens   Int      @default(0)
+  outputTokens  Int      @default(0)
+  costInr       Float    @default(0)
+  cliEstimated  Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ai_spend_logs")
 }
 
 model Comment {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { callClaudeJson, claudeAvailable, ClaudeUnavailableError } from "@/lib/claude-runner";
+import { checkBudget, recordSpend } from "@/lib/ai-budget";
 
 /**
  * Earnings concall summarizer — works via Anthropic SDK OR Claude CLI.
@@ -58,12 +59,24 @@ Output strict JSON with the keys exactly:
   quotedFromManagement: string[] (3-5 verbatim quotes that capture key shifts)
 Be precise. Quote actual numbers. Do NOT invent figures.`;
 
+  // AI budget gate
+  const budget = await checkBudget(userId);
+  if (!budget.allowed) {
+    return NextResponse.json(
+      { error: `Monthly AI budget of ₹${budget.capInr} reached. Resets on the 1st.` },
+      { status: 429 },
+    );
+  }
+
   try {
     const summary = await callClaudeJson({
       system: SYSTEM,
       user: `Company: ${company || "(unspecified)"}\nQuarter: ${quarter || "(unspecified)"}\n\nTranscript:\n\n${transcript}`,
       maxTokens: 2000,
     });
+    // Estimated tokens (CLI): ~transcript.length/4 input chars + 2000 output tokens
+    const estInput = Math.ceil(transcript.length / 4);
+    recordSpend(userId, "claude-cli", estInput, 2000);
     return NextResponse.json({ summary, via });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });

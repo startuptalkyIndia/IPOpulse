@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { callClaude, ClaudeUnavailableError } from "@/lib/claude-runner";
+import { checkBudget, recordSpend } from "@/lib/ai-budget";
 
 /**
  * Per-IPO DRHP deep-dive. Pass `slug` + `question` and we fetch the IPO's
@@ -54,6 +55,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No DRHP/RHP URL on file for this IPO yet" }, { status: 404 });
   }
 
+  // AI budget gate (DPDP + cost control)
+  const budget = await checkBudget(userId);
+  if (!budget.allowed) {
+    return NextResponse.json(
+      { error: `Monthly AI budget of ₹${budget.capInr} reached. Resets on the 1st.` },
+      { status: 429 },
+    );
+  }
+
   try {
     const answer = await callClaude({
       system: `You are IPOpulse's DRHP analyst. The user will provide an IPO prospectus PDF URL and a question. Fetch the PDF and answer the question STRICTLY from its contents. Quote exact figures and section names. If the answer is not in the document, say so explicitly. Be concise (under 300 words). Do not hallucinate.`,
@@ -63,6 +73,9 @@ Prospectus PDF URL: ${pdfUrl}
 
 Question: ${question}`,
     });
+
+    // Estimated tokens (CLI — no token count returned): 1200 input + 400 output per DRHP query
+    recordSpend(userId, "claude-cli", 1200, 400);
 
     return NextResponse.json({
       answer,

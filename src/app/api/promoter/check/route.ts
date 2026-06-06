@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { callClaudeJson, claudeAvailable, ClaudeUnavailableError } from "@/lib/claude-runner";
+import { checkBudget, recordSpend } from "@/lib/ai-budget";
 
 /**
  * Promoter / management background check — works via Anthropic SDK OR Claude CLI.
@@ -51,12 +52,23 @@ export async function POST(request: Request) {
   confidence: "high"|"medium"|"low"
 Be honest about uncertainty. Do NOT fabricate. Cover Indian context: SEBI/MCA/EOW/NCLT actions, BSE/NSE filings, Indian press.`;
 
+  // AI budget gate
+  const budget = await checkBudget(userId);
+  if (!budget.allowed) {
+    return NextResponse.json(
+      { error: `Monthly AI budget of ₹${budget.capInr} reached. Resets on the 1st.` },
+      { status: 429 },
+    );
+  }
+
   try {
     const result = await callClaudeJson({
       system: SYSTEM,
       user: `Promoter: ${name}\nCurrent company: ${company || "(unspecified)"}`,
       maxTokens: 1500,
     });
+    // Estimated tokens (CLI): 600 input + 1500 output per promoter check
+    recordSpend(userId, "claude-cli", 600, 1500);
     return NextResponse.json({ result, via, disclaimer: "AI-generated. Verify against SEBI/MCA/BSE filings before any investment decision." });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
