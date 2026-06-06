@@ -18,6 +18,8 @@ import { GmpChart, type GmpPoint } from "@/components/ipo/GmpChart";
 import { SubscriptionBar } from "@/components/ipo/SubscriptionBar";
 import { SubscriptionVelocity } from "@/components/ipo/SubscriptionVelocity";
 import { DrhpAnalysisCard } from "@/components/ipo/DrhpAnalysisCard";
+import type { DrhpAnalysis } from "@/lib/drhp-analyzer";
+import type { EnrichedPeer } from "@/lib/drhp-peer-enrichment";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import { TrackApplicationButton } from "@/components/ipo/TrackApplicationButton";
 import { SetAlertButton } from "@/components/ipo/SetAlertButton";
@@ -371,18 +373,18 @@ export default async function IpoDetailPage({ params }: Props) {
           sourceType={ipo.drhpAnalysis.sourceType}
           sourceUrl={ipo.drhpAnalysis.sourceUrl}
           tldr={ipo.drhpAnalysis.tldr}
-          issueDetails={ipo.drhpAnalysis.issueDetails as never}
-          useOfProceeds={ipo.drhpAnalysis.useOfProceeds as never}
-          riskFactors={ipo.drhpAnalysis.riskFactors as never}
-          governance={ipo.drhpAnalysis.governance as never}
-          relatedPartyTransactions={ipo.drhpAnalysis.relatedPartyTransactions as never}
-          contingentLiabilities={ipo.drhpAnalysis.contingentLiabilities as never}
-          peerComparables={ipo.drhpAnalysis.peerComparables as never}
-          enrichedPeers={ipo.drhpAnalysis.enrichedPeers as never}
-          financialHighlights={ipo.drhpAnalysis.financialHighlights as never}
+          issueDetails={ipo.drhpAnalysis.issueDetails as unknown as DrhpAnalysis["issueDetails"] | null}
+          useOfProceeds={ipo.drhpAnalysis.useOfProceeds as unknown as DrhpAnalysis["useOfProceeds"] | null}
+          riskFactors={ipo.drhpAnalysis.riskFactors as unknown as DrhpAnalysis["riskFactors"] | null}
+          governance={ipo.drhpAnalysis.governance as unknown as DrhpAnalysis["governance"] | null}
+          relatedPartyTransactions={ipo.drhpAnalysis.relatedPartyTransactions as unknown as DrhpAnalysis["relatedPartyTransactions"] | null}
+          contingentLiabilities={ipo.drhpAnalysis.contingentLiabilities as unknown as DrhpAnalysis["contingentLiabilities"] | null}
+          peerComparables={ipo.drhpAnalysis.peerComparables as unknown as DrhpAnalysis["peerComparables"] | null}
+          enrichedPeers={ipo.drhpAnalysis.enrichedPeers as unknown as EnrichedPeer[] | null}
+          financialHighlights={ipo.drhpAnalysis.financialHighlights as unknown as DrhpAnalysis["financialHighlights"] | null}
           riskScore={ipo.drhpAnalysis.riskScore}
           riskBand={ipo.drhpAnalysis.riskBand}
-          riskRationale={ipo.drhpAnalysis.riskRationale as never}
+          riskRationale={ipo.drhpAnalysis.riskRationale as unknown as string[] | null}
         />
       ) : null}
 

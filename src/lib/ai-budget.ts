@@ -46,7 +46,7 @@ export async function checkBudget(userId: string): Promise<{
     where: { userId, createdAt: { gte: monthStart() } },
     select: { costInr: true },
   });
-  const spentInr = logs.reduce((s, l) => s + l.costInr, 0);
+  const spentInr = logs.reduce((s: number, l: { costInr: number }) => s + l.costInr, 0);
   const remainingInr = Math.max(0, MONTHLY_CAP_INR - spentInr);
   return { allowed: spentInr < MONTHLY_CAP_INR, spentInr, remainingInr, capInr: MONTHLY_CAP_INR };
 }
@@ -81,7 +81,7 @@ export async function getMonthlyUsage(userId: string): Promise<{
     where: { userId, createdAt: { gte: monthStart() } },
     select: { costInr: true },
   });
-  const spentInr = logs.reduce((s, l) => s + l.costInr, 0);
+  const spentInr = logs.reduce((s: number, l: { costInr: number }) => s + l.costInr, 0);
   return {
     spentInr,
     remainingInr: Math.max(0, MONTHLY_CAP_INR - spentInr),
