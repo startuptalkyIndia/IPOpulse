@@ -1,120 +1,141 @@
 /**
- * Insider trading / SAST disclosure ingestion from NSE.
+ * Insider Trading (SEBI PIT disclosures) from NSE.
  *
- * SEBI SAST (Substantial Acquisition of Shares and Takeovers) regulations
- * require promoters, directors, and KMPs to disclose every buy/sell/pledge.
- * NSE publishes these at:
- *   /api/corporate-insider?symbol=SYMBOL&from=YYYY-MM-DD&to=YYYY-MM-DD
+ * The old per-company /api/corporate-insider endpoint is dead. The working
+ * source is the market-wide PIT (Prohibition of Insider Trading) feed:
+ *   /api/corporates-pit?index=equities&from_date=DD-MM-YYYY&to_date=DD-MM-YYYY
+ * which returns every insider disclosure across all companies in one call.
  *
- * We batch over all active companies and ingest the last 30 days.
- * Rate-limited to avoid hammering NSE — 500ms between requests.
+ * Schedule: daily at 6 PM IST. Pulls the last 60 days each run (idempotent
+ * upsert on the [date,exchange,symbol,acquirerName,tradeType,qty] unique key).
  *
- * Why this matters: promoter buy = highest conviction signal in Indian markets.
- *   A promoter spending their own money to buy more of their own stock —
- *   at market price, no discount — is the most bullish signal an investor can get.
+ * Why this matters: a promoter buying their own stock at market price (no
+ * discount) is among the most bullish conviction signals in Indian markets.
  */
 
 import { prisma } from "@/lib/db";
 import { fetchNse } from "@/lib/nse-session";
+import type { IngestionResult } from "../runIngestion";
 
-interface NseSast {
-  symbol?: string;
+interface PitRow {
+  acqName?: string;
+  acqMode?: string;
   company?: string;
-  personName?: string;
-  category?: string;
-  noOfSharesAcq?: string | number;
-  noOfSharesSale?: string | number;
-  acquisitionValue?: string | number;
-  saleValue?: string | number;
-  preShareHolding?: string | number;
-  postShareHolding?: string | number;
-  transactionDate?: string;
-  disclosureDate?: string;
-  type?: string; // Acquisition / Sale / Pledge / Revoke
+  symbol?: string;
+  personCategory?: string;
+  secType?: string;
+  secAcq?: string;
+  secVal?: string;
+  buyQuantity?: string;
+  buyValue?: string;
+  sellquantity?: string;
+  sellValue?: string;
+  befAcqSharesPer?: string;
+  afterAcqSharesPer?: string;
+  acqfromDt?: string;
+  intimDt?: string;
 }
 
-function parseNum(v: string | number | undefined): number {
-  if (v == null) return 0;
-  return parseFloat(String(v).replace(/,/g, "")) || 0;
+const MONTHS: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+function parseDate(s: string | undefined): Date | null {
+  if (!s) return null;
+  const m = s.match(/^(\d{1,2})-(\w{3})-(\d{4})/);
+  if (!m) return null;
+  const mon = MONTHS[m[2].toLowerCase()];
+  if (mon === undefined) return null;
+  return new Date(Date.UTC(parseInt(m[3], 10), mon, parseInt(m[1], 10)));
 }
 
-export async function ingestInsiderTrades(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
+function num(s: string | undefined): number {
+  if (!s) return 0;
+  return parseFloat(String(s).replace(/,/g, "")) || 0;
+}
+
+function ddmmyyyy(d: Date): string {
+  return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+}
+
+function mapAcquirerType(cat: string | undefined): string {
+  const c = (cat ?? "").toLowerCase();
+  if (c.includes("promoter")) return "Promoter";
+  if (c.includes("director")) return "Director";
+  if (c.includes("kmp") || c.includes("management")) return "KMP";
+  return cat || "Other";
+}
+
+function mapTradeType(r: PitRow): string {
+  const mode = (r.acqMode ?? "").toLowerCase();
+  if (mode.includes("pledge")) return "Pledge";
+  if (mode.includes("revoke") || mode.includes("invoke")) return "Revoke";
+  if (mode.includes("esop") || mode.includes("allot") || mode.includes("rights")) return "Allotment";
+  if (num(r.sellValue) > 0 || num(r.sellquantity) > 0) return "Sell";
+  return "Buy";
+}
+
+export async function ingestInsiderTrades(): Promise<IngestionResult> {
   const today = new Date();
-  const from = new Date(today.getTime() - 30 * 86400000).toISOString().slice(0, 10);
-  const to = today.toISOString().slice(0, 10);
+  const past = new Date(today.getTime() - 60 * 86400000);
 
-  // Fetch top 200 companies by market cap — insider trades for micro-caps
-  // are less meaningful as signals
-  const companies = await prisma.company.findMany({
-    where: { active: true, nseSymbol: { not: null } },
-    orderBy: { marketCap: "desc" },
-    take: 200,
-    select: { id: true, nseSymbol: true, name: true },
-  });
+  let rows: PitRow[] = [];
+  try {
+    const raw = await fetchNse<{ data?: PitRow[] }>(
+      `/api/corporates-pit?index=equities&from_date=${ddmmyyyy(past)}&to_date=${ddmmyyyy(today)}`,
+    );
+    rows = raw?.data ?? [];
+  } catch (e) {
+    return { rowsIn: 0, rowsError: 1, notes: `PIT fetch failed: ${e instanceof Error ? e.message : "error"}` };
+  }
 
   let inserted = 0;
   let errors = 0;
-  let fetched = 0;
 
-  for (const co of companies) {
-    if (!co.nseSymbol) continue;
+  for (const r of rows) {
     try {
-      const raw = await fetchNse<{ data?: NseSast[] } | NseSast[]>(
-        `/api/corporate-insider?symbol=${co.nseSymbol}&from=${from}&to=${to}`
-      );
-      const items: NseSast[] = Array.isArray(raw) ? raw : (raw as { data?: NseSast[] }).data ?? [];
-      fetched += items.length;
+      const sym = (r.symbol ?? "").toUpperCase().trim();
+      const acquirer = (r.acqName ?? "").trim();
+      if (!sym || !acquirer) continue;
+      const date = parseDate(r.acqfromDt) ?? parseDate(r.intimDt) ?? today;
+      const tradeType = mapTradeType(r);
+      const qtyNum = num(r.secAcq) || num(r.buyQuantity) || num(r.sellquantity);
+      const qty = BigInt(Math.round(qtyNum)); // part of unique key — default 0n if unknown
+      const valueLakh = num(r.secVal) > 0 ? num(r.secVal) / 100000 : null;
 
-      for (const item of items) {
-        try {
-          const qty = BigInt(Math.round(parseNum(item.noOfSharesAcq ?? item.noOfSharesSale)));
-          const tradeType = item.type?.toLowerCase().includes("sale") ? "Sell"
-            : item.type?.toLowerCase().includes("pledge") ? "Pledge"
-            : item.type?.toLowerCase().includes("revoke") ? "Revoke"
-            : "Buy";
-          const valueLakh = parseNum(item.acquisitionValue ?? item.saleValue);
-          const date = new Date(item.transactionDate ?? item.disclosureDate ?? today.toISOString().slice(0, 10));
-          if (isNaN(date.getTime())) continue;
-
-          await prisma.insiderTrade.upsert({
-            where: {
-              date_exchange_symbol_acquirerName_tradeType_qty: {
-                date,
-                exchange: "NSE",
-                symbol: co.nseSymbol!,
-                acquirerName: item.personName ?? "Unknown",
-                tradeType,
-                qty,
-              },
-            },
-            update: { valueLakh, postHoldingPct: parseNum(item.postShareHolding) },
-            create: {
-              date,
-              exchange: "NSE",
-              symbol: co.nseSymbol!,
-              companyName: co.name,
-              acquirerName: item.personName ?? "Unknown",
-              acquirerType: item.category ?? "Other",
-              securityType: "Equity",
-              tradeType,
-              qty,
-              valueLakh,
-              preHoldingPct: parseNum(item.preShareHolding),
-              postHoldingPct: parseNum(item.postShareHolding),
-              disclosureDate: item.disclosureDate ? new Date(item.disclosureDate) : null,
-            },
-          });
-          inserted++;
-        } catch { errors++; }
-      }
-      // Rate limit — 500ms between companies
-      await new Promise((r) => setTimeout(r, 500));
-    } catch { errors++; }
+      await prisma.insiderTrade.upsert({
+        where: {
+          date_exchange_symbol_acquirerName_tradeType_qty: {
+            date, exchange: "NSE", symbol: sym, acquirerName: acquirer, tradeType, qty,
+          },
+        },
+        update: {
+          valueLakh,
+          preHoldingPct: r.befAcqSharesPer ? num(r.befAcqSharesPer) : null,
+          postHoldingPct: r.afterAcqSharesPer ? num(r.afterAcqSharesPer) : null,
+        },
+        create: {
+          date, exchange: "NSE", symbol: sym,
+          companyName: (r.company ?? sym).trim(),
+          acquirerName: acquirer,
+          acquirerType: mapAcquirerType(r.personCategory),
+          securityType: r.secType ?? "Equity",
+          tradeType, qty, valueLakh,
+          preHoldingPct: r.befAcqSharesPer ? num(r.befAcqSharesPer) : null,
+          postHoldingPct: r.afterAcqSharesPer ? num(r.afterAcqSharesPer) : null,
+          disclosureDate: parseDate(r.intimDt),
+        },
+      });
+      inserted++;
+    } catch {
+      errors++;
+    }
   }
 
   return {
     rowsIn: inserted,
     rowsError: errors,
-    notes: `Insider trades: scanned ${companies.length} companies, found ${fetched} disclosures, upserted ${inserted}.`,
+    notes: `PIT: ${rows.length} disclosures fetched → ${inserted} upserted, ${errors} errors`,
   };
 }
