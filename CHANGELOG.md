@@ -1,5 +1,21 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · test: add Vitest unit + integration test suite — 89 tests, 0 failures
+- Installed vitest + @vitest/coverage-v8 as devDeps. Added vitest.config.ts with @/* path alias.
+- Added `npm test` and `npm run test:coverage` scripts to package.json.
+- Unit tests (pure functions, zero DB):
+  - tests/unit/calculators.spec.ts — 31 tests covering sipCalc, lumpsumCalc, emiCalc, fdCalc, ppfCalc, hraCalc, inflationCalc, mfReturnsCalc, ltcgStcgCalc, taxCalc, swpCalc, rdCalc, goalCalc, npsCalc
+  - tests/unit/format.spec.ts — 11 tests for formatCurrency (Indian locale), formatPercent, formatPlain, formatByType
+  - tests/unit/rate-limit.spec.ts — 10 tests for rateLimit() (isolation, remaining, blocking) + clientIp()
+  - tests/unit/feature-flags.spec.ts — 8 tests for FLAG_DEFINITIONS integrity (uniqueness, valid categories, non-empty keys)
+- API integration tests (mocked Prisma + auth via vi.hoisted):
+  - tests/unit/api-alerts.spec.ts — 6 tests: 401 unauthed, 400 invalid input, 409 duplicate, 201 created
+  - tests/unit/api-signup.spec.ts — 6 tests: 400 bad input, 409 duplicate, 200 created, lowercase email, 429 rate-limit
+  - tests/unit/api-watchlist.spec.ts — 7 tests: POST + DELETE auth guard, slug regex, upsert/delete
+- tests/README.md: documents how to run, what's mocked, env vars needed
+- Coverage: format.ts 100%, calculators/math.ts 65.9%, rate-limit.ts 72.2%, API routes well-covered
+- Root cause note: vi.mock factory hoisting requires vi.hoisted() for module-level variables (LESSON applied)
+
 ## 2026-06-06 · fix(types): clear all 14 TS errors — stale Prisma client + field name mismatches
 - Root cause: Prisma client was never regenerated after DataDeletionLog, AiSpendLog, and User.deletedAt were added to the schema. Server Dockerfile already runs `prisma generate` so prod was unaffected.
 - Fix 1 (HIGH): account/export/route.ts — WatchlistItem has no `ipoId` field; replaced with `type + targetSlug`. IpoApplication field `lots` → `lotsApplied`.

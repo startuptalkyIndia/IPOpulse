@@ -15,7 +15,10 @@
     "db:seed": "npx prisma db seed",
     "db:seed-ipos": "tsx scripts/seed-ipos.ts",
     "prepare": "husky 2>/dev/null || true",
-    "test:smoke": "playwright test"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:smoke": "playwright test",
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "tsx scripts/seed.ts"
@@ -57,6 +60,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/tough-cookie": "^4.0.5",
+    "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^9.1.7",
@@ -65,7 +69,8 @@
     "qrcode": "^1.5.4",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   },
   "overrides": {
     "esbuild": "^0.25.0",
