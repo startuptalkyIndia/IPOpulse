@@ -38,26 +38,59 @@ html[data-theme="dark"] body {
   color: var(--text-primary);
 }
 
-/* Dark-mode overrides for common Tailwind classes we use heavily */
-html[data-theme="dark"] .bg-white { background-color: var(--bg-card) !important; }
-html[data-theme="dark"] .bg-gray-50 { background-color: var(--bg-muted) !important; }
-html[data-theme="dark"] .bg-gray-100 { background-color: var(--bg-muted) !important; }
-html[data-theme="dark"] .border-gray-100,
-html[data-theme="dark"] .border-gray-200,
-html[data-theme="dark"] .border-gray-300 { border-color: var(--border) !important; }
-html[data-theme="dark"] .text-gray-900 { color: var(--text-primary) !important; }
-html[data-theme="dark"] .text-gray-800 { color: var(--text-primary) !important; }
-html[data-theme="dark"] .text-gray-700 { color: var(--text-secondary) !important; }
-html[data-theme="dark"] .text-gray-600 { color: var(--text-secondary) !important; }
-html[data-theme="dark"] .text-gray-500 { color: var(--text-muted) !important; }
-html[data-theme="dark"] .text-gray-400 { color: var(--text-muted) !important; }
-html[data-theme="dark"] .hover\:bg-gray-50:hover { background-color: var(--bg-muted) !important; }
-html[data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--border) !important; }
-html[data-theme="dark"] .bg-indigo-50 { background-color: rgba(99, 102, 241, 0.15) !important; }
-html[data-theme="dark"] .bg-yellow-50 { background-color: rgba(250, 204, 21, 0.12) !important; }
-html[data-theme="dark"] .bg-green-50 { background-color: rgba(16, 185, 129, 0.15) !important; }
-html[data-theme="dark"] .bg-red-50 { background-color: rgba(239, 68, 68, 0.15) !important; }
-html[data-theme="dark"] .bg-blue-50 { background-color: rgba(59, 130, 246, 0.15) !important; }
+/* ════════════════════════════════════════════════════════════════
+   DARK MODE — comprehensive override layer.
+   The site is built with light Tailwind classes; this layer remaps the
+   surfaces, text, borders and tints used across the app so dark mode is
+   coherent everywhere (not just a few classes).
+   ════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  /* Surfaces */
+  & .bg-white { background-color: var(--bg-card) !important; }
+  & [class*="bg-gray-50"] { background-color: var(--bg-muted) !important; }
+  & [class*="bg-gray-100"] { background-color: var(--bg-muted) !important; }
+  & .bg-gray-200 { background-color: var(--border) !important; }
+
+  /* Cards: softer surface, no light shadow */
+  & .card { background-color: var(--bg-card) !important; border-color: var(--border) !important; box-shadow: none !important; }
+  & .stat-tile { background-color: var(--bg-muted) !important; }
+
+  /* Borders */
+  & .border-gray-100, & .border-gray-200, & .border-gray-300 { border-color: var(--border) !important; }
+  & .divide-gray-100 > *, & .divide-gray-200 > * { border-color: var(--border) !important; }
+
+  /* Text */
+  & .text-gray-900, & .text-gray-800 { color: var(--text-primary) !important; }
+  & .text-gray-700, & .text-gray-600 { color: var(--text-secondary) !important; }
+  & .text-gray-500, & .text-gray-400, & .text-gray-300 { color: var(--text-muted) !important; }
+
+  /* Hovers */
+  & .hover\:bg-gray-50:hover, & .hover\:bg-gray-100:hover { background-color: var(--border) !important; }
+
+  /* Colored tints → translucent dark versions (covers /30 /40 /50 /60 /70 too) */
+  & [class*="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.14) !important; }
+  & [class*="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.22) !important; }
+  & [class*="bg-violet-50"] { background-color: rgba(139, 92, 246, 0.14) !important; }
+  & [class*="bg-violet-100"] { background-color: rgba(139, 92, 246, 0.22) !important; }
+  & [class*="bg-emerald-50"], & [class*="bg-green-50"] { background-color: rgba(16, 185, 129, 0.14) !important; }
+  & [class*="bg-emerald-100"], & [class*="bg-green-100"] { background-color: rgba(16, 185, 129, 0.20) !important; }
+  & [class*="bg-red-50"], & [class*="bg-rose-50"] { background-color: rgba(239, 68, 68, 0.14) !important; }
+  & [class*="bg-red-100"], & [class*="bg-rose-100"] { background-color: rgba(239, 68, 68, 0.20) !important; }
+  & [class*="bg-amber-50"], & [class*="bg-yellow-50"], & [class*="bg-orange-50"] { background-color: rgba(245, 158, 11, 0.13) !important; }
+  & [class*="bg-amber-100"], & [class*="bg-yellow-100"], & [class*="bg-orange-100"] { background-color: rgba(245, 158, 11, 0.20) !important; }
+  & [class*="bg-blue-50"], & [class*="bg-cyan-50"], & [class*="bg-teal-50"] { background-color: rgba(59, 130, 246, 0.14) !important; }
+  & [class*="bg-blue-100"], & [class*="bg-cyan-100"], & [class*="bg-teal-100"] { background-color: rgba(59, 130, 246, 0.20) !important; }
+
+  /* Inputs */
+  & .input, & input, & select, & textarea { background-color: var(--bg-muted) !important; border-color: var(--border) !important; color: var(--text-primary) !important; }
+
+  /* Keep colored TEXT readable on dark — lighten the deep -700/-800 text shades */
+  & .text-indigo-700, & .text-indigo-800 { color: #a5b4fc !important; }
+  & .text-emerald-700, & .text-green-700, & .text-emerald-800 { color: #6ee7b7 !important; }
+  & .text-red-600, & .text-red-700 { color: #fca5a5 !important; }
+  & .text-amber-700, & .text-amber-800, & .text-yellow-800 { color: #fcd34d !important; }
+  & .text-violet-700 { color: #c4b5fd !important; }
+}
 
 html,
 body {
