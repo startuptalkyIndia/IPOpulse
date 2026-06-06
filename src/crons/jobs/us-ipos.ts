@@ -31,48 +31,60 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
-async function fetchEdgarS1s(): Promise<EdgarFiling[]> {
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000)
-    .toISOString()
-    .slice(0, 10);
+async function fetchEdgarS1s(): Promise<Array<EdgarFiling & { symbol?: string }>> {
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
   const today = new Date().toISOString().slice(0, 10);
 
-  // EDGAR full-text search: S-1 initial filings in last 90 days
-  const url =
-    `https://efts.sec.gov/LATEST/search-index?q=%22S-1%22&dateRange=custom` +
-    `&startdt=${ninetyDaysAgo}&enddt=${today}&forms=S-1&hits.hits._source=period_of_report,entity_name,file_num,period_of_report,form_type&hits.hits.total.value=true&hits.hits.highlight=&_source=period_of_report,entity_name,file_num,period_of_report,form_type&hits.hits.fields=file_date,entity_name,file_num,period_of_report,form_type,accession_no&category=form-type&hits.hits.total.relation=eq`;
-
-  // Simpler endpoint that's well-documented:
-  const searchUrl = `https://efts.sec.gov/LATEST/search-index?q=%22prospectus%22&forms=S-1&dateRange=custom&startdt=${ninetyDaysAgo}&enddt=${today}`;
-
+  // EDGAR full-text search for S-1 IPO filings in the window.
   const resp = await fetch(
     `https://efts.sec.gov/LATEST/search-index?q=%22initial+public+offering%22&forms=S-1&dateRange=custom&startdt=${ninetyDaysAgo}&enddt=${today}`,
-    { headers: { "User-Agent": "IPOpulse ipopulse@talkytools.com" }, signal: AbortSignal.timeout(15000) }
+    { headers: { "User-Agent": "IPOpulse research@ipopulse.com" }, signal: AbortSignal.timeout(15000) },
   );
   if (!resp.ok) throw new Error(`EDGAR search failed: ${resp.status}`);
 
   const data = (await resp.json()) as {
     hits?: {
       hits?: Array<{
-        _source?: { entity_name?: string; file_date?: string; accession_no?: string };
-        fields?: { entity_name?: string[]; file_date?: string[]; accession_no?: string[] };
+        _id?: string; // "accession:file.htm"
+        _source?: {
+          display_names?: string[];   // ["Company Name  (TICKER)  (CIK 0000...)"]
+          file_date?: string;
+          adsh?: string;              // "0001213900-26-058915"
+          ciks?: string[];
+        };
       }>;
     };
   };
 
-  return (data.hits?.hits ?? []).map((h) => {
+  const seen = new Set<string>();
+  const out: Array<EdgarFiling & { symbol?: string }> = [];
+
+  for (const h of data.hits?.hits ?? []) {
     const src = h._source ?? {};
-    const fields = h.fields ?? {};
-    const name = (fields.entity_name?.[0] ?? src.entity_name ?? "").trim();
-    const filed = (fields.file_date?.[0] ?? src.file_date ?? "").slice(0, 10);
-    const accNo = (fields.accession_no?.[0] ?? src.accession_no ?? "").replace(/-/g, "");
-    const cik = accNo.slice(0, 10).replace(/^0+/, "");
-    return { entityName: name, cik, filedDate: filed, accessionNo: accNo };
-  }).filter((f) => f.entityName && f.filedDate);
+    const display = src.display_names?.[0] ?? "";
+    if (!display) continue;
+
+    // Parse "Company Name  (TICKER)  (CIK 0000123)"
+    const name = display.split("(")[0].trim();
+    if (!name) continue;
+    const tickerMatch = display.match(/\(([A-Z]{1,6})\)/);
+    const symbol = tickerMatch ? tickerMatch[1] : undefined;
+    const cik = (src.ciks?.[0] ?? "").replace(/^0+/, "");
+    const filed = (src.file_date ?? "").slice(0, 10);
+    const accessionNo = (src.adsh ?? "").replace(/-/g, "");
+
+    // Dedup by company (one S-1 has many file hits)
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    out.push({ entityName: name, cik, filedDate: filed, accessionNo, symbol });
+  }
+  return out;
 }
 
 export async function ingestUsIpos(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
-  let filings: EdgarFiling[] = [];
+  let filings: Array<EdgarFiling & { symbol?: string }> = [];
   try {
     filings = await fetchEdgarS1s();
   } catch (err) {
@@ -86,19 +98,22 @@ export async function ingestUsIpos(): Promise<{ rowsIn: number; rowsError?: numb
   for (const f of filings.slice(0, 100)) {
     try {
       const baseSlug = slugify(f.entityName) || `us-ipo-${f.cik}`;
-      const s1Url = f.accessionNo
-        ? `https://www.sec.gov/Archives/edgar/data/${f.cik}/${f.accessionNo.replace(/(\d{10})(\d{18})/, "$1-$2-").replace(/-(\d{4})$/, "-$1.txt")}`
+      // EDGAR filing-index URL (reliable, human-browsable)
+      const s1Url = f.accessionNo && f.cik
+        ? `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.cik}&type=S-1&dateb=&owner=include&count=10`
         : null;
 
       await prisma.usIpo.upsert({
         where: { slug: baseSlug },
         update: {
           filedDate: f.filedDate ? new Date(f.filedDate) : null,
+          ...(f.symbol && { symbol: f.symbol }),
           s1Url,
         },
         create: {
           companyName: f.entityName,
           slug: baseSlug,
+          symbol: f.symbol ?? null,
           filedDate: f.filedDate ? new Date(f.filedDate) : null,
           s1Url,
           status: "upcoming",
