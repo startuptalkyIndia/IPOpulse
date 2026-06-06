@@ -313,3 +313,31 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 - **Prefer the right agent** for the job (deploy, security, health, etc.) over doing everything inline.
 
 **Never cut these to save tokens:** reading the real source (no guessing from snippets), verification (run the test / fetch the real URL), research-before-planning, and accuracy. If a shortcut skips work needed to be *right*, don't take it.
+
+---
+
+## State as of 2026-06-06 (post Pass 2)
+
+**Live:** No (pre-launch)
+**Compliance score:** 88/100
+**Last commit:** `588c84d` 2026-06-06 21:41 IST — Stage 5 perf + SEO
+**Tests:** 8 spec files
+**TS errors:** 0
+
+**Today's major work (Pass 2):**
+- Stage 5: perf + SEO hardening (DB indexes, JSON-LD, OG, sitemap)
+- Health endpoint upgraded to enumerate AI/email/payment deps (not bare `status:ok`)
+- DPDP compliance endpoint added
+- 41 commits in the last 7 days (highest velocity of all projects)
+
+**Known gaps / vendor blockers:**
+- Zerodha Kite Connect subscription (₹500/mo) — not yet active; live prices unavailable
+- WhatsApp Channel CTA banner pending
+- Free vs Premium tier feature gate not yet built
+
+**Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
+
+**Deploy:** `/home/ubuntu/IPOpulse` — `docker compose up -d --build`
+**SSH key:** `~/Downloads/Other/linkbuilder-deploy.pem`
+
+**Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
