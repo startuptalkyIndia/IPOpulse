@@ -247,3 +247,9 @@ Built the missing cron job that checks user alert conditions and fires emails vi
 ## 2026-06-06: Parity fix — talkytools-parity agent
 Added /about and/or /contact pages using DIYPR shell + product-specific copy. Rewrote bare health endpoints to canonical 3-state shape where needed (Boxhub, ToolsTalky, BankTalky). No deploy.
   Updated: IPOpulse
+
+---
+## 2026-06-06: Build fix — refactor agent
+Root cause: Pass 1 perf agent put `nextDynamic(..., {ssr:false})` directly in Server Component pages — Next 16 server build rejects this.
+Fix: Extracted 6 Client Component loader files (GmpChartLoader, SubscriptionVelocityLoader, MonthlyChartLoader, FiiDiiChartLoader, PriceChartLoader, CompanyFinancialsLoader). Pages now import from loaders. 0 TS errors in src/.
+Files changed: 4 pages + 6 new loaders. Commit: 0f2861c.
