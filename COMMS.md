@@ -3,6 +3,21 @@
 <!-- AUTO: last commit `5900cbd` — chore: platform-standards housekeeping — CLAUDE.md identity block + SESSION_LOCK gitignore + COMMS entry — 2026-06-06 05:12 IST -->
 ---
 
+## 2026-06-06 — health-check agent: /api/health honest dep check
+
+Replaced bare `{status:"ok"}` with canonical 3-state pattern (LESSON-039).
+Checks: db (SELECT 1 + latency), kite/anthropic/resend (env-presence).
+DB fail → 503; unconfigured → 200 degraded; all ok → 200 ok.
+File: `src/app/api/health/route.ts`
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | /api/health honest dep check | ✅ Done | db+kite+anthropic+resend checks |
+| 2 | TypeScript errors | pending tsc | |
+| 3 | Deployed to server | pending deploy | |
+
+---
+
 ## 2026-05-23 — WhatsApp Channel CTA Banner (Task 3)
 
 | # | Task | Status | Notes |

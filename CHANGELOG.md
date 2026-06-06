@@ -1,5 +1,11 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · fix: /api/health — enumerate deps with {ok|unconfigured|fail}
+- Replaced bare `{status:"ok"}` with canonical 3-state pattern.
+- Checks: db (SELECT 1 + latency), kite (env-presence), anthropic (env-presence), resend (env-presence).
+- DB fail → 503 unhealthy; unconfigured deps → 200 degraded; all ok → 200 ok.
+- Cache-Control: no-store added. LESSON-039 fix.
+
 ## 2026-05-30 · (sha ae76f32) fix(sec): patch HIGH axios vuln 1.15.2→1.16.1 — root cause: 4 axios advisories (NO_PROXY bypass + prototype-pollution header injection/DoS/MITM). Non-force `npm audit fix`, within ^1 semver, build green.
 
 ## 2026-05-25 · (sha 1b8cad9) fix(docker): use UID 1001 to avoid conflict with node user
