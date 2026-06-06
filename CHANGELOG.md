@@ -1,5 +1,11 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · feat(ai-budget): superadmin email exemption from ₹1.5K/month AI cap
+- Root cause gap: superadmin/founder emails were hitting the same budget cap as regular users.
+- Fix: `checkBudget()` does `prisma.user.findUnique` first; if email is in `AI_BUDGET_EXEMPT_EMAILS` env var, returns `{allowed:true, remaining:MAX_SAFE_INTEGER}` unconditionally.
+- Default exempt list: `shubham@startuptalky.com,superadmin@startuptalky.com`. Override via env.
+- Note: pre-existing TS errors in this file (`aiSpendLog` not in Prisma schema) are unrelated.
+
 ## 2026-06-06 · fix: /api/health — enumerate deps with {ok|unconfigured|fail}
 - Replaced bare `{status:"ok"}` with canonical 3-state pattern.
 - Checks: db (SELECT 1 + latency), kite (env-presence), anthropic (env-presence), resend (env-presence).
