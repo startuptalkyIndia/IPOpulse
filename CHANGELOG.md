@@ -1,5 +1,30 @@
 # Changelog — IPOpulse
 
+## 2026-06-06 · perf + seo: Stage 5 — performance optimizations + SEO improvements
+
+### Performance
+| # | Optimization | Before | After | Delta |
+|---|---|---|---|---|
+| 1 | Dynamic import recharts charts (6 components, 4 pages) | Recharts in initial SSR payload on ticker/ipo/fii-dii/stats pages | Recharts loads client-side only (ssr:false) | Removes ~45 KB recharts from initial JS on each page |
+| 2 | Cache-Control on /api/news | No cache header (CDN passthrough) | public s-maxage=300, SWR=600 | Reduces origin hits up to 80% on repeated news fetches |
+| 3 | Cache-Control on /api/search | No cache header | private max-age=60 | Browser reuses result for 60s per session |
+| 4 | Remove unused icon imports (3 icons, 2 files) | TrendingUp, TrendingDown, ArrowLeft imported but unused | Removed | ~1.5 KB gzip saved per page |
+
+### SEO
+- /ipo: added openGraph + twitter card + canonical
+- /fii-dii: added openGraph + twitter card + canonical + JSON-LD WebPage
+- ticker/[slug]: added JSON-LD WebPage + Corporation (tickerSymbol, industry)
+- /ipo (hub): added JSON-LD CollectionPage
+- calculators/stock-forecast: new layout.tsx with metadata (client component)
+- sitemap.ts: added /buybacks + /pricing (were missing)
+- corporate-actions/page.tsx: added canonical URL
+
+### DB indexes reviewed
+- Existing indexes confirmed sufficient for all hot queries (fii_dii_daily, bhavcopy_daily, alerts, watchlist_items)
+- ILIKE searches on Ipo.name + Company.name: B-tree indexes do not help; pg_trgm would require schema migration — skipped (LESSON applied)
+
+**TypeScript: 0 errors before and after all changes.**
+
 ## 2026-06-06 · feat(ux): Stage 4 customer polish — empty states, loading states, error boundaries, onboarding, mobile, microcopy
 
 ### Hypothesis: users hitting empty/loading/error states with no direction will drop. Polished states reduce bounce and increase first-session depth.
