@@ -27,6 +27,7 @@ import { checkIpoAlerts } from "./jobs/check-alerts";
 import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals";
 import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
 import { backfillIpoSymbols } from "./jobs/ipo-symbol-backfill";
+import { computeSignals } from "./jobs/compute-signals";
 
 let started = false;
 
@@ -86,6 +87,13 @@ export function startScheduler() {
   cron.schedule("0 5 * * 0", async () => {
     const result = await runIngestion("screener_deep", ingestScreenerDeepFundamentals);
     console.log(`[cron screener_deep] ${result.ok ? "ok" : "failed"} upserted=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // Compute Signals — precompute technicals + quality flags into Company columns
+  // Nightly 11:30 PM IST (after bhavcopy 7 PM + screener fundamentals 10:30 PM)
+  cron.schedule("30 23 * * 1-5", async () => {
+    const result = await runIngestion("compute_signals", computeSignals);
+    console.log(`[cron compute_signals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // BSE corporate announcements — every 30 min during market hours, hourly outside
@@ -233,4 +241,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   yahoo_fundamentals: runYahooFundamentals,
   screener_deep: ingestScreenerDeepFundamentals,
   ipo_symbol_backfill: backfillIpoSymbols,
+  compute_signals: computeSignals,
 };

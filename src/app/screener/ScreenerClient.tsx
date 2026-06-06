@@ -26,6 +26,14 @@ export interface ScreenerCompany {
   eps?: number | null;
   revYoy?: number | null;
   profitYoy?: number | null;
+  rsi?: number | null;
+  weinsteinStage?: number | null;
+  ret1m?: number | null;
+  ret1y?: number | null;
+  roeConsistentYrs?: number | null;
+  isMoat?: boolean;
+  moatNote?: string | null;
+  cyclicalPeak?: boolean;
 }
 
 const MCAP_BANDS: Array<{ key: string; label: string; min: number | null; max: number | null }> = [
@@ -57,6 +65,11 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   const [debtMax, setDebtMax] = useState<string>("");
   const [divMin, setDivMin] = useState<string>("");
   const [requireFundamentals, setRequireFundamentals] = useState(false);
+
+  // Signal filters (from Stock Analysis merge)
+  const [moatOnly, setMoatOnly] = useState(false);
+  const [uptrendOnly, setUptrendOnly] = useState(false);       // Weinstein stage 2
+  const [compounderOnly, setCompounderOnly] = useState(false); // ROE >=15% for 4+ yrs
 
   const [sortBy, setSortBy] = useState<SortKey>("marketCap");
 
@@ -97,6 +110,10 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         if (divMinN != null) {
           if (c.dividendYield == null || c.dividendYield < divMinN) return false;
         }
+        // Signal filters
+        if (moatOnly && !c.isMoat) return false;
+        if (uptrendOnly && c.weinsteinStage !== 2) return false;
+        if (compounderOnly && (c.roeConsistentYrs ?? 0) < 4) return false;
         return true;
       });
 
@@ -122,7 +139,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
       return (sortBy === "pe" || sortBy === "chg1d_asc" || sortBy === "near52wLow") ? av - bv : bv - av;
     };
     return result.sort(compare).slice(0, 200);
-  }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, sortBy]);
+  }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy]);
 
   function reset() {
     setSearch("");
@@ -184,6 +201,28 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
               <div className="text-[11px] opacity-70 mt-0.5">{s.sub}</div>
             </button>
           ))}
+        </div>
+
+        {/* Signal toggles (Stock Analysis merge) */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          <button
+            onClick={() => setMoatOnly(v => !v)}
+            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition ${moatOnly ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-white border-gray-200 text-gray-600 hover:bg-amber-50"}`}
+          >
+            🏰 Moat companies only
+          </button>
+          <button
+            onClick={() => setUptrendOnly(v => !v)}
+            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition ${uptrendOnly ? "bg-emerald-100 border-emerald-300 text-emerald-800" : "bg-white border-gray-200 text-gray-600 hover:bg-emerald-50"}`}
+          >
+            📈 In uptrend (Stage 2)
+          </button>
+          <button
+            onClick={() => setCompounderOnly(v => !v)}
+            className={`text-xs px-3 py-1.5 rounded-full border font-medium transition ${compounderOnly ? "bg-indigo-100 border-indigo-300 text-indigo-800" : "bg-white border-gray-200 text-gray-600 hover:bg-indigo-50"}`}
+          >
+            ✓ Consistent compounder (ROE ≥15% × 4yr)
+          </button>
         </div>
       </div>
 
@@ -315,16 +354,23 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                 <th className="px-3 py-3 text-right">P/E</th>
                 <th className="px-3 py-3 text-right">ROE %</th>
                 <th className="px-3 py-3 text-right" title="Year-on-year revenue growth from annual financials">Rev YoY</th>
-                <th className="px-3 py-3 text-right" title="Year-on-year net profit growth from annual financials">Profit YoY</th>
+                <th className="px-3 py-3 text-right" title="1-year price return">1Y</th>
+                <th className="px-3 py-3 text-center" title="Weinstein stage: 2=uptrend, 4=downtrend">Stage</th>
+                <th className="px-3 py-3 text-right" title="14-period Relative Strength Index">RSI</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((c) => (
                 <tr key={c.slug} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-3 py-2.5 text-sm">
-                    <Link href={`/ticker/${c.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">
-                      {c.name}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link href={`/ticker/${c.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                        {c.name}
+                      </Link>
+                      {c.isMoat && <span title={c.moatNote ?? "Economic moat"} className="text-amber-500 text-xs">🏰</span>}
+                      {c.cyclicalPeak && <span title="Cyclical-peak risk" className="text-xs">🌀</span>}
+                      {(c.roeConsistentYrs ?? 0) >= 4 && <span title={`ROE ≥15% for ${c.roeConsistentYrs} years — consistent compounder`} className="text-emerald-600 text-xs">✓</span>}
+                    </div>
                     <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{c.symbol ?? "—"}</div>
                   </td>
                   <td className="px-3 py-2.5 text-xs text-gray-600">{c.sector ?? "—"}</td>
@@ -362,15 +408,30 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                     {c.revYoy != null ? `${c.revYoy >= 0 ? "+" : ""}${c.revYoy.toFixed(1)}%` : "—"}
                   </td>
                   <td className={`px-3 py-2.5 text-xs text-right tabular-nums ${
-                    c.profitYoy != null ? (c.profitYoy >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium") : "text-gray-400"
+                    c.ret1y != null ? (c.ret1y >= 0 ? "text-emerald-600 font-medium" : "text-red-600 font-medium") : "text-gray-400"
                   }`}>
-                    {c.profitYoy != null ? `${c.profitYoy >= 0 ? "+" : ""}${c.profitYoy.toFixed(1)}%` : "—"}
+                    {c.ret1y != null ? `${c.ret1y >= 0 ? "+" : ""}${c.ret1y.toFixed(0)}%` : "—"}
+                  </td>
+                  <td className="px-3 py-2.5 text-center">
+                    {c.weinsteinStage != null ? (
+                      <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        c.weinsteinStage === 2 ? "bg-emerald-100 text-emerald-700" :
+                        c.weinsteinStage === 1 ? "bg-blue-100 text-blue-700" :
+                        c.weinsteinStage === 3 ? "bg-amber-100 text-amber-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>{c.weinsteinStage}</span>
+                    ) : <span className="text-gray-300 text-xs">—</span>}
+                  </td>
+                  <td className={`px-3 py-2.5 text-xs text-right tabular-nums ${
+                    c.rsi == null ? "text-gray-400" : c.rsi >= 70 ? "text-red-600" : c.rsi <= 30 ? "text-emerald-600" : "text-gray-700"
+                  }`}>
+                    {c.rsi != null ? c.rsi.toFixed(0) : "—"}
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="px-3 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={12} className="px-3 py-12 text-center text-sm text-gray-500">
                     No companies match these filters. Reset to see all.
                   </td>
                 </tr>

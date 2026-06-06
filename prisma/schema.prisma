@@ -188,6 +188,24 @@ model Company {
   netMargin        Decimal? @map("net_margin") @db.Decimal(8, 4)
   fundamentalsAt   DateTime? @map("fundamentals_at")
 
+  // Precomputed signals (nightly compute-signals cron) — powers fast table columns + filters
+  rsi               Decimal? @db.Decimal(6, 2)
+  weinsteinStage    Int?     @map("weinstein_stage")        // 1-4
+  trendTemplate     Int?     @map("trend_template")         // 0-7 Minervini
+  relStrength       Decimal? @map("rel_strength") @db.Decimal(8, 2)  // vs Nifty 3M (pp)
+  ret1m             Decimal? @map("ret_1m") @db.Decimal(8, 2)
+  ret3m             Decimal? @map("ret_3m") @db.Decimal(8, 2)
+  ret6m             Decimal? @map("ret_6m") @db.Decimal(8, 2)
+  ret1y             Decimal? @map("ret_1y") @db.Decimal(8, 2)
+  roeConsistentYrs  Int?     @map("roe_consistent_yrs")     // # years ROE >= 15%
+  revCagr           Decimal? @map("rev_cagr") @db.Decimal(8, 2)
+  cashBacked        String?  @map("cash_backed")            // strong | ok | weak
+  isMoat            Boolean  @default(false) @map("is_moat")
+  moatNote          String?  @map("moat_note")
+  isCyclical        Boolean  @default(false) @map("is_cyclical")
+  cyclicalPeak      Boolean  @default(false) @map("cyclical_peak")
+  signalsAt         DateTime? @map("signals_at")
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

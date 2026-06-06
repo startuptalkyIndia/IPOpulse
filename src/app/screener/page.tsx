@@ -19,6 +19,8 @@ export default async function ScreenerPage() {
       nseSymbol: true, bseCode: true, marketCap: true, isSme: true,
       peRatio: true, pbRatio: true, roePercent: true, debtToEquity: true,
       dividendYield: true, eps: true,
+      rsi: true, weinsteinStage: true, ret1m: true, ret1y: true,
+      roeConsistentYrs: true, isMoat: true, moatNote: true, cyclicalPeak: true,
     },
     orderBy: { marketCap: "desc" },
     take: 2000,
@@ -113,6 +115,14 @@ export default async function ScreenerPage() {
       eps: c.eps ? Number(c.eps) : null,
       revYoy: yoyMap.get(c.id)?.revYoy ?? null,
       profitYoy: yoyMap.get(c.id)?.profitYoy ?? null,
+      rsi: c.rsi != null ? Number(c.rsi) : null,
+      weinsteinStage: c.weinsteinStage ?? null,
+      ret1m: c.ret1m != null ? Number(c.ret1m) : null,
+      ret1y: c.ret1y != null ? Number(c.ret1y) : null,
+      roeConsistentYrs: c.roeConsistentYrs ?? null,
+      isMoat: c.isMoat ?? false,
+      moatNote: c.moatNote ?? null,
+      cyclicalPeak: c.cyclicalPeak ?? false,
     };
   });
 

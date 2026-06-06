@@ -56,6 +56,8 @@ export default async function BestStocksCategoryPage({ params }: Props) {
     pbRatio: Prisma.Decimal | null; roePercent: Prisma.Decimal | null;
     dividendYield: Prisma.Decimal | null; eps: Prisma.Decimal | null;
     ltp: number | null; volume: number | null;
+    isMoat?: boolean; moatNote?: string | null;
+    weinsteinStage?: number | null; roeConsistentYrs?: number | null;
   };
 
   let filtered: StockRow[] = [];
@@ -129,6 +131,7 @@ export default async function BestStocksCategoryPage({ params }: Props) {
       select: {
         id: true, slug: true, name: true, nseSymbol: true, sector: true, industry: true,
         marketCap: true, peRatio: true, pbRatio: true, roePercent: true, dividendYield: true, eps: true,
+        isMoat: true, moatNote: true, weinsteinStage: true, roeConsistentYrs: true,
       },
     });
 
@@ -297,9 +300,13 @@ export default async function BestStocksCategoryPage({ params }: Props) {
                   <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-3 py-3 text-xs text-gray-400">{i + 1}</td>
                     <td className="px-3 py-3 text-sm">
-                      <Link href={`/ticker/${c.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">
-                        {c.name}
-                      </Link>
+                      <div className="flex items-center gap-1.5">
+                        <Link href={`/ticker/${c.slug}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                          {c.name}
+                        </Link>
+                        {c.isMoat && <span title={c.moatNote ?? "Economic moat"} className="text-amber-500 text-xs">🏰</span>}
+                        {(c.roeConsistentYrs ?? 0) >= 4 && <span title={`ROE ≥15% for ${c.roeConsistentYrs} years`} className="text-emerald-600 text-xs">✓</span>}
+                      </div>
                       <div className="text-[11px] text-gray-400 font-mono mt-0.5">{c.nseSymbol ?? "—"}</div>
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-600">{c.sector ?? "—"}</td>
