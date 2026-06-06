@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, PieChart } from "lucide-react";
+import { PieChart } from "lucide-react";
 import { DataDisclaimer } from "@/components/DataDisclaimer";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 

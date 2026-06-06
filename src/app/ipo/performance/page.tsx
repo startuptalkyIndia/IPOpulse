@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, TrendingDown, Award, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Award, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Sparkline } from "@/components/Sparkline";
 
