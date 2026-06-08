@@ -341,3 +341,15 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 **SSH key:** `~/Downloads/Other/linkbuilder-deploy.pem`
 
 **Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
+
+
+---
+
+## AI integration standard (platform-wide B.20)
+
+When adding ANY Claude AI call to this project: use the `runClaude()` helper from `lib/ai/claudeRunner.ts` (CLI primary, API fallback). Only use `runClaudeCustomer()` from `lib/ai/claudeApiOnly.ts` if the call is customer-facing AND you need per-customer billing isolation.
+
+Standard: founder Claude Pro subscription is the default path. Per-token API billing is the exception, not the rule.
+
+See `_shared/AGENT_OPERATING_STANDARDS.md` B.20 for the full standard.
+
