@@ -30,6 +30,7 @@ import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
 import { backfillIpoSymbols } from "./jobs/ipo-symbol-backfill";
 import { computeSignals } from "./jobs/compute-signals";
 import { runCrawlerHealth } from "./jobs/crawler-health";
+import { trackGmp } from "./jobs/gmp-tracker";
 
 let started = false;
 
@@ -51,6 +52,12 @@ export function startScheduler() {
   cron.schedule("15 19 * * 1-5", async () => {
     const result = await runIngestion("nse_fii_dii", ingestNseFiiDii);
     console.log(`[cron nse_fii_dii] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // GMP tracker — every 4 hours (IPO Watch updates a few times a day)
+  cron.schedule("20 */4 * * *", async () => {
+    const result = await runIngestion("gmp_tracker", trackGmp);
+    console.log(`[cron gmp_tracker] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // NSE IPOs — every 2 hours (primary source; BSE page is now an Akamai-blocked SPA)
@@ -215,7 +222,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -249,4 +256,5 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   ipo_symbol_backfill: backfillIpoSymbols,
   compute_signals: computeSignals,
   crawler_health: runCrawlerHealth,
+  gmp_tracker: trackGmp,
 };

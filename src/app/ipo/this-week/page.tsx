@@ -26,22 +26,22 @@ export default async function ThisWeekPage() {
   const [openingThisWeek, closingThisWeek, listingThisWeek, openingNext14] = await Promise.all([
     prisma.ipo.findMany({
       where: { openDate: { gte: weekStart, lte: weekEnd } },
-      include: { listing: true, drhpAnalysis: true },
+      include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } },
       orderBy: { openDate: "asc" },
     }),
     prisma.ipo.findMany({
       where: { closeDate: { gte: weekStart, lte: weekEnd }, status: { in: ["live", "upcoming"] } },
-      include: { listing: true, drhpAnalysis: true },
+      include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } },
       orderBy: { closeDate: "asc" },
     }),
     prisma.ipo.findMany({
       where: { listingDate: { gte: weekStart, lte: weekEnd } },
-      include: { listing: true, drhpAnalysis: true },
+      include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } },
       orderBy: { listingDate: "asc" },
     }),
     prisma.ipo.findMany({
       where: { openDate: { gt: weekEnd, lte: next14 } },
-      include: { listing: true, drhpAnalysis: true },
+      include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } },
       orderBy: { openDate: "asc" },
     }),
   ]);

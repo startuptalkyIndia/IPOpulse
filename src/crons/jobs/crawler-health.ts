@@ -117,6 +117,7 @@ const JOB_LIVENESS: Array<{ job: string; maxAgeHours: number }> = [
   { job: "nse_fii_dii", maxAgeHours: 80 },         // weekdays
   { job: "us_ipos", maxAgeHours: 24 },             // every 6h
   { job: "screener_deep", maxAgeHours: 192 },      // weekly (Sun) + 1d slack
+  { job: "gmp_tracker", maxAgeHours: 12 },         // every 4h (throws on parse failure)
 ];
 
 async function checkJobLiveness(): Promise<Result[]> {

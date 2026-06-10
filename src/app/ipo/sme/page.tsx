@@ -14,10 +14,10 @@ export const revalidate = 60;
 
 export default async function SmeIpoPage() {
   const [live, upcoming, closed, listed] = await Promise.all([
-    prisma.ipo.findMany({ where: { type: "sme", status: "live" }, orderBy: { closeDate: "asc" }, include: { listing: true, drhpAnalysis: true } }),
-    prisma.ipo.findMany({ where: { type: "sme", status: "upcoming" }, orderBy: { openDate: "asc" }, include: { listing: true, drhpAnalysis: true } }),
-    prisma.ipo.findMany({ where: { type: "sme", status: "closed" }, orderBy: { closeDate: "desc" }, include: { listing: true, drhpAnalysis: true } }),
-    prisma.ipo.findMany({ where: { type: "sme", status: "listed" }, orderBy: { listingDate: "desc" }, include: { listing: true, drhpAnalysis: true }, take: 20 }),
+    prisma.ipo.findMany({ where: { type: "sme", status: "live" }, orderBy: { closeDate: "asc" }, include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } } }),
+    prisma.ipo.findMany({ where: { type: "sme", status: "upcoming" }, orderBy: { openDate: "asc" }, include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } } }),
+    prisma.ipo.findMany({ where: { type: "sme", status: "closed" }, orderBy: { closeDate: "desc" }, include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } } }),
+    prisma.ipo.findMany({ where: { type: "sme", status: "listed" }, orderBy: { listingDate: "desc" }, include: { listing: true, drhpAnalysis: true, gmpEntries: { orderBy: { date: "desc" }, take: 1 } }, take: 20 }),
   ]);
 
   return (

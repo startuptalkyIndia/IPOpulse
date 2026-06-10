@@ -1,12 +1,17 @@
 import Link from "next/link";
-import type { Ipo, IpoListing, IpoDrhpAnalysis } from "@prisma/client";
+import type { Ipo, IpoListing, IpoDrhpAnalysis, IpoGmp } from "@prisma/client";
 import { formatPriceBand, formatIssueSize, formatDateRange, formatDate, computeIpoStatus } from "@/lib/ipo";
 import { IpoStatusBadge } from "./IpoStatusBadge";
 import { RiskScoreBadge } from "./RiskScoreBadge";
 import { TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 
-type IpoWithListing = Ipo & { listing?: IpoListing | null; drhpAnalysis?: IpoDrhpAnalysis | null };
+type IpoWithListing = Ipo & {
+  listing?: IpoListing | null;
+  drhpAnalysis?: IpoDrhpAnalysis | null;
+  /** latest GMP entry first (pass `take: 1, orderBy: { date: "desc" }`) */
+  gmpEntries?: IpoGmp[];
+};
 
 interface Props {
   ipos: IpoWithListing[];
@@ -34,6 +39,8 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
   // Show the Risk column only when at least one row has an analysis ready —
   // avoids an empty column on lists that pre-date DRHP intelligence.
   const showRisk = ipos.some((i) => i.drhpAnalysis?.status === "ready" && i.drhpAnalysis.riskScore != null);
+  // GMP column only for non-listed lists where at least one row has data
+  const showGmp = variant !== "listed" && ipos.some((i) => i.gmpEntries && i.gmpEntries.length > 0);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -51,6 +58,9 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
               {variant === "listed" ? (
                 <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-right">List gain</th>
               ) : null}
+              {showGmp ? (
+                <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-right" title="Grey Market Premium — unofficial, indicative only">GMP</th>
+              ) : null}
               {showRisk ? (
                 <th className="px-3 py-3 font-medium text-gray-500 text-xs uppercase text-left">Risk</th>
               ) : null}
@@ -66,6 +76,9 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
               const gainClass =
                 gain == null ? "text-gray-400" : gain > 0 ? "text-green-600" : gain < 0 ? "text-red-600" : "text-gray-600";
               const riskReady = ipo.drhpAnalysis?.status === "ready" && ipo.drhpAnalysis.riskScore != null;
+              const gmp = ipo.gmpEntries?.[0] ? Number(ipo.gmpEntries[0].gmp) : null;
+              const gmpPct = gmp != null && ipo.priceBandHigh ? (gmp / Number(ipo.priceBandHigh)) * 100 : null;
+              const gmpClass = gmp == null || gmp === 0 ? "text-gray-400" : gmp > 0 ? "text-green-600" : "text-red-600";
               return (
                 <tr key={ipo.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-3 py-3 text-sm">
@@ -89,6 +102,20 @@ export function IpoTable({ ipos, variant = "default", emptyText = "No IPOs here 
                   {variant === "listed" ? (
                     <td className={`px-3 py-3 text-sm text-right font-semibold tabular-nums ${gainClass}`}>
                       {gain == null ? "—" : `${gain > 0 ? "+" : ""}${gain.toFixed(2)}%`}
+                    </td>
+                  ) : null}
+                  {showGmp ? (
+                    <td className={`px-3 py-3 text-sm text-right font-semibold tabular-nums ${gmpClass}`}>
+                      {gmp == null ? "—" : (
+                        <>
+                          ₹{gmp.toFixed(0)}
+                          {gmpPct != null ? (
+                            <span className="block text-[11px] font-normal">
+                              {gmpPct > 0 ? "+" : ""}{gmpPct.toFixed(1)}%
+                            </span>
+                          ) : null}
+                        </>
+                      )}
                     </td>
                   ) : null}
                   {showRisk ? (
