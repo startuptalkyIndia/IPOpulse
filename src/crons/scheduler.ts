@@ -77,10 +77,12 @@ export function startScheduler() {
     }, { timezone: "Asia/Kolkata" });
   }
 
-  // Yahoo Fundamentals (deep sync) — Sunday 2:00 AM IST
-  // Fetches sharesOutstanding, ROE, D/E, margins for all NSE companies via yahoo-finance2
-  // ~45 min runtime for 2,300+ companies at 1 req/1.2s
-  cron.schedule("0 2 * * 0", async () => {
+  // Yahoo Fundamentals — NIGHTLY 2:00 AM IST (was Sunday-only).
+  // Incremental by design: only processes companies whose fundamentalsAt is
+  // older than 6 days, so most nights it touches a few hundred companies and
+  // the full universe rolls over weekly. Nightly scheduling means a single
+  // missed run no longer leaves fundamentals stale for a week.
+  cron.schedule("0 2 * * *", async () => {
     const result = await runIngestion("yahoo_fundamentals", runYahooFundamentals);
     console.log(`[cron yahoo_fundamentals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
@@ -106,15 +108,9 @@ export function startScheduler() {
     console.log(`[cron crawler_health] healthy=${result.rowsIn ?? 0} stale=${result.rowsError ?? 0} — ${result.notes ?? ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // BSE corporate announcements — every 30 min during market hours, hourly outside
-  cron.schedule("*/30 9-16 * * 1-5", async () => {
-    const result = await runIngestion("bse_announcements", ingestBseAnnouncements);
-    console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-  }, { timezone: "Asia/Kolkata" });
-  cron.schedule("0 17-21 * * *", async () => {
-    const result = await runIngestion("bse_announcements", ingestBseAnnouncements);
-    console.log(`[cron bse_announcements] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-  }, { timezone: "Asia/Kolkata" });
+  // BSE corporate announcements — UNSCHEDULED (api.bseindia.com is Akamai-blocked
+  // from cloud; 114 runs/week returned 0 rows). Job stays in availableJobs for
+  // manual trigger if BSE access is ever restored (e.g. via proxy).
 
   // Daily IPO digest email — 7:00 AM IST, weekdays only (no email on weekends)
   cron.schedule("0 7 * * 1-5", async () => {
@@ -167,11 +163,10 @@ export function startScheduler() {
     console.log(`[cron super_investor] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
-  // Screener fundamentals — Yahoo Finance quoteSummary, nightly at 10:30 PM IST
-  cron.schedule("30 22 * * 1-5", async () => {
-    const result = await runIngestion("screener_fundamentals", ingestScreenerFundamentals);
-    console.log(`[cron screener_fundamentals] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-  }, { timezone: "Asia/Kolkata" });
+  // screener_fundamentals — UNSCHEDULED (its Pass-1 Yahoo v7 batch API is
+  // 401-blocked: 7 runs/week produced 0 rows). Fundamentals now refresh via
+  // the nightly yahoo_fundamentals job (cookie-authenticated yahoo-finance2).
+  // Job stays in availableJobs for manual trigger.
 
   // NSE Index data — 4:00 PM (post-close) + 8:00 AM (pre-market, yesterday's close for reference)
   for (const sch of ["0 8 * * 1-5", "0 16 * * 1-5"]) {
@@ -220,7 +215,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(Sun 2AM), nse_fii_dii, nse_indices(2×daily), bse_announcements(30min), amfi_navs, daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {

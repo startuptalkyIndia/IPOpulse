@@ -32,9 +32,12 @@ interface Check {
 const CHECKS: Check[] = [
   { name: "EOD prices (bhavcopy)", cron: "nse_bhavcopy", maxAgeDays: 5, minRows: 1000,
     sql: `SELECT MAX(date) AS latest, COUNT(*) AS rows FROM bhavcopy_daily` },
-  // Fundamentals refresh weekly (yahoo_fundamentals, Sun) — allow 10d for weekend slack
-  { name: "Company fundamentals", cron: "yahoo_fundamentals", maxAgeDays: 10, minRows: 1000,
+  // Fundamentals refresh nightly (yahoo_fundamentals) — rolls full universe weekly
+  { name: "Company fundamentals", cron: "yahoo_fundamentals", maxAgeDays: 4, minRows: 1000,
     sql: `SELECT MAX(fundamentals_at) AS latest, COUNT(*) FILTER (WHERE fundamentals_at IS NOT NULL) AS rows FROM companies` },
+  // Deep financials scrape weekly (screener_deep, Sun) — allow 10d slack
+  { name: "Deep financials (Screener)", cron: "screener_deep", maxAgeDays: 10, minRows: 1000,
+    sql: `SELECT MAX(captured_at) AS latest, COUNT(*) AS rows FROM annual_financials` },
   { name: "Signals (RSI/stage/moat)", cron: "compute_signals", maxAgeDays: 5, minRows: 1000,
     sql: `SELECT MAX(signals_at) AS latest, COUNT(*) FILTER (WHERE signals_at IS NOT NULL) AS rows FROM companies` },
   { name: "Nifty indices", cron: "nse_indices", maxAgeDays: 5, minRows: 50,
@@ -98,26 +101,71 @@ async function pushAlert(title: string, body: string, priority: "high" | "defaul
   }
 }
 
+// ─── Layer 2: job liveness — did each scheduled cron actually RUN? ──────────
+// Data-freshness checks can't distinguish "endpoint broke" from "cron never
+// fired" (container crash, scheduler bug, stuck run). This checks the
+// ingestion_runs ledger for a successful run within the expected window.
+const JOB_LIVENESS: Array<{ job: string; maxAgeHours: number }> = [
+  { job: "nse_bhavcopy", maxAgeHours: 80 },        // 2×/weekday — 80h tolerates weekends
+  { job: "nse_ipos", maxAgeHours: 12 },            // every 2h
+  { job: "amfi_navs", maxAgeHours: 36 },           // daily
+  { job: "yahoo_fundamentals", maxAgeHours: 36 },  // nightly
+  { job: "compute_signals", maxAgeHours: 80 },     // weekdays
+  { job: "nse_bulk_block", maxAgeHours: 80 },      // weekdays
+  { job: "nse_insider", maxAgeHours: 80 },         // weekdays
+  { job: "nse_indices", maxAgeHours: 80 },         // weekdays
+  { job: "nse_fii_dii", maxAgeHours: 80 },         // weekdays
+  { job: "us_ipos", maxAgeHours: 24 },             // every 6h
+  { job: "screener_deep", maxAgeHours: 192 },      // weekly (Sun) + 1d slack
+];
+
+async function checkJobLiveness(): Promise<Result[]> {
+  const out: Result[] = [];
+  for (const j of JOB_LIVENESS) {
+    try {
+      const rows = await prisma.$queryRawUnsafe<Array<{ latest: Date | null }>>(
+        `SELECT MAX(started_at) AS latest FROM ingestion_runs WHERE job_name = '${j.job}' AND status = 'success'`,
+      );
+      const latest = rows[0]?.latest ?? null;
+      const ageHours = latest ? (Date.now() - new Date(latest).getTime()) / 3600000 : null;
+      if (ageHours === null) {
+        out.push({ name: `job:${j.job}`, cron: j.job, ok: false, reason: "never succeeded", ageDays: null, rows: 0 });
+      } else if (ageHours > j.maxAgeHours) {
+        out.push({ name: `job:${j.job}`, cron: j.job, ok: false, reason: `last success ${Math.round(ageHours)}h ago (>${j.maxAgeHours}h) — cron not firing or failing`, ageDays: null, rows: 0 });
+      } else {
+        out.push({ name: `job:${j.job}`, cron: j.job, ok: true, reason: `last success ${Math.round(ageHours)}h ago`, ageDays: null, rows: 0 });
+      }
+    } catch (e) {
+      out.push({ name: `job:${j.job}`, cron: j.job, ok: false, reason: `liveness check error: ${e instanceof Error ? e.message : "?"}`, ageDays: null, rows: 0 });
+    }
+  }
+  return out;
+}
+
 export async function runCrawlerHealth(): Promise<IngestionResult> {
-  const results = await Promise.all(CHECKS.map(runCheck));
+  const [dataResults, jobResults] = await Promise.all([
+    Promise.all(CHECKS.map(runCheck)),
+    checkJobLiveness(),
+  ]);
+  const results = [...dataResults, ...jobResults];
   const failures = results.filter((r) => !r.ok);
 
   // Log full report
-  console.log("[crawler-health] ── Data freshness report ──");
+  console.log("[crawler-health] ── Data freshness + job liveness report ──");
   for (const r of results) {
     console.log(`[crawler-health] ${r.ok ? "✅" : "🔴"} ${r.name}: ${r.reason}`);
   }
 
   if (failures.length > 0) {
-    const body = failures.map((f) => `🔴 ${f.name} (${f.cron}): ${f.reason}`).join("\n");
-    await pushAlert(`IPOpulse: ${failures.length} crawler(s) stale/empty`, body, "high");
+    const body = failures.map((f) => `🔴 ${f.name}: ${f.reason}`).join("\n");
+    await pushAlert(`IPOpulse: ${failures.length} crawler issue(s)`, body, "high");
   }
 
   return {
     rowsIn: results.length - failures.length, // # healthy
     rowsError: failures.length,
     notes: failures.length === 0
-      ? `All ${results.length} crawlers healthy`
-      : `${failures.length} STALE: ${failures.map((f) => f.name).join(", ")}`,
+      ? `All ${results.length} checks healthy (${dataResults.length} data + ${jobResults.length} liveness)`
+      : `${failures.length} ISSUES: ${failures.map((f) => f.name).join(", ")}`,
   };
 }

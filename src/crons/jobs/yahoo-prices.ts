@@ -1,80 +1,33 @@
 /**
- * Indian stock price ingestion via Yahoo Finance v8 chart API.
+ * Indian stock price ingestion via Yahoo Finance — intraday refresher.
  *
- * v7 quote API deprecated/blocked (returns 401). Switched to v8 chart API
- * which is per-symbol but works reliably from cloud IPs with no auth.
+ * History: v7 quote API → 401. Anonymous v8 chart API → now 429 rate-limited
+ * from cloud IPs. The only reliable path is the yahoo-finance2 client, which
+ * maintains a cookie + crumb session (same client that powers the weekly
+ * fundamentals sync, proven to work at 2,300-company scale).
  *
- * v8 URL: https://query2.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=1d
- * Returns: regularMarketPrice, open, high, low, volume via chart metadata
- *
- * Fetches top 500 companies concurrently (10 workers, 100ms delay between batches).
- * 500 symbols ≈ 60 seconds total. Runs every 15 min during market hours.
+ * Uses yahoo-finance2's quote() in batches of 50 symbols per call.
+ * Top 300 companies by market cap → ~6 API calls per run.
  *
  * Schedule: every 15 min, 9:10am – 3:50pm IST, Mon–Fri.
+ * Writes into bhavcopy_daily with source "yahoo" for today's date, so pages
+ * show near-live prices during market hours; the official NSE bhavcopy
+ * provides canonical EOD data after close.
  */
 
 import { prisma } from "@/lib/db";
 
-interface YahooV8Meta {
-  symbol: string;
-  regularMarketPrice: number;
-  regularMarketVolume: number;
-  regularMarketOpen: number;
-  regularMarketDayHigh: number;
-  regularMarketDayLow: number;
-  chartPreviousClose: number;
+interface YfQuote {
+  symbol?: string;
+  regularMarketPrice?: number;
+  regularMarketVolume?: number;
+  regularMarketOpen?: number;
+  regularMarketDayHigh?: number;
+  regularMarketDayLow?: number;
 }
 
-const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-
-/** Fetch a single symbol via Yahoo Finance v8 chart API */
-async function fetchV8Chart(yahooSymbol: string): Promise<YahooV8Meta | null> {
-  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?interval=1d&range=1d&includePrePost=false&events=`;
-  try {
-    const resp = await fetch(url, {
-      headers: { "User-Agent": UA, "Accept": "application/json" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json() as {
-      chart?: { result?: Array<{ meta?: Partial<YahooV8Meta> }> };
-    };
-    const meta = data.chart?.result?.[0]?.meta;
-    if (!meta?.regularMarketPrice) return null;
-    return {
-      symbol: meta.symbol ?? yahooSymbol,
-      regularMarketPrice: meta.regularMarketPrice,
-      regularMarketVolume: meta.regularMarketVolume ?? 0,
-      regularMarketOpen: meta.regularMarketOpen ?? meta.regularMarketPrice,
-      regularMarketDayHigh: meta.regularMarketDayHigh ?? meta.regularMarketPrice,
-      regularMarketDayLow: meta.regularMarketDayLow ?? meta.regularMarketPrice,
-      chartPreviousClose: meta.chartPreviousClose ?? meta.regularMarketPrice,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/** Fetch a batch of symbols concurrently (up to `concurrency` at a time) */
-async function fetchBatch(
-  symbols: string[],
-  concurrency = 10
-): Promise<Map<string, YahooV8Meta>> {
-  const result = new Map<string, YahooV8Meta>();
-  for (let i = 0; i < symbols.length; i += concurrency) {
-    const chunk = symbols.slice(i, i + concurrency);
-    const results = await Promise.all(chunk.map(fetchV8Chart));
-    for (let j = 0; j < chunk.length; j++) {
-      const meta = results[j];
-      if (meta) result.set(chunk[j], meta);
-    }
-    // Polite delay between batches
-    if (i + concurrency < symbols.length) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-  }
-  return result;
-}
+const BATCH_SIZE = 50;
+const BATCH_DELAY_MS = 800;
 
 function isMarketHours(): boolean {
   const now = new Date();
@@ -90,67 +43,89 @@ export async function ingestYahooPrices(): Promise<{ rowsIn: number; rowsError?:
     return { rowsIn: 0, notes: "Outside market hours — skipped." };
   }
 
-  // Top 500 active companies with NSE symbol
+  // Top 300 active companies with NSE symbol (most-viewed stocks)
   const companies = await prisma.company.findMany({
     where: { active: true, nseSymbol: { not: null } },
     orderBy: { marketCap: "desc" },
-    take: 500,
+    take: 300,
     select: { id: true, nseSymbol: true },
   });
-
   if (companies.length === 0) return { rowsIn: 0, notes: "No companies with NSE symbols." };
+
+  const symbolToId = new Map<string, number>();
+  const symbols: string[] = [];
+  for (const co of companies) {
+    const ySym = `${co.nseSymbol}.NS`;
+    symbols.push(ySym);
+    symbolToId.set(ySym, co.id);
+  }
+
+  // Cookie/crumb-authenticated client — survives where anonymous v8 gets 429
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const YahooFinance = require("yahoo-finance2").default;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yf: any = new YahooFinance();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const symbolToId = new Map<string, number>();
-  const yahooSymbols: string[] = [];
-  for (const co of companies) {
-    if (!co.nseSymbol) continue;
-    const ySym = `${co.nseSymbol}.NS`;
-    yahooSymbols.push(ySym);
-    symbolToId.set(ySym, co.id);
-  }
-
-  const quotes = await fetchBatch(yahooSymbols, 10);
-
   let upserted = 0;
   let errors = 0;
+  let fetched = 0;
 
-  for (const [ySym, meta] of quotes) {
-    const companyId = symbolToId.get(ySym);
-    if (!companyId) continue;
+  for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
+    const batch = symbols.slice(i, i + BATCH_SIZE);
+    let quotes: YfQuote[] = [];
     try {
-      await prisma.bhavcopyDaily.upsert({
-        where: { companyId_date_source: { companyId, date: today, source: "yahoo" } },
-        update: {
-          close: meta.regularMarketPrice,
-          open: meta.regularMarketOpen,
-          high: meta.regularMarketDayHigh,
-          low: meta.regularMarketDayLow,
-          volume: BigInt(Math.round(meta.regularMarketVolume)),
-        },
-        create: {
-          companyId,
-          date: today,
-          close: meta.regularMarketPrice,
-          open: meta.regularMarketOpen,
-          high: meta.regularMarketDayHigh,
-          low: meta.regularMarketDayLow,
-          volume: BigInt(Math.round(meta.regularMarketVolume)),
-          source: "yahoo",
-        },
-      });
-      upserted++;
+      const res = await yf.quote(batch);
+      quotes = Array.isArray(res) ? res : [res];
     } catch {
       errors++;
+      continue;
+    }
+    fetched += quotes.length;
+
+    for (const q of quotes) {
+      const sym = q.symbol ?? "";
+      const companyId = symbolToId.get(sym);
+      if (!companyId || q.regularMarketPrice == null) continue;
+      try {
+        const price = q.regularMarketPrice;
+        await prisma.bhavcopyDaily.upsert({
+          where: { companyId_date_source: { companyId, date: today, source: "yahoo" } },
+          update: {
+            close: price,
+            open: q.regularMarketOpen ?? price,
+            high: q.regularMarketDayHigh ?? price,
+            low: q.regularMarketDayLow ?? price,
+            volume: BigInt(Math.round(q.regularMarketVolume ?? 0)),
+          },
+          create: {
+            companyId,
+            date: today,
+            close: price,
+            open: q.regularMarketOpen ?? price,
+            high: q.regularMarketDayHigh ?? price,
+            low: q.regularMarketDayLow ?? price,
+            volume: BigInt(Math.round(q.regularMarketVolume ?? 0)),
+            source: "yahoo",
+          },
+        });
+        upserted++;
+      } catch {
+        errors++;
+      }
+    }
+
+    if (i + BATCH_SIZE < symbols.length) {
+      await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
     }
   }
 
-  console.log(`[yahoo-prices] v8: ${upserted} updated, ${errors} errors from ${quotes.size} quotes (${yahooSymbols.length} requested)`);
+  console.log(`[yahoo-prices] yf2: ${upserted} updated, ${errors} errors from ${fetched} quotes (${symbols.length} requested)`);
   return {
     rowsIn: upserted,
     rowsError: errors,
-    notes: `Yahoo v8: ${upserted}/${yahooSymbols.length} updated in ~${Math.round(yahooSymbols.length / 10 * 0.2)}s`,
+    notes: `yahoo-finance2: ${upserted}/${symbols.length} updated (${fetched} quotes fetched)`,
   };
 }
