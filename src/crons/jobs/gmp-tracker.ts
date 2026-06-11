@@ -21,6 +21,7 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+import { slugifyIpoName } from "@/lib/scrapers/bse-ipo";
 
 const SOURCE_URL = "https://ipowatch.in/ipo-grey-market-premium-latest-ipo-gmp/";
 const UA =
@@ -29,7 +30,10 @@ const UA =
 interface GmpRow {
   name: string;
   gmp: number;
-  status: string; // Upcoming | Open | Closed | Listed (IPO Watch's label)
+  priceBand: string;  // "₹103" (upper band) or "₹62-66"
+  dates: string;      // "12-16 June" / "30 May-3 June"
+  boardType: string;  // "BSE SME" | "NSE SME" | "Mainboard"
+  status: string;     // Upcoming | Open | Closed | Listed (IPO Watch's label)
 }
 
 function stripTags(s: string): string {
@@ -52,6 +56,28 @@ function normalize(name: string): string {
     .trim();
 }
 
+const MONTHS: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+};
+
+/** Parse "12-16 June" / "30 May-3 June" → open/close dates (year inferred). */
+function parseDateRange(s: string): { open: Date | null; close: Date | null } {
+  const m = s.match(/(\d{1,2})\s*([A-Za-z]+)?\s*[-–]\s*(\d{1,2})\s*([A-Za-z]+)/);
+  if (!m) return { open: null, close: null };
+  const closeMon = MONTHS[m[4].slice(0, 3).toLowerCase()];
+  const openMon = m[2] ? MONTHS[m[2].slice(0, 3).toLowerCase()] : closeMon;
+  if (openMon === undefined || closeMon === undefined) return { open: null, close: null };
+  const now = new Date();
+  const mk = (day: number, mon: number) => {
+    let y = now.getUTCFullYear();
+    if (mon - now.getUTCMonth() > 6) y -= 1; // December rows seen in January
+    if (now.getUTCMonth() - mon > 6) y += 1; // January rows seen in December
+    return new Date(Date.UTC(y, mon, day));
+  };
+  return { open: mk(parseInt(m[1], 10), openMon), close: mk(parseInt(m[3], 10), closeMon) };
+}
+
 function parseGmpTables(html: string): GmpRow[] {
   const rows: GmpRow[] = [];
   const tables = html.match(/<table[\s\S]*?<\/table>/g) ?? [];
@@ -66,6 +92,9 @@ function parseGmpTables(html: string): GmpRow[] {
       rows.push({
         name: cells[0],
         gmp: parseFloat(gmpMatch[0]),
+        priceBand: cells[3] ?? "",
+        dates: cells[5] ?? "",
+        boardType: cells[6] ?? "",
         status: cells[7] ?? "",
       });
     }
@@ -117,6 +146,7 @@ export async function trackGmp(): Promise<IngestionResult> {
 
   let upserted = 0;
   let unmatched = 0;
+  let created = 0;
   const unmatchedNames: string[] = [];
 
   for (const row of scraped) {
@@ -136,9 +166,33 @@ export async function trackGmp(): Promise<IngestionResult> {
     }
 
     if (!ipoId) {
-      unmatched++;
-      if (unmatchedNames.length < 5) unmatchedNames.push(row.name);
-      continue;
+      // BSE SME IPOs never appear in the NSE feed (and BSE blocks cloud IPs),
+      // so this page is our only listing source for them. Create the IPO here.
+      // NSE SME + Mainboard stay with nse_ipos to avoid duplicate records.
+      const statusMap: Record<string, string> = { upcoming: "upcoming", open: "live", closed: "closed" };
+      const mapped = statusMap[row.status.trim().toLowerCase()];
+      if (/bse\s*sme/i.test(row.boardType) && mapped) {
+        const nums = row.priceBand.replace(/,/g, "").match(/\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+        const high = nums.length ? Math.max(...nums) : null;
+        const low = nums.length ? Math.min(...nums) : null;
+        const { open, close } = parseDateRange(row.dates);
+        const slug = slugifyIpoName(row.name, { suffix: "sme" });
+        const createdIpo = await prisma.ipo.upsert({
+          where: { slug },
+          update: {},
+          create: {
+            name: row.name, slug, type: "sme", status: mapped,
+            priceBandHigh: high, priceBandLow: low,
+            openDate: open, closeDate: close,
+          },
+        });
+        ipoId = createdIpo.id;
+        created++;
+      } else {
+        unmatched++;
+        if (unmatchedNames.length < 5) unmatchedNames.push(row.name);
+        continue;
+      }
     }
 
     await prisma.ipoGmp.upsert({
@@ -150,12 +204,12 @@ export async function trackGmp(): Promise<IngestionResult> {
   }
 
   console.log(
-    `[gmp-tracker] ${upserted} GMP rows upserted, ${unmatched} unmatched of ${scraped.length} scraped` +
+    `[gmp-tracker] ${upserted} GMP rows upserted (${created} BSE SME IPOs created), ${unmatched} unmatched of ${scraped.length} scraped` +
       (unmatchedNames.length ? ` (unmatched: ${unmatchedNames.join(", ")})` : ""),
   );
   return {
     rowsIn: upserted,
     rowsError: 0,
-    notes: `${upserted}/${scraped.length} matched+saved${unmatched ? `; unmatched: ${unmatchedNames.join(", ")}${unmatched > 5 ? "…" : ""}` : ""}`,
+    notes: `${upserted}/${scraped.length} matched+saved${created ? `; ${created} BSE SME IPOs created` : ""}${unmatched ? `; unmatched: ${unmatchedNames.join(", ")}${unmatched > 5 ? "…" : ""}` : ""}`,
   };
 }
