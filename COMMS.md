@@ -31,7 +31,9 @@ Commit `8697151`.
 | 2 | Reap stale `running` ingestion_runs on startup | ✅ Done | new `reapStaleIngestionRuns()` in scheduler |
 | 3 | Add BSE daily bhavcopy job | ✅ Done | new scraper + job + 6:30 PM IST cron |
 | 4 | TypeScript | ✅ 0 errors | |
-| 5 | Deployed to server | ⏳ in progress | |
+| 5 | Deployed to server | ✅ HTTP 200 (8697151) | BSE first run: 78 rows; after bseCode backfill: 2,199 rows |
+| 6 | Backfill `bseCode` from BSE bhavcopy ticker match | ✅ Done | 80 → 2,201 companies with bseCode |
+| 7 | Patch historical 400-day cap → MAX_DAYS×2 (525a0c7) | ✅ Done | unblocks deeper-history walk on server with BHAVCOPY_BACKFILL_DAYS=600 |
 
 ## 2026-06-06 — health-check agent: /api/health honest dep check
 
