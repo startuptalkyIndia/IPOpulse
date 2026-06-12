@@ -3,6 +3,36 @@
 <!-- AUTO: last commit `5900cbd` — chore: platform-standards housekeeping — CLAUDE.md identity block + SESSION_LOCK gitignore + COMMS entry — 2026-06-06 05:12 IST -->
 ---
 
+## 2026-06-12 — bhavcopy hardening: hung historical + date corruption + BSE daily job
+
+Commit `8697151`.
+
+**Triage of `bhavcopy_daily` revealed three real bugs:**
+
+1. **Historical backfill silently corrupted dates.** `fetchNseBhavcopy(target)` walks back up to 6 days to tolerate holidays and returns rows tagged with the actual CSV date. The job was upserting with `target` instead of `row.date` — so rows from a real trading day got duplicated under every holiday target the walk passed through.
+2. **Historical job left "running" zombies.** Two `bhavcopy_historical` runs (2026-06-06, 2026-06-10) and four other jobs were stuck in `running` because process restarts (deploys) killed the JS before the runIngestion wrapper could mark them failed. No wall-time guard.
+3. **No BSE bhavcopy at all.** Schema supported `source='bse'` but only NSE was ingested. ~1,500 BSE-only smallcaps + SME segment invisible.
+
+**Fixes:**
+- `src/crons/jobs/nse-bhavcopy-historical.ts` — rewrite: use `row.date`, bulk-load symbol→id map once (was findUnique per row = ~69k DB roundtrips/run), 25-min wall-time cap, 400-day calendar bound.
+- `src/crons/scheduler.ts` — `reapStaleIngestionRuns()` at startup marks any run still `running` after 2h as failed. Wired BSE bhavcopy cron at 6:30 PM IST Mon–Fri and added to `availableJobs` registry.
+- `src/lib/scrapers/bse-bhavcopy.ts` + `src/crons/jobs/bse-bhavcopy.ts` — new. URL pattern `https://www.bseindia.com/download/BhavCopy/Equity/BhavCopy_BSE_CM_0_0_0_YYYYMMDD_F_0000.CSV` (verified open, no auth). Filters CM/STK/equity series, keyed on `bseCode` (BSE scrip code → `FinInstrmId`).
+- Prod cleanup: 6 stale `ingestion_runs` rows marked failed manually.
+
+**Not bugs (initially flagged, then dismissed):**
+- `source='yahoo'` rows in `bhavcopy_daily` — intentional intraday refresher (top 300, every 15 min market hours). NSE EOD overwrites later. Queries wanting canonical EOD should filter `source IN ('nse','bse')`.
+- Cron times "looked wrong" because DB stores `started_at` in UTC. 10:45 UTC = 16:15 IST, matches scheduler comments.
+
+**TS:** 0 errors. **Deploy:** in progress.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Fix hung bhavcopy_historical (date bug + wall-time + bulk lookup) | ✅ Done | `src/crons/jobs/nse-bhavcopy-historical.ts` |
+| 2 | Reap stale `running` ingestion_runs on startup | ✅ Done | new `reapStaleIngestionRuns()` in scheduler |
+| 3 | Add BSE daily bhavcopy job | ✅ Done | new scraper + job + 6:30 PM IST cron |
+| 4 | TypeScript | ✅ 0 errors | |
+| 5 | Deployed to server | ⏳ in progress | |
+
 ## 2026-06-06 — health-check agent: /api/health honest dep check
 
 Replaced bare `{status:"ok"}` with canonical 3-state pattern (LESSON-039).
