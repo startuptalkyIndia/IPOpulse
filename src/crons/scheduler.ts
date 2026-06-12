@@ -5,6 +5,7 @@ import { ingestBseIposFromHtml } from "./jobs/bse-ipo-html";
 import { ingestNseIpos } from "./jobs/nse-ipos";
 import { ingestAmfiNavs } from "./jobs/amfi-navs";
 import { ingestNseBhavcopy } from "./jobs/nse-bhavcopy";
+import { ingestBseBhavcopy } from "./jobs/bse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 import { sendDailyDigest } from "./jobs/daily-digest";
 import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
@@ -31,8 +32,31 @@ import { backfillIpoSymbols } from "./jobs/ipo-symbol-backfill";
 import { computeSignals } from "./jobs/compute-signals";
 import { runCrawlerHealth } from "./jobs/crawler-health";
 import { trackGmp } from "./jobs/gmp-tracker";
+import { prisma } from "@/lib/db";
 
 let started = false;
+
+/**
+ * Mark any ingestion_runs left in `running` state for more than 2 hours as
+ * failed. Long jobs can be cut off by container restarts/deploys; without
+ * this sweep they linger forever and hide real failure signal.
+ */
+async function reapStaleIngestionRuns() {
+  const cutoff = new Date(Date.now() - 2 * 60 * 60 * 1000);
+  try {
+    const res = await prisma.ingestionRun.updateMany({
+      where: { status: "running", startedAt: { lt: cutoff } },
+      data: {
+        status: "failed",
+        finishedAt: new Date(),
+        errorMsg: "Reaped on scheduler startup: still running after 2h (process restart)",
+      },
+    });
+    if (res.count > 0) console.log(`[scheduler] reaped ${res.count} stale ingestion_runs`);
+  } catch (err) {
+    console.log(`[scheduler] reap failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
 
 /**
  * Registers all recurring jobs. Called once on server boot via Next.js
@@ -47,6 +71,10 @@ export function startScheduler() {
     console.log("[scheduler] Skipped — not production.");
     return;
   }
+
+  // Best-effort: close out any ingestion_runs left "running" by a prior
+  // process restart so dashboards don't show zombie work.
+  reapStaleIngestionRuns().catch(() => {});
 
   // NSE FII/DII — daily at 7:15 PM IST (data is published ~6:30 PM)
   cron.schedule("15 19 * * 1-5", async () => {
@@ -83,6 +111,13 @@ export function startScheduler() {
       recalcMarketCap().catch(() => null);
     }, { timezone: "Asia/Kolkata" });
   }
+
+  // BSE EOD Bhavcopy — 6:30 PM IST (BSE publishes earlier than NSE).
+  // Covers ~1,500 BSE-only smallcaps and SME segment invisible to NSE feed.
+  cron.schedule("30 18 * * 1-5", async () => {
+    const result = await runIngestion("bse_bhavcopy", ingestBseBhavcopy);
+    console.log(`[cron bse_bhavcopy] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
 
   // Yahoo Fundamentals — NIGHTLY 2:00 AM IST (was Sunday-only).
   // Incremental by design: only processes companies whose fundamentalsAt is
@@ -222,7 +257,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_bhavcopy(2×daily+mktcap_recalc), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -231,6 +266,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   nse_ipos: ingestNseIpos,
   amfi_navs: ingestAmfiNavs,
   nse_bhavcopy: ingestNseBhavcopy,
+  bse_bhavcopy: ingestBseBhavcopy,
   bse_announcements: ingestBseAnnouncements,
   daily_digest: sendDailyDigest,
   daily_market_summary: generateDailyMarketSummary,
