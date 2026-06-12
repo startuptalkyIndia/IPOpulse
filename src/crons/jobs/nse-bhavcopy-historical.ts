@@ -73,7 +73,9 @@ export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
 
     const target = subtractDays(today, daysBack);
     daysBack++;
-    if (daysBack > 400) break; // hard upper bound on calendar walk
+    // Hard upper bound on calendar walk, scaled to allow MAX_DAYS trading
+    // days plus weekend/holiday slack (~1.5× covers India market).
+    if (daysBack > MAX_DAYS * 2) break;
 
     if (isWeekend(target)) continue;
 
