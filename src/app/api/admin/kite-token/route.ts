@@ -5,9 +5,19 @@ import { prisma } from "@/lib/db";
 // Store Kite token in DB settings table (key-value)
 // Falls back to KITE_ACCESS_TOKEN env var if no DB entry
 
-export async function POST(req: NextRequest) {
+// Role gate per Constitution §1.1 (least privilege, LESSON-088): this route
+// overwrites the live broker access token, so session alone is not enough —
+// require admin/superadmin role. Cloned from admin/drhp/analyze adminGuard.
+async function adminGuard() {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  return role === "admin" || role === "superadmin";
+}
+
+export async function POST(req: NextRequest) {
+  if (!(await adminGuard())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await req.json();
   const token = (body.token as string)?.trim();
@@ -26,9 +36,10 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, message: "Kite token updated. Live prices active until midnight IST." });
 }
 
-export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function GET() {
+  if (!(await adminGuard())) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   try {
     const rows = await prisma.$queryRaw<Array<{ value: string; updated_at: Date }>>`

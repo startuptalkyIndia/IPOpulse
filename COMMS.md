@@ -3,6 +3,12 @@
 <!-- AUTO: last commit `5900cbd` — chore: platform-standards housekeeping — CLAUDE.md identity block + SESSION_LOCK gitignore + COMMS entry — 2026-06-06 05:12 IST -->
 ---
 
+## 2026-06-14 — security: role-gate admin kite-token route (Saturday CTO W4 auto-fix)
+
+- **What:** `api/admin/kite-token` GET+POST were session-gated only (401 if no session) but **not role-gated** — any authenticated user (public signup is open) could overwrite the live Zerodha broker access token. Added an `adminGuard()` (admin/superadmin role check), cloned from the sibling `admin/drhp/analyze` route; both handlers now return 403 for non-admins.
+- **Why:** Constitution §1.1 (authorization-per-action / least privilege, LESSON-088). Security audit finding **H-2** (2026-06-14).
+- **Verified:** `npx tsc --noEmit` exit 0. Change is confined to the auth check; no behavior change for legitimate admins. **Not deployed** — committed only; deploy remains gated on founder "go".
+
 ## 2026-06-12 — bhavcopy hardening: hung historical + date corruption + BSE daily job
 
 Commit `8697151`.
