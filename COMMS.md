@@ -1,5 +1,18 @@
 # IPOpulse — COMMS
 
+## 2026-06-15 — seo: /sup-min child-route-escape noindex fix (branch fix/seo-indexability — NOT pushed/deployed)
+
+SDD-lite: **What** — `/sup-min` (the super-admin login page) + all its children rendered `index,follow` because there was no `sup-min/layout.tsx`, so they inherited the root layout's `index,follow` (child-route-escape, LESSON-114). **Why** — Phase 15 audit: admin console crawlable/indexable. **Done when** — `/sup-min` + every child carry `noindex,nofollow`; `Disallow: /sup-min` in robots.txt. Public homepage unchanged. **Out of scope** — public pages, business logic (metadata only). **Verify** — grep + `tsc --noEmit` exit 0 (cannot verify rendered HTML; not deployed).
+
+### What changed (metadata only)
+- NEW `src/app/sup-min/layout.tsx` — server segment layout exporting `robots:{index:false,follow:false}`. All `/sup-min/*` routes (login page + advisors/community/dashboard/gmp/ingestion/ipos/kite-token/feature-flags) now inherit noindex. (Note: there is no separate `/sup-min/login` route — the login IS `sup-min/page.tsx`; Phase 15's "/sup-min/login" = that login page.)
+- `public/robots.txt` — added `Disallow: /sup-min` and `Disallow: /api/` (merged additively). The dynamic `src/app/robots.ts` already disallowed `/sup-min` and shadows the static file in App Router; this keeps the static file consistent as a belt.
+- Root `src/app/layout.tsx` (homepage `index:true`) untouched.
+- `tsc --noEmit` exit 0.
+
+**Source-correct, not yet deployed.** Branch left local for founder "go".
+
+
 <!-- AUTO: last commit `5900cbd` — chore: platform-standards housekeeping — CLAUDE.md identity block + SESSION_LOCK gitignore + COMMS entry — 2026-06-06 05:12 IST -->
 ---
 
