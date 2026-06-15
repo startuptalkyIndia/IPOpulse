@@ -25,6 +25,7 @@ import { ingestHistoricalFiiDii } from "./jobs/nse-fii-dii-historical";
 import { ingestScreenerFundamentals } from "./jobs/screener-fundamentals";
 import { syncIpoListings } from "./jobs/bse-listing-sync";
 import { ingestKiteLivePrices } from "./jobs/kite-live-prices";
+import { ingestFyersLivePrices } from "./jobs/fyers-live-prices";
 import { checkIpoAlerts } from "./jobs/check-alerts";
 import { runYahooFundamentals, recalcMarketCap } from "./jobs/yahoo-fundamentals";
 import { ingestScreenerDeepFundamentals } from "./jobs/screener-deep-scrape";
@@ -256,6 +257,15 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
+  // Fyers live prices — every 5 min during market hours (Kite-backup broker source)
+  // Active only when a daily token is set via /sup-min/fyers-token + app has Data API perm.
+  cron.schedule("*/5 9-15 * * 1-5", async () => {
+    const result = await runIngestion("fyers_live", ingestFyersLivePrices);
+    if (result.rowsIn && result.rowsIn > 0) {
+      console.log(`[cron fyers_live] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    }
+  }, { timezone: "Asia/Kolkata" });
+
   // Yahoo Finance v8 prices — every 15 min during market hours (free, 15-min delayed fallback)
   cron.schedule("*/15 9-15 * * 1-5", async () => {
     const result = await runIngestion("yahoo_prices", ingestYahooPrices);
@@ -264,7 +274,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -282,6 +292,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   us_adrs: updateUsAdrs,
   yahoo_prices: ingestYahooPrices,
   kite_live: ingestKiteLivePrices,
+  fyers_live: ingestFyersLivePrices,
   nse_bulk_block: ingestBulkBlockDeals,
   nse_insider: ingestInsiderTrades,
   super_investor: ingestSuperInvestorHoldings,
