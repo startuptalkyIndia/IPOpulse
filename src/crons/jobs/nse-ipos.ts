@@ -18,6 +18,7 @@ import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
 import { fetchNseArray } from "@/lib/nse-session";
 import { slugifyIpoName } from "@/lib/scrapers/bse-ipo";
+import { computeIpoStatus } from "@/lib/ipo";
 
 interface NseIssue {
   companyName: string;
@@ -115,6 +116,37 @@ async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number
   return { rowsIn, note: `${category}: ${issues.length} fetched, ${rowsIn} upserted` };
 }
 
+/**
+ * Advance stale IPO statuses by date.
+ * NSE's upcoming-issues feed only lists upcoming/active issues — once an IPO
+ * closes it drops off the feed, so the scraper never moves its status past
+ * "upcoming"/"live". This corrects the DB `status` column from dates (the same
+ * rules as computeIpoStatus) so list pages that filter on status stay accurate.
+ * Only advances forward; never regresses a "listed" or "withdrawn" IPO.
+ */
+async function advanceStaleStatuses(): Promise<{ changed: number; note: string }> {
+  const ipos = await prisma.ipo.findMany({
+    where: { status: { notIn: ["listed", "withdrawn"] } },
+    select: {
+      id: true, status: true, openDate: true, closeDate: true, listingDate: true,
+      listing: { select: { id: true } },
+    },
+  });
+
+  let changed = 0;
+  const samples: string[] = [];
+  for (const ipo of ipos) {
+    // A listing row means it's trading even if listingDate wasn't captured.
+    const next = ipo.listing ? "listed" : computeIpoStatus(ipo);
+    if (next !== ipo.status) {
+      await prisma.ipo.update({ where: { id: ipo.id }, data: { status: next } });
+      changed++;
+      if (samples.length < 5) samples.push(`${ipo.status}→${next}`);
+    }
+  }
+  return { changed, note: `status-advance: ${changed} corrected${samples.length ? ` (${samples.join(", ")})` : ""}` };
+}
+
 export async function ingestNseIpos(): Promise<IngestionResult> {
   const notes: string[] = [];
   let rowsIn = 0;
@@ -129,6 +161,15 @@ export async function ingestNseIpos(): Promise<IngestionResult> {
       rowsError++;
       notes.push(`${cat}: ${err instanceof Error ? err.message : "fetch error"}`);
     }
+  }
+
+  // After ingesting the feed, fix any IPOs the feed no longer reports.
+  try {
+    const adv = await advanceStaleStatuses();
+    rowsIn += adv.changed;
+    notes.push(adv.note);
+  } catch (err) {
+    notes.push(`status-advance: ${err instanceof Error ? err.message : "error"}`);
   }
 
   console.log(`[nse-ipos] ${notes.join(" | ")}`);

@@ -7,9 +7,12 @@ export function computeIpoStatus(ipo: { openDate: Date | null; closeDate: Date |
   if (ipo.status === "withdrawn") return "withdrawn";
   if (ipo.listingDate && now >= ipo.listingDate) return "listed";
   if (ipo.openDate && ipo.closeDate) {
+    // Close date is stored at UTC midnight; an IPO stays open through the whole
+    // close day, so treat the live window as ending at end of the close day.
+    const liveUntil = new Date(ipo.closeDate.getTime() + 86400000);
     if (now < ipo.openDate) return "upcoming";
-    if (now >= ipo.openDate && now <= ipo.closeDate) return "live";
-    if (now > ipo.closeDate) return "closed";
+    if (now < liveUntil) return "live";
+    return "closed";
   }
   return (ipo.status as IpoStatus) || "upcoming";
 }
