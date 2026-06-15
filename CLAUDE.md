@@ -5,7 +5,7 @@
 - **Port:** 3065
 - **Status:** Active
 - **Server folder:** /home/ubuntu/IPOpulse
-- **Server:** 13.202.189.233 (SSH: `ssh -i ~/Downloads/linkbuilder-deploy.pem ubuntu@13.202.189.233`)
+- **Server:** 13.202.189.233 (SSH: `ssh -i ~/.ssh/linkbuilder-deploy.pem ubuntu@13.202.189.233`)
 - **Stack:** Next.js · TypeScript · Prisma · Postgres · Docker
 
 > After `/clear` or a fresh session, re-read `COMMS.md` and `PRODUCT.md` to restore full context.
@@ -121,7 +121,7 @@ Runs at 10:23 AM IST — full audit including login test, SSL expiry, log analys
 # ⚠️ WORKSPACE BOUNDARY — READ THIS FIRST
 
 **You are the IPOpulse agent.** You MUST only edit files inside this directory:
-`/Users/shubhamkumar/Desktop/Claude Code/IPOpulse/`
+`/Users/shubhamkumar/Developer/Claude Code/IPOpulse/`
 
 **NEVER edit files in:**
 - Any sibling project folder (BillForge, SeizeLead, Optimo, OutreachIQ, etc.)
@@ -182,7 +182,7 @@ India's comprehensive IPO + stock + market data website — structured data only
 ## 🔄 AUTOSAVE — MANDATORY IMPLEMENTATION
 
 Every multi-field form in this project MUST have autosave. Read the full spec:
-`/Users/shubhamkumar/Desktop/Claude Code/_shared/AUTOSAVE_SPEC.md`
+`/Users/shubhamkumar/Developer/Claude Code/_shared/AUTOSAVE_SPEC.md`
 
 **Quick summary:**
 1. Create `src/hooks/useAutosave.ts` — debounced autosave hook (delay: 1500ms)
@@ -200,7 +200,7 @@ This is a platform-wide standard. Do not skip it.
 ## 🕷️ APIFY — Use for Web Scraping
 
 When you need to scrape data (LinkedIn, Google, Instagram, G2, contacts, news), use Apify instead of building custom scrapers. Read the full spec:
-`/Users/shubhamkumar/Desktop/Claude Code/_shared/APIFY_SPEC.md`
+`/Users/shubhamkumar/Developer/Claude Code/_shared/APIFY_SPEC.md`
 
 **Quick summary:**
 - Store token in `.env` as `APIFY_API_TOKEN`
@@ -216,7 +216,7 @@ When you need to scrape data (LinkedIn, Google, Instagram, G2, contacts, news), 
 ## 🔬 RESEARCH TASK — Do This Before Proposing New Features
 
 Before building anything new, research what real users say online about this product category.
-Read the full research spec: `/Users/shubhamkumar/Desktop/Claude Code/_shared/RESEARCH_TASK.md`
+Read the full research spec: `/Users/shubhamkumar/Developer/Claude Code/_shared/RESEARCH_TASK.md`
 
 **Search terms specific to this product:**
 
@@ -228,7 +228,7 @@ Save findings to COMMS.md under "## Research Findings — [DATE IST]"
 
 ## 🔒 SECURITY — Non-Negotiable Rules
 
-Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/SECURITY_STANDARD.md`
+Read the full security standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/SECURITY_STANDARD.md`
 
 **Must check before every deploy:**
 1. Every `/api/*` route has auth check (session/token validation)
@@ -246,7 +246,7 @@ Read the full security standard: `/Users/shubhamkumar/Desktop/Claude Code/_share
 
 ## ✅ QUALITY STANDARD — Definition of Done
 
-Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/QUALITY_STANDARD.md`
+Read the full standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/QUALITY_STANDARD.md`
 
 **Before marking ANY task done:**
 - [ ] Tested locally end-to-end
@@ -269,7 +269,7 @@ Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/QUALITY
 
 ## 🗄️ DATABASE STANDARD — Follow Before Any Schema Change
 
-Read the full standard: `/Users/shubhamkumar/Desktop/Claude Code/_shared/DB_STANDARD.md`
+Read the full standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/DB_STANDARD.md`
 
 **Required on every model:**
 - `createdAt DateTime @default(now())`
@@ -338,7 +338,7 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 **Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
 
 **Deploy:** `/home/ubuntu/IPOpulse` — `docker compose up -d --build`
-**SSH key:** `~/Downloads/Other/linkbuilder-deploy.pem`
+**SSH key:** `~/.ssh/linkbuilder-deploy.pem`
 
 **Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
 
