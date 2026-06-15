@@ -74,15 +74,17 @@ function parseBidDetails(rows: BidRow[]) {
 }
 
 export async function ingestIpoSubscription(): Promise<IngestionResult> {
-  // Live + recently-closed (finals settle a day or two after close) with a symbol
-  const cutoff = new Date(Date.now() - 4 * 86400000);
+  // Target by DATES, not the `status` field: NSE drops closed IPOs from its
+  // upcoming feed, so our status freezes at "upcoming" and can't be trusted.
+  // We want any IPO that has opened and whose close was within the last ~4
+  // days (subscription finals settle a day or two after close) or is still open.
+  const closeFloor = new Date(Date.now() - 4 * 86400000);
+  const openCeil = new Date(Date.now() + 1 * 86400000);
   const ipos = await prisma.ipo.findMany({
     where: {
       nseSymbol: { not: null },
-      OR: [
-        { status: "live" },
-        { status: "closed", closeDate: { gte: cutoff } },
-      ],
+      openDate: { lte: openCeil },
+      closeDate: { gte: closeFloor },
     },
     select: { id: true, name: true, nseSymbol: true },
   });
