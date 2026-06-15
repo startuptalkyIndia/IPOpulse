@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /sup-min
+Disallow: /api/
 
 Sitemap: https://ipopulse.talkytools.com/sitemap.xml
