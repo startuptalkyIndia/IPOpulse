@@ -19,6 +19,8 @@ services:
     cpus: 1.0
 
   ipopulse:
+    init: true  # tini as PID 1 reaps orphaned child processes that would otherwise become zombies
+    image: ipopulse:latest
     build: .
     restart: always
     ports:
