@@ -304,3 +304,6 @@ Added /about and/or /contact pages using DIYPR shell + product-specific copy. Re
 Root cause: Pass 1 perf agent put `nextDynamic(..., {ssr:false})` directly in Server Component pages — Next 16 server build rejects this.
 Fix: Extracted 6 Client Component loader files (GmpChartLoader, SubscriptionVelocityLoader, MonthlyChartLoader, FiiDiiChartLoader, PriceChartLoader, CompanyFinancialsLoader). Pages now import from loaders. 0 TS errors in src/.
 Files changed: 4 pages + 6 new loaders. Commit: 0f2861c.
+
+## 2026-07-13 — security: untracked CREDENTIALS.md (real prod passwords)
+`git rm --cached CREDENTIALS.md` + gitignore. Stops future exposure of the superadmin creds. History purge + password rotation remain founder-gated. Commit ab3f56d.
