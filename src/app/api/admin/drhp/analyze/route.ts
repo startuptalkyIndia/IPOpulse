@@ -47,11 +47,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, slug, modelUsed: result.modelUsed });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    console.error("[admin/drhp/analyze] AI request failed:", err);
     await prisma.ipoDrhpAnalysis.update({
       where: { ipoId: ipo.id },
-      data: { status: "failed", errorMsg: msg.slice(0, 1000) },
+      data: { status: "failed", errorMsg: msg.slice(0, 1000) }, // internal record only
     });
-    return NextResponse.json({ error: msg }, { status: 500 });
+    // Don't leak the raw internal error to the client (audit MEDIUM M13).
+    return NextResponse.json({ error: "Analysis failed. Please try again." }, { status: 500 });
   }
 }
 

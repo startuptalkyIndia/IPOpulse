@@ -76,10 +76,11 @@ Be precise. Quote actual numbers. Do NOT invent figures.`;
     });
     // Estimated tokens (CLI): ~transcript.length/4 input chars + 2000 output tokens
     const estInput = Math.ceil(transcript.length / 4);
-    recordSpend(userId, "claude-cli", estInput, 2000);
+    await recordSpend(userId, "claude-cli", estInput, 2000);
     return NextResponse.json({ summary, via });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
-    return NextResponse.json({ error: err instanceof Error ? err.message : "AI failed" }, { status: 500 });
+    console.error("[ai] request failed:", err);
+    return NextResponse.json({ error: "AI request failed. Please try again in a moment." }, { status: 500 });
   }
 }

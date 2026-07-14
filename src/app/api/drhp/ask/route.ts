@@ -72,10 +72,11 @@ export async function POST(request: Request) {
       maxTokens: 800,
     });
     // Estimated tokens (CLI): corpus ~2400 chars = 600 tokens input + 800 output
-    recordSpend(userId, "claude-cli", 600 + Math.ceil(corpusText.length / 4), 800);
+    await recordSpend(userId, "claude-cli", 600 + Math.ceil(corpusText.length / 4), 800);
     return NextResponse.json({ answer, via });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
-    return NextResponse.json({ error: err instanceof Error ? err.message : "AI failed" }, { status: 500 });
+    console.error("[ai] request failed:", err);
+    return NextResponse.json({ error: "AI request failed. Please try again in a moment." }, { status: 500 });
   }
 }

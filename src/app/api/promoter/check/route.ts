@@ -74,10 +74,11 @@ Cover Indian context factually: SEBI/MCA/EOW/NCLT orders, BSE/NSE filings, mains
       maxTokens: 1500,
     });
     // Estimated tokens (CLI): 600 input + 1500 output per promoter check
-    recordSpend(userId, "claude-cli", 600, 1500);
+    await recordSpend(userId, "claude-cli", 600, 1500);
     return NextResponse.json({ result, via, disclaimer: "AI-generated. Verify against SEBI/MCA/BSE filings before any investment decision." });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
-    return NextResponse.json({ error: err instanceof Error ? err.message : "AI failed" }, { status: 500 });
+    console.error("[ai] request failed:", err);
+    return NextResponse.json({ error: "AI request failed. Please try again in a moment." }, { status: 500 });
   }
 }

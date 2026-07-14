@@ -75,7 +75,7 @@ Question: ${question}`,
     });
 
     // Estimated tokens (CLI — no token count returned): 1200 input + 400 output per DRHP query
-    recordSpend(userId, "claude-cli", 1200, 400);
+    await recordSpend(userId, "claude-cli", 1200, 400);
 
     return NextResponse.json({
       answer,
@@ -87,8 +87,9 @@ Question: ${question}`,
     if (err instanceof ClaudeUnavailableError) {
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
+    console.error("[drhp/analyze] AI request failed:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "AI request failed" },
+      { error: "AI request failed. Please try again in a moment." },
       { status: 500 },
     );
   }

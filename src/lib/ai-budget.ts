@@ -51,24 +51,30 @@ export async function checkBudget(userId: string): Promise<{
   return { allowed: spentInr < MONTHLY_CAP_INR, spentInr, remainingInr, capInr: MONTHLY_CAP_INR };
 }
 
-export function recordSpend(
+export async function recordSpend(
   userId: string,
   model: string,
   inputTokens: number,
   outputTokens: number,
   cliEstimated = true,
-): void {
-  // Fire-and-forget — never await in the AI call hot path
-  prisma.aiSpendLog.create({
-    data: {
-      userId,
-      model,
-      inputTokens,
-      outputTokens,
-      costInr: estimateCostInr(inputTokens, outputTokens),
-      cliEstimated,
-    },
-  }).catch(() => { /* non-blocking */ });
+): Promise<void> {
+  // Awaited (audit MEDIUM M16): the ledger is the budget source of truth, and a
+  // fire-and-forget insert let two rapid requests both pass the cap before either
+  // was recorded. One insert is negligible next to a multi-second Claude call.
+  try {
+    await prisma.aiSpendLog.create({
+      data: {
+        userId,
+        model,
+        inputTokens,
+        outputTokens,
+        costInr: estimateCostInr(inputTokens, outputTokens),
+        cliEstimated,
+      },
+    });
+  } catch {
+    /* never break the response on a logging failure */
+  }
 }
 
 export async function getMonthlyUsage(userId: string): Promise<{
