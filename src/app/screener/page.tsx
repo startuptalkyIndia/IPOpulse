@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { canonicalRowsForDate, canonicalCloseMap, canonicalRange, type CanonRow } from "@/lib/price";
 import { ScreenerClient, type ScreenerCompany } from "./ScreenerClient";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default async function ScreenerPage() {
     orderBy: { marketCap: "desc" },
     take: 2000,
   });
+  const screenIds = companies.map((c) => c.id);
 
   // Latest two DISTINCT trading days for 1D change + 52W data.
   // NOTE: bhavcopy has ~2,300 rows per date, so `skip: 1` would skip one row
@@ -38,37 +40,17 @@ export default async function ScreenerPage() {
   const latestBhav = recentDates[0] ?? null;
   const prevBhav = recentDates[1] ?? null;
 
-  // Today's prices
-  const todayPrices = latestBhav
-    ? await prisma.bhavcopyDaily.findMany({
-        where: { date: latestBhav.date },
-        select: { companyId: true, close: true, high: true, low: true, volume: true },
-      })
-    : [];
-  const todayMap = new Map(todayPrices.map((p) => [p.companyId, p]));
+  // Canonical prices (one row per company) via the shared price layer.
+  const todayMap: Map<number, CanonRow> = latestBhav
+    ? new Map((await canonicalRowsForDate(latestBhav.date, screenIds)).map((r) => [r.companyId, r]))
+    : new Map<number, CanonRow>();
+  const prevMap = prevBhav ? await canonicalCloseMap(prevBhav.date, screenIds) : new Map<number, number>();
 
-  // Yesterday's close for 1D change
-  const prevPrices = prevBhav
-    ? await prisma.bhavcopyDaily.findMany({
-        where: { date: prevBhav.date },
-        select: { companyId: true, close: true },
-      })
-    : [];
-  const prevMap = new Map(prevPrices.map((p) => [p.companyId, Number(p.close)]));
-
-  // 52W high/low from bhavcopy (last 252 trading days)
+  // 52W high/low from canonical series (last ~252 trading days)
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
-  const yearData = await prisma.bhavcopyDaily.groupBy({
-    by: ["companyId"],
-    where: { date: { gte: cutoff } },
-    _max: { high: true },
-    _min: { low: true },
-  });
-  const yearMap = new Map(yearData.map((r) => [r.companyId, {
-    high52w: r._max.high ? Number(r._max.high) : null,
-    low52w: r._min.low ? Number(r._min.low) : null,
-  }]));
+  const range52 = await canonicalRange(screenIds, cutoff);
+  const yearMap = new Map([...range52.entries()].map(([id, r]) => [id, { high52w: r.max || null, low52w: r.min || null }]));
 
   // ─── YoY growth from annual_financials latest 2 years per company ────────
   const companyIds = companies.map((c) => c.id);

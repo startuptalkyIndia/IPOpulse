@@ -151,13 +151,13 @@ export async function canonicalRange(
   return out;
 }
 
-/** The single canonical close for one company on the latest available day. */
-export async function latestCloseForCompany(companyId: number): Promise<number | null> {
+/** The single canonical row for one company on ITS OWN latest available day. */
+export async function latestCanonicalRow(companyId: number): Promise<CanonRow | null> {
   const rows = await prisma.$queryRaw<RawRow[]>(Prisma.sql`
     SELECT DISTINCT ON (company_id) company_id, date, close, open, high, low, volume, delivery_pct
     FROM bhavcopy_daily
     WHERE company_id = ${companyId}
     ORDER BY company_id, date DESC, ${SRC_RANK}
   `);
-  return rows.length ? toNum(rows[0].close) : null;
+  return rows.length ? mapRow(rows[0]) : null;
 }

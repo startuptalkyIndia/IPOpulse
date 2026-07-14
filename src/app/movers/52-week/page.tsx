@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, TrendingUp, TrendingDown } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { latestTradingDate, canonicalRowsForDate, canonicalRange } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -27,44 +28,41 @@ interface Row {
 }
 
 async function fetchRows(): Promise<Row[]> {
-  const latest = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
+  const latest = await latestTradingDate();
   if (!latest) return [];
 
-  // For 52-week we'd ideally aggregate min/max over 252 trading days. With seed data only
-  // covering 2 days we approximate "52w high/low" from today's high/low intraday.
-  const todayRows = await prisma.bhavcopyDaily.findMany({
-    where: { date: latest.date },
-    include: { company: true },
+  // Canonical (one row per company) — direct reads would duplicate per source.
+  const todayRows = await canonicalRowsForDate(latest);
+  const since = new Date(latest.getTime() - 365 * 86400000);
+  const ids = todayRows.map((r) => r.companyId);
+  const range = await canonicalRange(ids, since);
+  const companies = await prisma.company.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, slug: true, name: true, sector: true, nseSymbol: true, bseCode: true, marketCap: true },
   });
+  const coMap = new Map(companies.map((c) => [c.id, c]));
 
-  // Past-year aggregation: best-effort (works once cron is running)
-  const since = new Date(latest.date.getTime() - 365 * 86400000);
-  const yearRows = await prisma.bhavcopyDaily.groupBy({
-    by: ["companyId"],
-    where: { date: { gte: since } },
-    _max: { high: true },
-    _min: { low: true },
-  });
-  const aggMap = new Map(yearRows.map((r) => [r.companyId, r]));
-
-  return todayRows.map((r) => {
-    const agg = aggMap.get(r.companyId);
-    const high52 = agg?._max.high ? Number(agg._max.high) : Number(r.high);
-    const low52 = agg?._min.low ? Number(agg._min.low) : Number(r.low);
-    const close = Number(r.close);
-    return {
-      slug: r.company.slug,
-      name: r.company.name,
-      sector: r.company.sector,
-      symbol: r.company.nseSymbol ?? r.company.bseCode,
-      close,
+  const out: Row[] = [];
+  for (const r of todayRows) {
+    const co = coMap.get(r.companyId);
+    if (!co) continue;
+    const agg = range.get(r.companyId);
+    const high52 = agg?.max || r.high;
+    const low52 = agg?.min || r.low;
+    out.push({
+      slug: co.slug,
+      name: co.name,
+      sector: co.sector,
+      symbol: co.nseSymbol ?? co.bseCode,
+      close: r.close,
       high52,
       low52,
-      fromHighPct: high52 > 0 ? ((close - high52) / high52) * 100 : 0,
-      fromLowPct: low52 > 0 ? ((close - low52) / low52) * 100 : 0,
-      marketCap: r.company.marketCap ? Number(r.company.marketCap) : null,
-    };
-  });
+      fromHighPct: high52 > 0 ? ((r.close - high52) / high52) * 100 : 0,
+      fromLowPct: low52 > 0 ? ((r.close - low52) / low52) * 100 : 0,
+      marketCap: co.marketCap ? Number(co.marketCap) : null,
+    });
+  }
+  return out;
 }
 
 function Table({ title, rows, accent }: { title: string; rows: Row[]; accent: "high" | "low" }) {
