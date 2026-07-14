@@ -154,8 +154,9 @@ export default async function SectorMomentumPage() {
   // Count companies per sector for context (use today's snapshot)
   const sectorCount = new Map<string, number>();
   for (const r of todayRows) {
-    if (!r.company?.sector) continue;
-    sectorCount.set(r.company.sector, (sectorCount.get(r.company.sector) ?? 0) + 1);
+    const sector = sectorByCompany.get(r.companyId);
+    if (!sector) continue;
+    sectorCount.set(sector, (sectorCount.get(sector) ?? 0) + 1);
   }
 
   const rows: SectorRow[] = Array.from(sectors).map((s) => {
