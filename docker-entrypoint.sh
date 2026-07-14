@@ -3,7 +3,11 @@ set -e
 
 echo "[entrypoint] Running prisma db push (additive schema sync)..."
 # IPOpulse uses prisma db push (no migration files). Safe for additive-only changes.
-npx prisma db push --accept-data-loss 2>&1 || echo "[entrypoint] prisma db push skipped or failed — schema may be current"
+# NOTE: --accept-data-loss was REMOVED (audit CRIT-1). Without it, a destructive
+# diff (dropped/truncated column) makes db push REFUSE and exit non-zero instead
+# of silently destroying prod data. Additive changes still apply. The refusal is
+# swallowed below so the app still boots on the existing (intact) schema.
+npx prisma db push 2>&1 || echo "[entrypoint] ⚠ prisma db push refused or failed — likely a DESTRUCTIVE schema diff was blocked (this is intended; data left intact). Booting on existing schema."
 
 # Restore Claude CLI config from backup if missing (mount wipes .claude.json on each restart)
 if [ ! -f /root/.claude.json ] && [ -d /root/.claude/backups ]; then
