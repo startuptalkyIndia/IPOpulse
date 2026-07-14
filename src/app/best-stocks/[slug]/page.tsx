@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, AlertTriangle, Info, TrendingUp, Coins, Building2, Sparkles, Award, Scale, Crown } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { canonicalRowsForDate, canonicalSeries } from "@/lib/price";
 import { Prisma } from "@prisma/client";
 import { bestStocksCategories, getCategoryBySlug } from "@/lib/best-stocks-categories";
 import { formatCurrency } from "@/lib/format";
@@ -74,14 +75,20 @@ export default async function BestStocksCategoryPage({ params }: Props) {
     };
     const priceMin = cat.filter.priceMin ?? 0;
     const priceMax = cat.filter.priceMax ?? 999999;
+    // Canonical price per company (DISTINCT ON) — a plain join to bhavcopy_daily
+    // would return the same company once per source and duplicate rows.
     const rows = await prisma.$queryRaw<RawRow[]>`
       SELECT c.id, c.slug, c.name, c.nse_symbol, c.sector, c.industry,
              c.market_cap, c.pe_ratio, c.pb_ratio, c.roe_pct, c.dividend_yield, c.eps,
              b.close as ltp, b.volume
-      FROM bhavcopy_daily b
+      FROM (
+        SELECT DISTINCT ON (company_id) company_id, close, volume
+        FROM bhavcopy_daily
+        WHERE date = ${latestBhav.date}
+        ORDER BY company_id, CASE source WHEN 'nse' THEN 1 WHEN 'bse' THEN 2 WHEN 'kite' THEN 3 WHEN 'fyers' THEN 4 WHEN 'yahoo' THEN 5 ELSE 9 END
+      ) b
       JOIN companies c ON c.id = b.company_id
-      WHERE b.date = ${latestBhav.date}
-        AND b.close >= ${priceMin}
+      WHERE b.close >= ${priceMin}
         AND b.close <= ${priceMax}
         AND b.volume > 25000
         AND c.active = true
@@ -135,11 +142,8 @@ export default async function BestStocksCategoryPage({ params }: Props) {
       },
     });
 
-    const prices = await prisma.bhavcopyDaily.findMany({
-      where: { companyId: { in: candidates.map((c) => c.id) }, date: latestBhav.date },
-      select: { companyId: true, close: true, volume: true },
-    });
-    const priceMap = new Map(prices.map((p) => [p.companyId, { close: Number(p.close), volume: Number(p.volume) }]));
+    const prices = await canonicalRowsForDate(latestBhav.date, candidates.map((c) => c.id));
+    const priceMap = new Map(prices.map((p) => [p.companyId, { close: p.close, volume: Number(p.volume) }]));
 
     filtered = candidates
       .map((c) => ({ ...c, ltp: priceMap.get(c.id)?.close ?? null, volume: priceMap.get(c.id)?.volume ?? null }))
@@ -151,17 +155,9 @@ export default async function BestStocksCategoryPage({ params }: Props) {
   // ─── Fetch 30-day price history per company for sparklines ────────────────
   const sparklineCutoff = new Date(latestBhav.date);
   sparklineCutoff.setDate(sparklineCutoff.getDate() - 35); // 35 days to ensure ~30 trading days
-  const sparkPrices = filtered.length > 0 ? await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: filtered.map((c) => c.id) }, date: { gte: sparklineCutoff } },
-    orderBy: [{ companyId: "asc" }, { date: "asc" }],
-    select: { companyId: true, close: true },
-  }) : [];
+  const sparkSeries = filtered.length > 0 ? await canonicalSeries(filtered.map((c) => c.id), sparklineCutoff) : new Map();
   const sparklineMap = new Map<number, number[]>();
-  for (const p of sparkPrices) {
-    const arr = sparklineMap.get(p.companyId) ?? [];
-    arr.push(Number(p.close));
-    sparklineMap.set(p.companyId, arr);
-  }
+  for (const [cid, rows] of sparkSeries) sparklineMap.set(cid, rows.map((r: { close: number }) => r.close));
 
   // ─── Fetch YoY growth from latest 2 annual financials per company ────────
   // Pull the most recent 2 fiscal years for each company in the filtered list

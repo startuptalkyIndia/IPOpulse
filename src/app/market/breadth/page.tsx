@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { canonicalRowsForDate, canonicalRange } from "@/lib/price";
 
 export const metadata: Metadata = {
   title: "Market Breadth — NSE advance/decline, new highs/lows, circuit breakers",
@@ -12,10 +13,23 @@ export default async function MarketBreadthPage() {
   const latestDate = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
   if (!latestDate) return <div className="max-w-4xl mx-auto px-4 py-10 text-sm text-gray-500">No bhavcopy data yet. Populates after first ingestion.</div>;
 
-  const todayRows = await prisma.bhavcopyDaily.findMany({
-    where: { date: latestDate.date },
-    select: { close: true, open: true, high: true, low: true, volume: true, companyId: true, company: { select: { name: true, nseSymbol: true, sector: true } } },
-  });
+  // Canonical rows (one per company) + company info — reading bhavcopy_daily
+  // directly would count the same stock once per source.
+  const canonRows = await canonicalRowsForDate(latestDate.date);
+  const breadthIds = canonRows.map((r) => r.companyId);
+  const coInfo = new Map(
+    (await prisma.company.findMany({ where: { id: { in: breadthIds } }, select: { id: true, name: true, nseSymbol: true, sector: true } }))
+      .map((c) => [c.id, c]),
+  );
+  const todayRows = canonRows.map((r) => ({
+    companyId: r.companyId,
+    close: r.close,
+    open: r.open,
+    high: r.high,
+    low: r.low,
+    volume: r.volume,
+    company: coInfo.get(r.companyId) ?? { name: "", nseSymbol: null, sector: null },
+  }));
 
   // Compute breadth metrics
   let advances = 0, declines = 0, unchanged = 0;
@@ -26,13 +40,7 @@ export default async function MarketBreadthPage() {
 
   // 52-week high/low from bhavcopy (approx: need 52w data; use available window)
   const oneYearAgo = new Date(latestDate.date.getTime() - 365 * 86400000);
-  const fiftyTwoWeekRange = await prisma.bhavcopyDaily.groupBy({
-    by: ["companyId"],
-    where: { date: { gte: oneYearAgo } },
-    _max: { close: true },
-    _min: { close: true },
-  });
-  const rangeByCompany = new Map(fiftyTwoWeekRange.map((r) => [r.companyId, { max: Number(r._max.close ?? 0), min: Number(r._min.close ?? 0) }]));
+  const rangeByCompany = await canonicalRange(breadthIds, oneYearAgo);
 
   for (const row of todayRows) {
     const close = Number(row.close);

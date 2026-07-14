@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Building2, Layers, Castle } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { latestTradingDate, canonicalCloseMap, canonicalSeries, canonicalRange, latestCanonicalRow } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 import { auth } from "@/lib/auth";
 import { WatchlistButton } from "@/components/WatchlistButton";
@@ -56,46 +57,23 @@ export default async function CompanyPage({ params }: Props) {
       })
     : [];
 
-  // Get latest price for current company + peers in one bhavcopy query
+  // Latest canonical price for current company + peers (one row per company).
   const allCompanyIds = [company.id, ...peers.map((p) => p.id)];
-  const latestBhav = await prisma.bhavcopyDaily.findFirst({
-    orderBy: { date: "desc" }, select: { date: true },
-  });
-  const peerPrices = latestBhav
-    ? await prisma.bhavcopyDaily.findMany({
-        where: { companyId: { in: allCompanyIds }, date: latestBhav.date },
-        select: { companyId: true, close: true },
-      })
-    : [];
-  const priceMap = new Map(peerPrices.map((p) => [p.companyId, Number(p.close)]));
+  const latestBhavDate = await latestTradingDate();
+  const priceMap = latestBhavDate ? await canonicalCloseMap(latestBhavDate, allCompanyIds) : new Map<number, number>();
 
-  // 30-day price history for sparklines (current company + peers)
+  // 30-day canonical series for sparklines (current company + peers)
   const sparkCutoff = new Date(); sparkCutoff.setDate(sparkCutoff.getDate() - 35);
-  const sparkRows = await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: allCompanyIds }, date: { gte: sparkCutoff } },
-    orderBy: [{ companyId: "asc" }, { date: "asc" }],
-    select: { companyId: true, close: true },
-  });
+  const sparkSeries = await canonicalSeries(allCompanyIds, sparkCutoff);
   const sparklineMap = new Map<number, number[]>();
-  for (const r of sparkRows) {
-    const arr = sparklineMap.get(r.companyId) ?? [];
-    arr.push(Number(r.close));
-    sparklineMap.set(r.companyId, arr);
-  }
+  for (const [cid, rows] of sparkSeries) sparklineMap.set(cid, rows.map((r) => r.close));
 
-  // Fetch latest bhavcopy for real price data + 52W range + financial history
+  // Canonical latest price + 52W range + financial history
   const cutoff52w = new Date(); cutoff52w.setFullYear(cutoff52w.getFullYear() - 1);
-  const [latestPrice, yearStats, quarterlyResults, annualFinancials] = await Promise.all([
-    prisma.bhavcopyDaily.findFirst({
-      where: { companyId: company.id },
-      orderBy: { date: "desc" },
-      select: { close: true, open: true, high: true, low: true, volume: true, deliveryPct: true, date: true },
-    }),
-    prisma.bhavcopyDaily.aggregate({
-      where: { companyId: company.id, date: { gte: cutoff52w } },
-      _max: { high: true },
-      _min: { low: true },
-    }),
+  const techCutoff = new Date(); techCutoff.setDate(techCutoff.getDate() - 400);
+  const [latestPrice, range52map, quarterlyResults, annualFinancials, techSeries, niftyHistory] = await Promise.all([
+    latestCanonicalRow(company.id),
+    canonicalRange([company.id], cutoff52w),
     prisma.quarterlyResult.findMany({
       where: { companyId: company.id },
       orderBy: { quarterEnd: "asc" },
@@ -106,22 +84,15 @@ export default async function CompanyPage({ params }: Props) {
       orderBy: { yearEnd: "asc" },
       take: 12,
     }),
-  ]);
-
-  // ─── Technical indicators — full price history + Nifty for relative strength ──
-  const techCutoff = new Date(); techCutoff.setDate(techCutoff.getDate() - 400);
-  const [techHistory, niftyHistory] = await Promise.all([
-    prisma.bhavcopyDaily.findMany({
-      where: { companyId: company.id, date: { gte: techCutoff } },
-      orderBy: { date: "asc" },
-      select: { close: true, high: true, low: true },
-    }),
+    canonicalSeries([company.id], techCutoff),
     prisma.niftyIndex.findMany({
       where: { indexName: "Nifty 50", date: { gte: techCutoff } },
       orderBy: { date: "asc" },
       select: { close: true },
     }),
   ]);
+  const yearStats = range52map.get(company.id) ?? null;
+  const techHistory = techSeries.get(company.id) ?? [];
   const technicals = techHistory.length >= 20
     ? computeTechnicals(
         techHistory.map(r => Number(r.close)),
@@ -195,9 +166,9 @@ export default async function CompanyPage({ params }: Props) {
     roe: num(a.roe),
     roce: num(a.roce),
   }));
-  const ltp = latestPrice ? Number(latestPrice.close) : null;
-  const high52w = yearStats._max.high ? Number(yearStats._max.high) : null;
-  const low52w = yearStats._min.low ? Number(yearStats._min.low) : null;
+  const ltp = latestPrice ? latestPrice.close : null;
+  const high52w = yearStats?.max || null;
+  const low52w = yearStats?.min || null;
 
   const description = getCompanyDescription(company.slug, {
     sector: company.sector,
