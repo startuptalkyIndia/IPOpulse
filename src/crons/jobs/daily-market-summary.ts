@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { canonicalCloseMap } from "@/lib/price";
 
 /**
  * Daily AI-generated market summary. Runs at 16:30 IST after market close.
@@ -29,26 +30,23 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
     select: { date: true },
   });
 
-  // Pull both days at once and pair by company
-  const both = await prisma.bhavcopyDaily.findMany({
-    where: { date: { in: priorDate ? [priorDate.date, latestDate.date] : [latestDate.date] } },
-    select: { date: true, close: true, companyId: true, company: { select: { name: true, slug: true } } },
-  });
-  const byCompany = new Map<number, { latest?: number; prior?: number; name?: string; slug?: string }>();
-  for (const r of both) {
-    const cur = byCompany.get(r.companyId) ?? {};
-    if (r.date.getTime() === latestDate.date.getTime()) cur.latest = Number(r.close);
-    else cur.prior = Number(r.close);
-    cur.name = r.company.name;
-    cur.slug = r.company.slug;
-    byCompany.set(r.companyId, cur);
-  }
+  // Canonical close per company (one row per company per day) for both days.
+  const [latestMap, priorMap] = await Promise.all([
+    canonicalCloseMap(latestDate.date),
+    priorDate ? canonicalCloseMap(priorDate.date) : Promise.resolve(new Map<number, number>()),
+  ]);
+  const cos = new Map(
+    (await prisma.company.findMany({ where: { id: { in: [...latestMap.keys()] } }, select: { id: true, name: true, slug: true } }))
+      .map((c) => [c.id, c]),
+  );
   const movers: { name: string; slug: string; close: number; pct: number }[] = [];
-  for (const v of byCompany.values()) {
-    if (!v.latest || !v.prior || !v.name || !v.slug) continue;
-    const pct = ((v.latest - v.prior) / v.prior) * 100;
+  for (const [companyId, latestClose] of latestMap) {
+    const prior = priorMap.get(companyId);
+    const co = cos.get(companyId);
+    if (!latestClose || !prior || !co) continue;
+    const pct = ((latestClose - prior) / prior) * 100;
     if (!Number.isFinite(pct)) continue;
-    movers.push({ name: v.name, slug: v.slug, close: v.latest, pct });
+    movers.push({ name: co.name, slug: co.slug, close: latestClose, pct });
   }
   const gainers = movers.slice().sort((a, b) => b.pct - a.pct).slice(0, 10);
   const losers = movers.slice().sort((a, b) => a.pct - b.pct).slice(0, 10);

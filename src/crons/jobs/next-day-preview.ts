@@ -16,6 +16,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { canonicalRowsForDate, canonicalCloseMap } from "@/lib/price";
 import { callClaudeJson, claudeAvailable } from "@/lib/claude-runner";
 import type { IngestionResult } from "../runIngestion";
 
@@ -68,26 +69,22 @@ export async function generateNextDayPreview(): Promise<IngestionResult> {
     where: { date: { lt: latest.date } }, orderBy: { date: "desc" }, select: { date: true },
   });
 
-  // Top movers
-  const todayRows = await prisma.bhavcopyDaily.findMany({
-    where: { date: latest.date },
-    select: { companyId: true, close: true, company: { select: { name: true, nseSymbol: true, sector: true } } },
-  });
-  const priorMap = new Map<number, number>();
-  if (prior) {
-    const priorRows = await prisma.bhavcopyDaily.findMany({
-      where: { date: prior.date }, select: { companyId: true, close: true },
-    });
-    for (const r of priorRows) priorMap.set(r.companyId, Number(r.close));
-  }
+  // Top movers — canonical rows (one per company) + company info.
+  const canon = await canonicalRowsForDate(latest.date);
+  const priorMap = prior ? await canonicalCloseMap(prior.date) : new Map<number, number>();
+  const cos = new Map(
+    (await prisma.company.findMany({ where: { id: { in: canon.map((r) => r.companyId) } }, select: { id: true, name: true, nseSymbol: true, sector: true } }))
+      .map((c) => [c.id, c]),
+  );
 
   const movers: Array<{ symbol: string; name: string; sector: string | null; pct: number; close: number }> = [];
-  for (const r of todayRows) {
+  for (const r of canon) {
     const prev = priorMap.get(r.companyId);
-    if (!prev) continue;
-    const pct = ((Number(r.close) - prev) / prev) * 100;
+    const co = cos.get(r.companyId);
+    if (!prev || !co) continue;
+    const pct = ((r.close - prev) / prev) * 100;
     if (!Number.isFinite(pct)) continue;
-    movers.push({ symbol: r.company.nseSymbol ?? "", name: r.company.name, sector: r.company.sector, pct, close: Number(r.close) });
+    movers.push({ symbol: co.nseSymbol ?? "", name: co.name, sector: co.sector, pct, close: r.close });
   }
 
   const gainers = [...movers].sort((a, b) => b.pct - a.pct).slice(0, 5);
