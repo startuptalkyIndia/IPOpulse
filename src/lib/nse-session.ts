@@ -13,6 +13,8 @@
  *   const data = await fetchNse("/api/option-chain-equities?symbol=NIFTY");
  */
 
+import { withRetry } from "@/lib/retry";
+
 const BASE = "https://www.nseindia.com";
 const SESSION_TTL_MS = 90 * 60 * 1000; // 90 minutes
 
@@ -68,6 +70,15 @@ async function getSession(): Promise<Session> {
  * Returns parsed JSON or throws.
  */
 export async function fetchNse<T = unknown>(path: string): Promise<T> {
+  // Retry transient blips (network/timeout/5xx) but not deterministic 4xx
+  // (audit MEDIUM M42) — a once-daily job shouldn't lose a day to one hiccup.
+  return withRetry(() => fetchNseOnce<T>(path), {
+    attempts: 3,
+    shouldRetry: (e) => !(e instanceof Error && /failed: 4\d\d/.test(e.message)),
+  });
+}
+
+async function fetchNseOnce<T = unknown>(path: string): Promise<T> {
   const s = await getSession();
   const url = `${BASE}${path}`;
 
