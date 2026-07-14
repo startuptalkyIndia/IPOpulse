@@ -47,8 +47,8 @@ html[data-theme="dark"] body {
 html[data-theme="dark"] {
   /* Surfaces */
   & .bg-white { background-color: var(--bg-card) !important; }
-  & [class*="bg-gray-50"] { background-color: var(--bg-muted) !important; }
-  & [class*="bg-gray-100"] { background-color: var(--bg-muted) !important; }
+  & [class~="bg-gray-50"] { background-color: var(--bg-muted) !important; }
+  & [class~="bg-gray-100"] { background-color: var(--bg-muted) !important; }
   & .bg-gray-200 { background-color: var(--border) !important; }
 
   /* Cards: softer surface, no light shadow */
@@ -68,18 +68,18 @@ html[data-theme="dark"] {
   & .hover\:bg-gray-50:hover, & .hover\:bg-gray-100:hover { background-color: var(--border) !important; }
 
   /* Colored tints → translucent dark versions (covers /30 /40 /50 /60 /70 too) */
-  & [class*="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.14) !important; }
-  & [class*="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.22) !important; }
-  & [class*="bg-violet-50"] { background-color: rgba(139, 92, 246, 0.14) !important; }
-  & [class*="bg-violet-100"] { background-color: rgba(139, 92, 246, 0.22) !important; }
-  & [class*="bg-emerald-50"], & [class*="bg-green-50"] { background-color: rgba(16, 185, 129, 0.14) !important; }
-  & [class*="bg-emerald-100"], & [class*="bg-green-100"] { background-color: rgba(16, 185, 129, 0.20) !important; }
-  & [class*="bg-red-50"], & [class*="bg-rose-50"] { background-color: rgba(239, 68, 68, 0.14) !important; }
-  & [class*="bg-red-100"], & [class*="bg-rose-100"] { background-color: rgba(239, 68, 68, 0.20) !important; }
-  & [class*="bg-amber-50"], & [class*="bg-yellow-50"], & [class*="bg-orange-50"] { background-color: rgba(245, 158, 11, 0.13) !important; }
-  & [class*="bg-amber-100"], & [class*="bg-yellow-100"], & [class*="bg-orange-100"] { background-color: rgba(245, 158, 11, 0.20) !important; }
-  & [class*="bg-blue-50"], & [class*="bg-cyan-50"], & [class*="bg-teal-50"] { background-color: rgba(59, 130, 246, 0.14) !important; }
-  & [class*="bg-blue-100"], & [class*="bg-cyan-100"], & [class*="bg-teal-100"] { background-color: rgba(59, 130, 246, 0.20) !important; }
+  & [class~="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.14) !important; }
+  & [class~="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.22) !important; }
+  & [class~="bg-violet-50"] { background-color: rgba(139, 92, 246, 0.14) !important; }
+  & [class~="bg-violet-100"] { background-color: rgba(139, 92, 246, 0.22) !important; }
+  & [class~="bg-emerald-50"], & [class~="bg-green-50"] { background-color: rgba(16, 185, 129, 0.14) !important; }
+  & [class~="bg-emerald-100"], & [class~="bg-green-100"] { background-color: rgba(16, 185, 129, 0.20) !important; }
+  & [class~="bg-red-50"], & [class~="bg-rose-50"] { background-color: rgba(239, 68, 68, 0.14) !important; }
+  & [class~="bg-red-100"], & [class~="bg-rose-100"] { background-color: rgba(239, 68, 68, 0.20) !important; }
+  & [class~="bg-amber-50"], & [class~="bg-yellow-50"], & [class~="bg-orange-50"] { background-color: rgba(245, 158, 11, 0.13) !important; }
+  & [class~="bg-amber-100"], & [class~="bg-yellow-100"], & [class~="bg-orange-100"] { background-color: rgba(245, 158, 11, 0.20) !important; }
+  & [class~="bg-blue-50"], & [class~="bg-cyan-50"], & [class~="bg-teal-50"] { background-color: rgba(59, 130, 246, 0.14) !important; }
+  & [class~="bg-blue-100"], & [class~="bg-cyan-100"], & [class~="bg-teal-100"] { background-color: rgba(59, 130, 246, 0.20) !important; }
 
   /* Inputs */
   & .input, & input, & select, & textarea { background-color: var(--bg-muted) !important; border-color: var(--border) !important; color: var(--text-primary) !important; }

@@ -59,20 +59,17 @@ function parsePriceBand(s: string | undefined): { low: number | null; high: numb
   return { low: Math.min(...vals), high: Math.max(...vals) };
 }
 
-/** Map NSE status + dates to our internal status. */
-function mapStatus(nseStatus: string | undefined, open: Date | null, close: Date | null): string {
+/**
+ * Map the NSE feed's status KEYWORD to our internal status. Date-based inference
+ * is intentionally NOT done here — computeIpoStatus (via advanceStaleStatuses,
+ * which runs right after ingest) is the single authority for date-derived status,
+ * so this no longer duplicates that logic (audit HIGH: two sources of truth).
+ */
+function mapStatus(nseStatus: string | undefined): string {
   const st = (nseStatus ?? "").toLowerCase();
   if (st === "active") return "live";
-  if (st === "forthcoming") return "upcoming";
   if (st === "closed") return "closed";
-  // Fall back to date-based inference
-  const now = new Date();
-  if (open && close) {
-    if (now < open) return "upcoming";
-    if (now >= open && now <= new Date(close.getTime() + 86400000)) return "live";
-    return "closed";
-  }
-  return "upcoming";
+  return "upcoming"; // "forthcoming" or unknown; advanceStaleStatuses corrects by date
 }
 
 async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number; note: string }> {
@@ -85,7 +82,7 @@ async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number
     const open = parseNseDate(issue.issueStartDate);
     const close = parseNseDate(issue.issueEndDate);
     const band = parsePriceBand(issue.issuePrice);
-    const status = mapStatus(issue.status, open, close);
+    const status = mapStatus(issue.status);
     const slug = slugifyIpoName(issue.companyName, { suffix: type === "sme" ? "sme" : undefined });
 
     await prisma.ipo.upsert({
