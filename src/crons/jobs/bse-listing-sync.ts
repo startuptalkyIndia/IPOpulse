@@ -54,33 +54,26 @@ export async function syncIpoListings(): Promise<IngestionResult> {
     const nextDay = new Date(listingDay);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    // Try to find bhavcopy data for listing day
-    let bhavRow = null;
-
+    // Resolve the company (NSE symbol first, then BSE code).
+    let companyId: number | null = null;
     if (ipo.nseSymbol) {
-      const co = await prisma.company.findUnique({
-        where: { nseSymbol: ipo.nseSymbol },
-        select: { id: true },
-      });
-      if (co) {
-        bhavRow = await prisma.bhavcopyDaily.findFirst({
-          where: { companyId: co.id, date: { gte: listingDay, lt: nextDay } },
-          select: { open: true, high: true, low: true, close: true, volume: true },
-        });
-      }
+      companyId = (await prisma.company.findUnique({ where: { nseSymbol: ipo.nseSymbol }, select: { id: true } }))?.id ?? null;
+    }
+    if (!companyId && ipo.bseCode) {
+      companyId = (await prisma.company.findUnique({ where: { bseCode: ipo.bseCode }, select: { id: true } }))?.id ?? null;
     }
 
-    if (!bhavRow && ipo.bseCode) {
-      const co = await prisma.company.findUnique({
-        where: { bseCode: ipo.bseCode },
-        select: { id: true },
+    // Pick ONE canonical listing-day row by source precedence (audit MEDIUM M8:
+    // a plain findFirst returned an arbitrary source and this feeds the public
+    // GMP-accuracy / listing-gain scorecard).
+    let bhavRow: { open: unknown; high: unknown; low: unknown; close: unknown; volume: bigint } | null = null;
+    if (companyId) {
+      const rows = await prisma.bhavcopyDaily.findMany({
+        where: { companyId, date: { gte: listingDay, lt: nextDay } },
+        select: { open: true, high: true, low: true, close: true, volume: true, source: true },
       });
-      if (co) {
-        bhavRow = await prisma.bhavcopyDaily.findFirst({
-          where: { companyId: co.id, date: { gte: listingDay, lt: nextDay } },
-          select: { open: true, high: true, low: true, close: true, volume: true },
-        });
-      }
+      const rank = (s: string) => (({ nse: 1, bse: 2, kite: 3, fyers: 4, yahoo: 5 }) as Record<string, number>)[s] ?? 9;
+      bhavRow = rows.sort((a, b) => rank(a.source) - rank(b.source))[0] ?? null;
     }
 
     // We need at least a listing price to proceed
