@@ -30,8 +30,12 @@ interface Check {
 }
 
 const CHECKS: Check[] = [
-  { name: "EOD prices (bhavcopy)", cron: "nse_bhavcopy", maxAgeDays: 5, minRows: 1000,
-    sql: `SELECT MAX(date) AS latest, COUNT(*) AS rows FROM bhavcopy_daily` },
+  // Per-source freshness (audit HIGH): a dead BSE feed was masked when the check
+  // scanned all sources together and NSE rows kept it looking fresh.
+  { name: "EOD prices (NSE bhavcopy)", cron: "nse_bhavcopy", maxAgeDays: 5, minRows: 1000,
+    sql: `SELECT MAX(date) AS latest, COUNT(*) AS rows FROM bhavcopy_daily WHERE source = 'nse'` },
+  { name: "EOD prices (BSE bhavcopy)", cron: "bse_bhavcopy", maxAgeDays: 6, minRows: 100,
+    sql: `SELECT MAX(date) AS latest, COUNT(*) AS rows FROM bhavcopy_daily WHERE source = 'bse'` },
   // Fundamentals refresh nightly (yahoo_fundamentals) — rolls full universe weekly
   { name: "Company fundamentals", cron: "yahoo_fundamentals", maxAgeDays: 4, minRows: 1000,
     sql: `SELECT MAX(fundamentals_at) AS latest, COUNT(*) FILTER (WHERE fundamentals_at IS NOT NULL) AS rows FROM companies` },
@@ -88,6 +92,17 @@ async function runCheck(c: Check): Promise<Result> {
   }
 }
 
+/** Ping an external dead-man service (healthchecks.io-style: /fail suffix on failure). */
+async function pingDeadMan(healthy: boolean) {
+  const url = process.env.HEALTHCHECK_PING_URL;
+  if (!url) return;
+  try {
+    await fetch(healthy ? url : `${url.replace(/\/$/, "")}/fail`, { signal: AbortSignal.timeout(8000) });
+  } catch {
+    // best-effort; never throw from the heartbeat
+  }
+}
+
 async function pushAlert(title: string, body: string, priority: "high" | "default" = "high") {
   try {
     await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
@@ -119,6 +134,12 @@ const JOB_LIVENESS: Array<{ job: string; maxAgeHours: number }> = [
   { job: "screener_deep", maxAgeHours: 192 },      // weekly (Sun) + 1d slack
   { job: "gmp_tracker", maxAgeHours: 12 },         // every 4h (throws on parse failure)
   { job: "nse_ipo_subscription", maxAgeHours: 24 },// every 30m; succeeds even w/ 0 live IPOs
+  { job: "bse_bhavcopy", maxAgeHours: 80 },        // daily weekday (audit HIGH: was unmonitored)
+  { job: "bse_listing_sync", maxAgeHours: 80 },    // daily weekday
+  { job: "us_adrs", maxAgeHours: 30 },             // every 6h
+  { job: "check_alerts", maxAgeHours: 12 },        // every 2h
+  { job: "yahoo_prices", maxAgeHours: 80 },        // 15min in market hours (fallback price path)
+  { job: "super_investor", maxAgeHours: 792 },     // monthly (15th) + slack
 ];
 
 async function checkJobLiveness(): Promise<Result[]> {
@@ -162,6 +183,13 @@ export async function runCrawlerHealth(): Promise<IngestionResult> {
     const body = failures.map((f) => `🔴 ${f.name}: ${f.reason}`).join("\n");
     await pushAlert(`IPOpulse: ${failures.length} crawler issue(s)`, body, "high");
   }
+
+  // Dead-man switch (audit HIGH): the heartbeat lives inside the very process it
+  // monitors, so a crashed/OOMed container silently stops ALL crons AND the
+  // alerter. Pinging an external service (e.g. healthchecks.io) on each run means
+  // that service alerts YOU when the ping stops — the only signal that survives a
+  // dead container. Set HEALTHCHECK_PING_URL to enable; no-op if unset.
+  await pingDeadMan(failures.length === 0);
 
   return {
     rowsIn: results.length - failures.length, // # healthy
