@@ -36,7 +36,7 @@ export function MobileNav({ authed }: { authed: boolean }) {
       {/* Hamburger trigger */}
       <button
         onClick={() => setOpen(true)}
-        className="md:hidden flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900"
+        className="lg:hidden flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900"
         aria-label="Open menu"
       >
         <Menu className="w-5 h-5" />
@@ -45,14 +45,14 @@ export function MobileNav({ authed }: { authed: boolean }) {
       {/* Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 z-50 md:hidden"
+          className="fixed inset-0 bg-black/40 z-50 lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-200 ease-in-out md:hidden ${
+        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-200 ease-in-out lg:hidden ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

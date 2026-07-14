@@ -22,6 +22,7 @@ export async function ingestNseBhavcopy(): Promise<IngestionResult> {
 
   let rowsIn = 0;
   let rowsError = 0;
+  let firstError: string | undefined; // capture first per-row error (audit MEDIUM M38)
   for (const r of rows) {
     const companyId = symbolMap.get(r.symbol);
     if (!companyId) continue;
@@ -51,8 +52,9 @@ export async function ingestNseBhavcopy(): Promise<IngestionResult> {
         },
       });
       rowsIn++;
-    } catch {
+    } catch (e) {
       rowsError++;
+      if (!firstError) firstError = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -61,5 +63,9 @@ export async function ingestNseBhavcopy(): Promise<IngestionResult> {
     await prisma.bhavcopyDaily.deleteMany({ where: { date: rows[0].date, source: "seed" } });
   }
 
-  return { rowsIn, rowsError, notes: `parsed ${rows.length} CSV rows, matched ${rowsIn}` };
+  return {
+    rowsIn,
+    rowsError,
+    notes: `parsed ${rows.length} CSV rows, matched ${rowsIn}${firstError ? ` — first error: ${firstError}` : ""}`,
+  };
 }
