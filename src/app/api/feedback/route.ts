@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +22,13 @@ const Schema = z.object({
 const NTFY_TOPIC = process.env.NTFY_FEEDBACK_TOPIC || "";
 
 export async function POST(req: Request) {
+  // Rate limit (audit MEDIUM M14): unauthenticated endpoint that writes a DB row
+  // and fires a founder push per request — cap to 5 / 10 min per IP.
+  const rl = rateLimit("feedback", clientIp(req), 5, 10 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json({ ok: false, error: "Too many submissions — please try again later." }, { status: 429 });
+  }
+
   let parsed;
   try {
     parsed = Schema.parse(await req.json());
