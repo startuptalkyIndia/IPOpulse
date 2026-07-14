@@ -147,6 +147,7 @@ export async function trackGmp(): Promise<IngestionResult> {
   let upserted = 0;
   let unmatched = 0;
   let created = 0;
+  let manualSkipped = 0;
   const unmatchedNames: string[] = [];
 
   for (const row of scraped) {
@@ -195,6 +196,18 @@ export async function trackGmp(): Promise<IngestionResult> {
       }
     }
 
+    // Do NOT overwrite a GMP a human curated via /sup-min (audit HIGH: the
+    // tracker silently clobbered manual entries). Manual rows have enteredBy =
+    // an admin email; tracker rows have enteredBy = "gmp_tracker".
+    const existing = await prisma.ipoGmp.findUnique({
+      where: { ipoId_date: { ipoId, date } },
+      select: { enteredBy: true },
+    });
+    if (existing && existing.enteredBy && existing.enteredBy !== "gmp_tracker") {
+      manualSkipped++;
+      continue;
+    }
+
     await prisma.ipoGmp.upsert({
       where: { ipoId_date: { ipoId, date } },
       update: { gmp: row.gmp, source: "ipowatch", enteredBy: "gmp_tracker" },
@@ -210,6 +223,6 @@ export async function trackGmp(): Promise<IngestionResult> {
   return {
     rowsIn: upserted,
     rowsError: 0,
-    notes: `${upserted}/${scraped.length} matched+saved${created ? `; ${created} BSE SME IPOs created` : ""}${unmatched ? `; unmatched: ${unmatchedNames.join(", ")}${unmatched > 5 ? "…" : ""}` : ""}`,
+    notes: `${upserted}/${scraped.length} matched+saved${created ? `; ${created} BSE SME IPOs created` : ""}${manualSkipped ? `; ${manualSkipped} manual GMP preserved` : ""}${unmatched ? `; unmatched: ${unmatchedNames.join(", ")}${unmatched > 5 ? "…" : ""}` : ""}`,
   };
 }

@@ -179,6 +179,8 @@ export async function checkIpoAlerts(): Promise<{
   let fired = 0;
   let failed = 0;
   const firedIds: string[] = [];
+  const undeliveredIds: string[] = [];
+  const MAX_DELIVERY_ATTEMPTS = 5; // give up (mark fired) after this many failures
 
   for (const alert of alerts) {
     try {
@@ -229,6 +231,11 @@ export async function checkIpoAlerts(): Promise<{
       const ipoName = ipo?.name ?? alert.ipoName;
       const conditionLine = describeCondition(alert.type, alert.threshold ?? null, gmpValueForEmail);
 
+      // Only mark an alert fired once the email is actually DELIVERED (audit HIGH:
+      // it previously marked firedAt even with no API key / on send failure, so
+      // notifications were silently dropped forever). Undelivered alerts retry,
+      // capped by attemptCount so a permanently-bad address can't loop forever.
+      let delivered = false;
       if (resend) {
         const html = buildEmailHtml({
           userName: alert.user.name ?? "",
@@ -247,23 +254,38 @@ export async function checkIpoAlerts(): Promise<{
               "List-Unsubscribe": `<https://ipopulse.talkytools.com/my/alerts>`,
             },
           });
+          delivered = true;
         } catch {
-          // Email failed — still mark firedAt to prevent infinite retries
-          // The alert condition was genuinely met; silently continue
+          delivered = false;
         }
       }
 
-      firedIds.push(alert.id);
-      fired++;
+      if (delivered) {
+        firedIds.push(alert.id);
+        fired++;
+      } else {
+        undeliveredIds.push(alert.id);
+      }
     } catch {
       failed++;
     }
   }
 
-  // Bulk-mark all fired alerts in one query
+  // Bulk-mark delivered alerts as fired
   if (firedIds.length > 0) {
     await prisma.alert.updateMany({
       where: { id: { in: firedIds } },
+      data: { firedAt: new Date() },
+    });
+  }
+  // Undelivered: bump attempt count; give up (mark fired) once the cap is hit
+  if (undeliveredIds.length > 0) {
+    await prisma.alert.updateMany({
+      where: { id: { in: undeliveredIds } },
+      data: { attemptCount: { increment: 1 } },
+    });
+    await prisma.alert.updateMany({
+      where: { id: { in: undeliveredIds }, attemptCount: { gte: MAX_DELIVERY_ATTEMPTS } },
       data: { firedAt: new Date() },
     });
   }

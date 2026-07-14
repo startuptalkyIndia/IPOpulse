@@ -24,9 +24,11 @@ export async function saveGmpEntry(formData: FormData) {
     return { ok: false, error: "Please fill IPO, date, and GMP." };
   }
 
-  const date = new Date(dateStr);
-  if (Number.isNaN(date.getTime())) return { ok: false, error: "Invalid date" };
-  date.setHours(0, 0, 0, 0);
+  const raw = new Date(dateStr);
+  if (Number.isNaN(raw.getTime())) return { ok: false, error: "Invalid date" };
+  // Normalize to UTC midnight so this key matches the gmp_tracker cron's key
+  // (audit HIGH: local-midnight vs UTC-midnight created duplicate same-day rows).
+  const date = new Date(Date.UTC(raw.getUTCFullYear(), raw.getUTCMonth(), raw.getUTCDate()));
 
   await prisma.ipoGmp.upsert({
     where: { ipoId_date: { ipoId, date } },
