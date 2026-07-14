@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { canonicalCloseMap } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -18,19 +19,16 @@ export default async function TickerPage() {
     ? await prisma.bhavcopyDaily.findFirst({ where: { date: { lt: latestBhav.date } }, orderBy: { date: "desc" }, select: { date: true } })
     : null;
 
-  const [companies, todayPrices, prevPrices] = await Promise.all([
+  const [companies, todayMap, prevMap] = await Promise.all([
     prisma.company.findMany({
       where: { active: true, isSme: false },
       orderBy: { marketCap: "desc" },
       take: 500,
       select: { id: true, slug: true, name: true, nseSymbol: true, bseCode: true, sector: true, marketCap: true },
     }),
-    latestBhav ? prisma.bhavcopyDaily.findMany({ where: { date: latestBhav.date }, select: { companyId: true, close: true } }) : [],
-    prevBhav  ? prisma.bhavcopyDaily.findMany({ where: { date: prevBhav.date  }, select: { companyId: true, close: true } }) : [],
+    latestBhav ? canonicalCloseMap(latestBhav.date) : new Map<number, number>(),
+    prevBhav ? canonicalCloseMap(prevBhav.date) : new Map<number, number>(),
   ]);
-
-  const todayMap = new Map(todayPrices.map(p => [p.companyId, Number(p.close)]));
-  const prevMap  = new Map(prevPrices.map(p  => [p.companyId, Number(p.close)]));
 
   const enriched = companies.map(c => {
     const ltp  = todayMap.get(c.id) ?? null;

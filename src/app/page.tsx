@@ -13,6 +13,7 @@ import {
   Compass,
 } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { latestTradingDate, prevTradingDate, canonicalCloseMap } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 import { SITE_MAP } from "@/lib/site-map";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
@@ -86,21 +87,21 @@ export default async function HomePage() {
   // Sector performance from today's bhavcopy
   const sectorPerf = await (async () => {
     try {
-      const latest = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
-      const prev = await prisma.bhavcopyDaily.findFirst({ where: { date: { lt: latest!.date } }, orderBy: { date: "desc" }, select: { date: true } });
+      const latest = await latestTradingDate();
+      const prev = latest ? await prevTradingDate(latest) : null;
       if (!latest || !prev) return [];
-      const [todayRows, prevRows] = await Promise.all([
-        prisma.bhavcopyDaily.findMany({ where: { date: latest.date }, select: { companyId: true, close: true, company: { select: { sector: true } } } }),
-        prisma.bhavcopyDaily.findMany({ where: { date: prev.date }, select: { companyId: true, close: true } }),
-      ]);
-      const prevMap = new Map(prevRows.map(r => [r.companyId, Number(r.close)]));
+      const [todayMap, prevMap] = await Promise.all([canonicalCloseMap(latest), canonicalCloseMap(prev)]);
+      const sectorByCompany = new Map(
+        (await prisma.company.findMany({ where: { id: { in: [...todayMap.keys()] }, sector: { not: null } }, select: { id: true, sector: true } }))
+          .map((c) => [c.id, c.sector as string]),
+      );
       const sectorMap = new Map<string, number[]>();
-      for (const r of todayRows) {
-        const sec = r.company.sector;
+      for (const [companyId, close] of todayMap) {
+        const sec = sectorByCompany.get(companyId);
         if (!sec) continue;
-        const p = prevMap.get(r.companyId);
+        const p = prevMap.get(companyId);
         if (!p) continue;
-        const pct = ((Number(r.close) - p) / p) * 100;
+        const pct = ((close - p) / p) * 100;
         if (!Number.isFinite(pct)) continue;
         const arr = sectorMap.get(sec) ?? [];
         arr.push(pct);

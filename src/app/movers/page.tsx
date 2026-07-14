@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { latestTradingDate, prevTradingDate, canonicalRowsForDate, canonicalCloseMap } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 import { DataDisclaimer } from "@/components/DataDisclaimer";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -30,45 +31,40 @@ interface Row {
 }
 
 async function fetchRows(): Promise<Row[]> {
-  // Fetch latest two trading days of bhavcopy
-  const latest = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
-  if (!latest) return [];
-  const prev = await prisma.bhavcopyDaily.findFirst({
-    where: { date: { lt: latest.date } },
-    orderBy: { date: "desc" },
-    select: { date: true },
-  });
-  const todayRows = await prisma.bhavcopyDaily.findMany({
-    where: { date: latest.date },
-    include: { company: true },
-  });
-  const prevByCompany = new Map<number, number>();
-  if (prev) {
-    const prevRows = await prisma.bhavcopyDaily.findMany({
-      where: { date: prev.date },
-      select: { companyId: true, close: true },
-    });
-    for (const p of prevRows) prevByCompany.set(p.companyId, Number(p.close));
-  }
+  // Canonical (one row per company per day) via the shared price layer — reading
+  // bhavcopy_daily directly would return the same stock once per source.
+  const latestDate = await latestTradingDate();
+  if (!latestDate) return [];
+  const prevDate = await prevTradingDate(latestDate);
+  const todayRows = await canonicalRowsForDate(latestDate);
+  const prevByCompany = prevDate ? await canonicalCloseMap(prevDate) : new Map<number, number>();
 
-  const rows: Row[] = todayRows.map((r) => {
-    const prevClose = prevByCompany.get(r.companyId) ?? Number(r.open);
-    const close = Number(r.close);
-    const pct = prevClose > 0 ? ((close - prevClose) / prevClose) * 100 : 0;
-    return {
-      slug: r.company.slug,
-      name: r.company.name,
-      sector: r.company.sector,
-      symbol: r.company.nseSymbol ?? r.company.bseCode,
-      close,
+  const companies = await prisma.company.findMany({
+    where: { id: { in: todayRows.map((r) => r.companyId) } },
+    select: { id: true, slug: true, name: true, sector: true, nseSymbol: true, bseCode: true },
+  });
+  const coMap = new Map(companies.map((c) => [c.id, c]));
+
+  const rows: Row[] = [];
+  for (const r of todayRows) {
+    const co = coMap.get(r.companyId);
+    if (!co) continue;
+    const prevClose = prevByCompany.get(r.companyId) ?? r.open;
+    const pct = prevClose > 0 ? ((r.close - prevClose) / prevClose) * 100 : 0;
+    rows.push({
+      slug: co.slug,
+      name: co.name,
+      sector: co.sector,
+      symbol: co.nseSymbol ?? co.bseCode,
+      close: r.close,
       prevClose,
       pctChange: pct,
-      high: Number(r.high),
-      low: Number(r.low),
+      high: r.high,
+      low: r.low,
       volume: r.volume,
-      deliveryPct: r.deliveryPct ? Number(r.deliveryPct) : null,
-    };
-  });
+      deliveryPct: r.deliveryPct,
+    });
+  }
 
   return rows;
 }

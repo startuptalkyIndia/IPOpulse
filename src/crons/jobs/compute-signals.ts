@@ -16,6 +16,7 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+import { canonicalSeries } from "@/lib/price";
 import { computeTechnicals } from "@/lib/technicals";
 import { computeQualitySignals, readCyclical } from "@/lib/quality-signals";
 import { getMoat } from "@/lib/moats";
@@ -44,19 +45,16 @@ export async function computeSignals(): Promise<IngestionResult> {
     const chunk = companies.slice(off, off + CHUNK);
     const ids = chunk.map(c => c.id);
 
-    // Bulk-fetch price history for this chunk
-    const prices = await prisma.bhavcopyDaily.findMany({
-      where: { companyId: { in: ids }, date: { gte: techCutoff } },
-      orderBy: [{ companyId: "asc" }, { date: "asc" }],
-      select: { companyId: true, close: true, high: true, low: true },
-    });
+    // Canonical series (one row per company per day) — reading bhavcopy_daily
+    // directly would feed duplicate same-day rows into RSI/returns and corrupt them.
+    const series = await canonicalSeries(ids, techCutoff);
     const priceMap = new Map<number, { close: number[]; high: number[]; low: number[] }>();
-    for (const p of prices) {
-      const e = priceMap.get(p.companyId) ?? { close: [], high: [], low: [] };
-      e.close.push(Number(p.close));
-      e.high.push(Number(p.high));
-      e.low.push(Number(p.low));
-      priceMap.set(p.companyId, e);
+    for (const [companyId, rows] of series) {
+      priceMap.set(companyId, {
+        close: rows.map((r) => r.close),
+        high: rows.map((r) => r.high),
+        low: rows.map((r) => r.low),
+      });
     }
 
     // Bulk-fetch annual financials for this chunk

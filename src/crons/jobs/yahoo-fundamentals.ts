@@ -116,13 +116,19 @@ export async function recalcMarketCap(): Promise<IngestionResult> {
   });
   if (!latestBhav) return { rowsIn: 0 };
 
+  // Use ONE canonical price per company (best source) — a plain join to
+  // bhavcopy_daily would match multiple source rows and pick one arbitrarily.
   const n = await prisma.$executeRaw`
     UPDATE companies c
-    SET market_cap = ROUND((c.shares_outstanding::numeric * b.close) / 10000000, 2),
+    SET market_cap = ROUND((c.shares_outstanding::numeric * canon.close) / 10000000, 2),
         "updatedAt" = now()
-    FROM bhavcopy_daily b
-    WHERE b.company_id = c.id
-      AND b.date = ${latestBhav.date}
+    FROM (
+      SELECT DISTINCT ON (company_id) company_id, close
+      FROM bhavcopy_daily
+      WHERE date = ${latestBhav.date}
+      ORDER BY company_id, CASE source WHEN 'nse' THEN 1 WHEN 'bse' THEN 2 WHEN 'kite' THEN 3 WHEN 'fyers' THEN 4 WHEN 'yahoo' THEN 5 ELSE 9 END
+    ) canon
+    WHERE canon.company_id = c.id
       AND c.shares_outstanding IS NOT NULL
       AND c.shares_outstanding > 0
   `;
