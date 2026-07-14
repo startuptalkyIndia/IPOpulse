@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { latestCanonicalRow, canonicalRange, canonicalSeries } from "@/lib/price";
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Sparkline } from "@/components/Sparkline";
 
@@ -153,47 +154,27 @@ export default async function CompareStocksPage({
     );
   }
 
-  // Latest price for both
+  // Latest canonical price for both (one row per company, best source)
   const [latestA, latestB] = await Promise.all([
-    prisma.bhavcopyDaily.findFirst({
-      where: { companyId: compA.id },
-      orderBy: { date: "desc" },
-      select: { close: true, date: true },
-    }),
-    prisma.bhavcopyDaily.findFirst({
-      where: { companyId: compB.id },
-      orderBy: { date: "desc" },
-      select: { close: true, date: true },
-    }),
+    latestCanonicalRow(compA.id),
+    latestCanonicalRow(compB.id),
   ]);
 
-  // 52W high/low
+  // 52W high/low (canonical)
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - 1);
-  const [yearA, yearB] = await Promise.all([
-    prisma.bhavcopyDaily.aggregate({
-      where: { companyId: compA.id, date: { gte: cutoff } },
-      _max: { high: true },
-      _min: { low: true },
-    }),
-    prisma.bhavcopyDaily.aggregate({
-      where: { companyId: compB.id, date: { gte: cutoff } },
-      _max: { high: true },
-      _min: { low: true },
-    }),
+  const [rangeMapA, rangeMapB] = await Promise.all([
+    canonicalRange([compA.id], cutoff),
+    canonicalRange([compB.id], cutoff),
   ]);
+  const yearA = rangeMapA.get(compA.id) ?? null;
+  const yearB = rangeMapB.get(compB.id) ?? null;
 
   // 30-day sparkline prices + 10-year annual financials for YoY/CAGR
   const sparkCutoff = new Date(); sparkCutoff.setDate(sparkCutoff.getDate() - 35);
-  const [sparkA, sparkB, annualA, annualB] = await Promise.all([
-    prisma.bhavcopyDaily.findMany({
-      where: { companyId: compA.id, date: { gte: sparkCutoff } },
-      orderBy: { date: "asc" }, select: { close: true },
-    }),
-    prisma.bhavcopyDaily.findMany({
-      where: { companyId: compB.id, date: { gte: sparkCutoff } },
-      orderBy: { date: "asc" }, select: { close: true },
-    }),
+  const [sparkSeriesA, sparkSeriesB, annualA, annualB] = await Promise.all([
+    canonicalSeries([compA.id], sparkCutoff),
+    canonicalSeries([compB.id], sparkCutoff),
     prisma.annualFinancial.findMany({
       where: { companyId: compA.id },
       orderBy: { yearEnd: "desc" }, take: 5,
@@ -205,8 +186,8 @@ export default async function CompareStocksPage({
       select: { sales: true, netProfit: true, eps: true, roe: true, roce: true },
     }),
   ]);
-  const sparkValuesA = sparkA.map(p => Number(p.close));
-  const sparkValuesB = sparkB.map(p => Number(p.close));
+  const sparkValuesA = (sparkSeriesA.get(compA.id) ?? []).map((p) => p.close);
+  const sparkValuesB = (sparkSeriesB.get(compB.id) ?? []).map((p) => p.close);
 
   // Helpers: YoY growth (last 2 yrs) and 3Y CAGR (last 4 yrs latest vs 3-yrs-ago)
   function yoyPct(rows: { sales?: import("@prisma/client").Prisma.Decimal | null; netProfit?: import("@prisma/client").Prisma.Decimal | null }[], field: "sales" | "netProfit"): number | null {
@@ -237,12 +218,12 @@ export default async function CompareStocksPage({
   const ret30A = sparkValuesA.length >= 2 ? ((sparkValuesA[sparkValuesA.length - 1] - sparkValuesA[0]) / sparkValuesA[0]) * 100 : null;
   const ret30B = sparkValuesB.length >= 2 ? ((sparkValuesB[sparkValuesB.length - 1] - sparkValuesB[0]) / sparkValuesB[0]) * 100 : null;
 
-  const ltpA = latestA ? Number(latestA.close) : null;
-  const ltpB = latestB ? Number(latestB.close) : null;
-  const high52A = yearA._max.high ? Number(yearA._max.high) : null;
-  const low52A = yearA._min.low ? Number(yearA._min.low) : null;
-  const high52B = yearB._max.high ? Number(yearB._max.high) : null;
-  const low52B = yearB._min.low ? Number(yearB._min.low) : null;
+  const ltpA = latestA ? latestA.close : null;
+  const ltpB = latestB ? latestB.close : null;
+  const high52A = yearA?.max || null;
+  const low52A = yearA?.min || null;
+  const high52B = yearB?.max || null;
+  const low52B = yearB?.min || null;
   const mcapA = compA.marketCap ? Number(compA.marketCap) : null;
   const mcapB = compB.marketCap ? Number(compB.marketCap) : null;
   const peA = compA.peRatio ? Number(compA.peRatio) : null;

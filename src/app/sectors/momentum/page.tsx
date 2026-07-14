@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Flame, Snowflake } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { canonicalRowsForDate, canonicalCloseMap } from "@/lib/price";
 
 export const metadata: Metadata = {
   title: "Sector Momentum Scorecard — fastest-rising Indian sectors",
@@ -23,16 +24,8 @@ interface SectorRow {
 }
 
 async function avgReturnByDate(targetDate: Date) {
-  const rows = await prisma.bhavcopyDaily.findMany({
-    where: { date: targetDate },
-    select: {
-      close: true,
-      open: true,
-      companyId: true,
-      company: { select: { sector: true } },
-    },
-  });
-  return rows;
+  // Canonical rows (one per company) — sector is resolved separately in the page.
+  return canonicalRowsForDate(targetDate);
 }
 
 async function findClosestBhavDate(target: Date): Promise<Date | null> {
@@ -62,6 +55,12 @@ export default async function SectorMomentumPage() {
     );
   }
 
+  // Sector per company (canonical rows carry no company join).
+  const sectorByCompany = new Map<number, string>(
+    (await prisma.company.findMany({ where: { sector: { not: null } }, select: { id: true, sector: true } }))
+      .map((c) => [c.id, c.sector as string]),
+  );
+
   const todayMs = latest.date.getTime();
   const week = await findClosestBhavDate(new Date(todayMs - 7 * 86400000));
   const month = await findClosestBhavDate(new Date(todayMs - 30 * 86400000));
@@ -89,16 +88,15 @@ export default async function SectorMomentumPage() {
     const sectorAvg = (set: typeof todayRows) => {
       const byS = new Map<string, { sum: number; n: number }>();
       for (const r of set) {
-        if (!r.company?.sector) continue;
-        const close = Number(r.close);
-        const open = Number(r.open);
-        if (!open) continue;
-        const pct = ((close - open) / open) * 100;
+        const sector = sectorByCompany.get(r.companyId);
+        if (!sector) continue;
+        if (!r.open) continue;
+        const pct = ((r.close - r.open) / r.open) * 100;
         if (!Number.isFinite(pct)) continue;
-        const cur = byS.get(r.company.sector) ?? { sum: 0, n: 0 };
+        const cur = byS.get(sector) ?? { sum: 0, n: 0 };
         cur.sum += pct;
         cur.n += 1;
-        byS.set(r.company.sector, cur);
+        byS.set(sector, cur);
       }
       const out = new Map<string, number>();
       for (const [s, { sum, n }] of byS) if (n > 0) out.set(s, sum / n);
@@ -119,27 +117,23 @@ export default async function SectorMomentumPage() {
   const latestDate = latest.date; // capture for closure (latest is non-null past the early return)
   async function periodReturnBySector(baselineDate: Date | null): Promise<Map<string, number>> {
     if (!baselineDate) return new Map();
-    const both = await prisma.bhavcopyDaily.findMany({
-      where: { date: { in: [baselineDate, latestDate] } },
-      select: { date: true, close: true, companyId: true, company: { select: { sector: true } } },
-    });
-    const byCompany = new Map<number, { base?: number; latest?: number; sector?: string }>();
-    for (const r of both) {
-      const cur = byCompany.get(r.companyId) ?? {};
-      if (r.date.getTime() === baselineDate.getTime()) cur.base = Number(r.close);
-      else cur.latest = Number(r.close);
-      cur.sector = r.company?.sector ?? cur.sector;
-      byCompany.set(r.companyId, cur);
-    }
+    // Canonical close on both dates (one per company) — direct reads would
+    // set base/latest from an arbitrary source row.
+    const [baseMap, latestClose] = await Promise.all([
+      canonicalCloseMap(baselineDate),
+      canonicalCloseMap(latestDate),
+    ]);
     const sectorBuckets = new Map<string, { sum: number; n: number }>();
-    for (const v of byCompany.values()) {
-      if (!v.base || !v.latest || !v.sector) continue;
-      const pct = ((v.latest - v.base) / v.base) * 100;
+    for (const [companyId, latestPx] of latestClose) {
+      const base = baseMap.get(companyId);
+      const sector = sectorByCompany.get(companyId);
+      if (!base || !latestPx || !sector) continue;
+      const pct = ((latestPx - base) / base) * 100;
       if (!Number.isFinite(pct)) continue;
-      const cur = sectorBuckets.get(v.sector) ?? { sum: 0, n: 0 };
+      const cur = sectorBuckets.get(sector) ?? { sum: 0, n: 0 };
       cur.sum += pct;
       cur.n += 1;
-      sectorBuckets.set(v.sector, cur);
+      sectorBuckets.set(sector, cur);
     }
     const out = new Map<string, number>();
     for (const [s, { sum, n }] of sectorBuckets) if (n > 0) out.set(s, sum / n);

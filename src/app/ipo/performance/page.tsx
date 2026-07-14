@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Award, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { latestTradingDate, canonicalCloseMap, canonicalSeries } from "@/lib/price";
 import { Sparkline } from "@/components/Sparkline";
 
 export const metadata: Metadata = {
@@ -72,25 +73,13 @@ export default async function IpoPerformancePage({ searchParams }: { searchParam
   // ─── For each matched company, fetch prices ─────────────────────────────
   const coIds = companies.map(c => c.id);
   const oldestCutoff = new Date(); oldestCutoff.setDate(oldestCutoff.getDate() - 35);
-  const sparkRows = coIds.length > 0 ? await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: coIds }, date: { gte: oldestCutoff } },
-    orderBy: [{ companyId: "asc" }, { date: "asc" }],
-    select: { companyId: true, close: true },
-  }) : [];
+  const sparkSeries = coIds.length > 0 ? await canonicalSeries(coIds, oldestCutoff) : new Map();
   const sparkMap = new Map<number, number[]>();
-  for (const r of sparkRows) {
-    const arr = sparkMap.get(r.companyId) ?? [];
-    arr.push(Number(r.close));
-    sparkMap.set(r.companyId, arr);
-  }
+  for (const [cid, rows] of sparkSeries) sparkMap.set(cid, rows.map((r: { close: number }) => r.close));
 
-  // Latest price per company
-  const latestBhav = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
-  const latestRows = latestBhav && coIds.length > 0 ? await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: coIds }, date: latestBhav.date },
-    select: { companyId: true, close: true },
-  }) : [];
-  const latestMap = new Map(latestRows.map(r => [r.companyId, Number(r.close)]));
+  // Latest canonical price per company
+  const latestBhavDate = await latestTradingDate();
+  const latestMap = latestBhavDate && coIds.length > 0 ? await canonicalCloseMap(latestBhavDate, coIds) : new Map<number, number>();
 
   // For each IPO, fetch prices at specific intervals (1m/3m/6m/1y after listing)
   const perfRows: PerfRow[] = [];

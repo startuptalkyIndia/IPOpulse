@@ -19,6 +19,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { latestTradingDate, canonicalCloseMap } from "@/lib/price";
 
 export interface EnrichedPeer {
   name: string;
@@ -175,14 +176,8 @@ export async function enrichPeers(
   const matchedIds = matches.map((m) => m.row?.id).filter((x): x is number => typeof x === "number");
   let ltpMap = new Map<number, number>();
   if (matchedIds.length > 0) {
-    const latestBhav = await prisma.bhavcopyDaily.findFirst({ orderBy: { date: "desc" }, select: { date: true } });
-    if (latestBhav) {
-      const prices = await prisma.bhavcopyDaily.findMany({
-        where: { date: latestBhav.date, companyId: { in: matchedIds } },
-        select: { companyId: true, close: true },
-      });
-      ltpMap = new Map(prices.map((p) => [p.companyId, Number(p.close)]));
-    }
+    const latestBhavDate = await latestTradingDate();
+    if (latestBhavDate) ltpMap = await canonicalCloseMap(latestBhavDate, matchedIds);
   }
 
   return matches.map(({ peer, row }) => ({

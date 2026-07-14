@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, TrendingUp, AlertTriangle, BookOpen, Building2 } from "lucide-react";
 import { sectors, getSectorBySlug } from "@/lib/sectors";
 import { prisma } from "@/lib/db";
+import { canonicalSeries } from "@/lib/price";
 import { formatCurrency } from "@/lib/format";
 import { Sparkline } from "@/components/Sparkline";
 
@@ -98,17 +99,9 @@ export default async function SectorPage({ params }: Props) {
   // ─── 30-day price history for sparklines (top 20 only) ─────────────────
   const top20 = allCompanies.slice(0, 20);
   const sparkCutoff = new Date(); sparkCutoff.setDate(sparkCutoff.getDate() - 35);
-  const sparkRows = top20.length > 0 ? await prisma.bhavcopyDaily.findMany({
-    where: { companyId: { in: top20.map(c => c.id) }, date: { gte: sparkCutoff } },
-    orderBy: [{ companyId: "asc" }, { date: "asc" }],
-    select: { companyId: true, close: true },
-  }) : [];
+  const sparkSeries = top20.length > 0 ? await canonicalSeries(top20.map(c => c.id), sparkCutoff) : new Map();
   const sparkMap = new Map<number, number[]>();
-  for (const r of sparkRows) {
-    const arr = sparkMap.get(r.companyId) ?? [];
-    arr.push(Number(r.close));
-    sparkMap.set(r.companyId, arr);
-  }
+  for (const [cid, rows] of sparkSeries) sparkMap.set(cid, rows.map((r: { close: number }) => r.close));
 
   // ─── YoY growth for top 20 ──────────────────────────────────────────────
   const annuals = top20.length > 0 ? await prisma.annualFinancial.findMany({
