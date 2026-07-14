@@ -22,6 +22,10 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+// Shared + canonical market-cap recalc (audit MEDIUM M3: this file used to carry
+// a byte-identical copy that joined bhavcopy by date only → arbitrary source price).
+import { recalcMarketCap } from "./yahoo-fundamentals";
+export { recalcMarketCap };
 
 const YF_HEADERS = {
   "User-Agent":
@@ -103,30 +107,6 @@ async function fetchQuoteSummary(yahooSymbol: string): Promise<{
   } catch {
     return null;
   }
-}
-
-// ─── Market cap recalculation ────────────────────────────────────────────────
-
-export async function recalcMarketCap(): Promise<number> {
-  const latestBhav = await prisma.bhavcopyDaily.findFirst({
-    orderBy: { date: "desc" },
-    select: { date: true },
-  });
-  if (!latestBhav) return 0;
-
-  const result = await prisma.$executeRaw`
-    UPDATE companies c
-    SET market_cap = ROUND((c.shares_outstanding::numeric * b.close) / 10000000, 2),
-        "updatedAt" = now()
-    FROM bhavcopy_daily b
-    WHERE b.company_id = c.id
-      AND b.date = ${latestBhav.date}
-      AND c.shares_outstanding IS NOT NULL
-      AND c.shares_outstanding > 0
-  `;
-
-  console.log(`[screener-fundamentals] Recalculated market_cap for ${result} companies from shares×price`);
-  return Number(result);
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────

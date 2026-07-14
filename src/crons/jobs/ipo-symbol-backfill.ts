@@ -19,17 +19,9 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+// Name normalization is shared (audit MEDIUM: was copy-pasted + drifted).
+import { normalizeCompanyName as normalize } from "@/lib/ipo-name-match";
 
-// Normalize a company/IPO name for comparison
-function normalize(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\b(limited|ltd|pvt|private|public|company|industries|technologies|corporation|corp|holdings|the)\b\.?/g, "")
-    .replace(/\([^)]*\)/g, "")       // strip parenthetical "(FirstCry)", "(historical)"
-    .replace(/[^a-z0-9 ]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 export async function backfillIpoSymbols(): Promise<IngestionResult> {
   const ipos = await prisma.ipo.findMany({

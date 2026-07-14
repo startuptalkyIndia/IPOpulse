@@ -22,6 +22,7 @@
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
 import { slugifyIpoName } from "@/lib/scrapers/bse-ipo";
+import { normalizeCompanyName as normalize } from "@/lib/ipo-name-match";
 
 const SOURCE_URL = "https://ipowatch.in/ipo-grey-market-premium-latest-ipo-gmp/";
 const UA =
@@ -42,17 +43,6 @@ function stripTags(s: string): string {
     .replace(/&amp;/g, "&")
     .replace(/&nbsp;/g, " ")
     .replace(/&#\d+;/g, "")
-    .trim();
-}
-
-/** Same normalization as ipo-symbol-backfill — keep matching behavior consistent. */
-function normalize(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\b(limited|ltd|pvt|private|public|company|industries|technologies|corporation|corp|holdings|the|ipo)\b\.?/g, "")
-    .replace(/\([^)]*\)/g, "")
-    .replace(/[^a-z0-9 ]/g, "")
-    .replace(/\s+/g, " ")
     .trim();
 }
 
