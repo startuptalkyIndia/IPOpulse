@@ -31,6 +31,14 @@ export function MobileNav({ authed }: { authed: boolean }) {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
+  // Close on Escape (audit MEDIUM M23 — dialog a11y)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <>
       {/* Hamburger trigger */}
@@ -50,8 +58,13 @@ export function MobileNav({ authed }: { authed: boolean }) {
         />
       )}
 
-      {/* Drawer */}
+      {/* Drawer — dialog semantics + inert when closed so its links leave the tab order */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site menu"
+        aria-hidden={!open}
+        inert={!open ? true : undefined}
         className={`fixed top-0 left-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-200 ease-in-out lg:hidden ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
