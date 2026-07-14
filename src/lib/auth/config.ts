@@ -32,6 +32,9 @@ export const authConfig: NextAuthConfig = {
         if (user) {
           const ok = await bcrypt.compare(password, user.passwordHash);
           if (ok) {
+            // Banned users must not receive a session (audit HIGH: ban was only
+            // enforced on the comments route, so banned users kept full access).
+            if (user.banned) return null;
             return { id: user.id, email: user.email, name: user.name ?? undefined, role: "user" };
           }
         }

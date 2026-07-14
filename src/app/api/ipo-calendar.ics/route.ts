@@ -3,10 +3,11 @@ import { prisma } from "@/lib/db";
 /**
  * IPO calendar export as iCalendar (.ics).
  *
- * Behaviour:
- *   - Without ?email=  → returns ALL upcoming + live IPOs as events
- *   - With ?email=     → returns only the IPOs that user has watchlisted /
- *     applied to (looked up via the User table)
+ * Behaviour: returns ALL upcoming + live + recently-listed IPOs as events.
+ * (A `?email=` personalization path was REMOVED — audit HIGH: it let anyone pass
+ * any email to read that user's tracked IPOs and confirm account existence, and
+ * nothing in the UI used it. Personalized feeds, if re-added, must use an
+ * unguessable per-user token, never a plaintext email.)
  *
  * Each IPO becomes 4 separate events: Open, Close, Allotment, Listing.
  * Apple Calendar / Google Calendar / Outlook all subscribe via:
@@ -44,47 +45,19 @@ function event({ uid, summary, date, url, description }: { uid: string; summary:
   ].join("\r\n");
 }
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const email = url.searchParams.get("email")?.toLowerCase().trim() ?? null;
-
-  let ipoIds: number[] | null = null;
-  let userLabel = "All upcoming Indian IPOs";
-
-  if (email) {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        watchlist: { where: { type: "ipo" }, select: { targetSlug: true } },
-        applications: { select: { ipoId: true } },
-      },
-    });
-    if (user) {
-      const slugs = user.watchlist.map((w) => w.targetSlug);
-      const watchlistedIds = slugs.length > 0
-        ? (await prisma.ipo.findMany({ where: { slug: { in: slugs } }, select: { id: true } })).map((x) => x.id)
-        : [];
-      const ids = new Set<number>([
-        ...watchlistedIds,
-        ...user.applications.map((a) => a.ipoId),
-      ]);
-      ipoIds = Array.from(ids);
-      userLabel = `IPOs you're tracking (${user.email})`;
-    }
-  }
+export async function GET() {
+  const userLabel = "All upcoming Indian IPOs";
 
   const now = new Date();
   const past14 = new Date(now.getTime() - 14 * 86400000);
   const future120 = new Date(now.getTime() + 120 * 86400000);
 
-  const where = ipoIds
-    ? { id: { in: ipoIds } }
-    : {
-        OR: [
-          { status: { in: ["upcoming", "live"] } },
-          { listingDate: { gte: past14, lte: future120 } },
-        ],
-      };
+  const where = {
+    OR: [
+      { status: { in: ["upcoming", "live"] } },
+      { listingDate: { gte: past14, lte: future120 } },
+    ],
+  };
 
   const ipos = await prisma.ipo.findMany({
     where,
@@ -126,7 +99,7 @@ export async function GET(request: Request) {
   return new Response(cal, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": `inline; filename="ipopulse-${ipoIds ? "watchlist" : "all"}.ics"`,
+      "Content-Disposition": `inline; filename="ipopulse-all.ics"`,
       "Cache-Control": "public, max-age=300",
     },
   });

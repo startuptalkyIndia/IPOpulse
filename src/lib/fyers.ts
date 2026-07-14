@@ -19,6 +19,7 @@
 
 import { createHash } from "crypto";
 import { prisma } from "@/lib/db";
+import { decryptMaybe } from "@/lib/encrypt";
 
 const API_BASE = "https://api-t1.fyers.in/api/v3";
 const DATA_BASE = "https://api-t1.fyers.in/data";
@@ -90,7 +91,7 @@ export async function getFyersToken(): Promise<string | null> {
     const updatedAt = new Date(rows[0].updated_at);
     const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     // Tokens expire ~next day; only trust one set today.
-    if (updatedAt.toDateString() === nowIST.toDateString()) return rows[0].value;
+    if (updatedAt.toDateString() === nowIST.toDateString()) return decryptMaybe(rows[0].value);
   } catch {
     // settings table may not exist yet
   }

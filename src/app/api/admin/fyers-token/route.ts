@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { exchangeFyersAuthCode, fyersLoginUrl, FYERS_APP_ID } from "@/lib/fyers";
+import { encryptApiKey, decryptMaybe } from "@/lib/encrypt";
 
 // Stores the Fyers access_token in the settings table (key-value), minted by
 // exchanging the admin's auth_code server-side (the secret never leaves here).
@@ -30,17 +31,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: result.error ?? "Token exchange failed" }, { status: 400 });
   }
 
+  // Store ENCRYPTED at rest (audit HIGH: broker tokens were plaintext).
+  const encAccess = encryptApiKey(result.accessToken);
   await prisma.$executeRaw`
     INSERT INTO settings (key, value, updated_at)
-    VALUES ('fyers_access_token', ${result.accessToken}, NOW())
-    ON CONFLICT (key) DO UPDATE SET value = ${result.accessToken}, updated_at = NOW()
+    VALUES ('fyers_access_token', ${encAccess}, NOW())
+    ON CONFLICT (key) DO UPDATE SET value = ${encAccess}, updated_at = NOW()
   `;
   // Stash the refresh token too (valid ~15 days) for future auto-refresh work.
   if (result.refreshToken) {
+    const encRefresh = encryptApiKey(result.refreshToken);
     await prisma.$executeRaw`
       INSERT INTO settings (key, value, updated_at)
-      VALUES ('fyers_refresh_token', ${result.refreshToken}, NOW())
-      ON CONFLICT (key) DO UPDATE SET value = ${result.refreshToken}, updated_at = NOW()
+      VALUES ('fyers_refresh_token', ${encRefresh}, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = ${encRefresh}, updated_at = NOW()
     `;
   }
 
@@ -63,8 +67,9 @@ export async function GET() {
     const updatedAt = new Date(rows[0].updated_at);
     const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     const isToday = updatedAt.toDateString() === nowIST.toDateString();
+    const plain = decryptMaybe(rows[0].value);
     return NextResponse.json({
-      token: rows[0].value.substring(0, 6) + "..." + rows[0].value.slice(-4),
+      token: plain.substring(0, 6) + "..." + plain.slice(-4),
       updatedAt: updatedAt.toISOString(),
       active: isToday,
       configured: !!FYERS_APP_ID,

@@ -16,6 +16,7 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+import { decryptMaybe } from "@/lib/encrypt";
 
 const KITE_API_KEY = process.env.KITE_API_KEY ?? "";
 
@@ -39,7 +40,7 @@ async function getKiteToken(): Promise<string | null> {
     const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
     // Only use if updated today (tokens expire at midnight IST)
     if (updatedAt.toDateString() === nowIST.toDateString()) {
-      return row.value;
+      return decryptMaybe(row.value);
     }
   } catch {
     // Settings table might not exist yet — fall back to env

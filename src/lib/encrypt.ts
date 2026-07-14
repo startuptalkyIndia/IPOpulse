@@ -21,3 +21,21 @@ export function decryptApiKey(text: string): string {
   const decipher = crypto.createDecipheriv("aes-256-cbc", KEY, Buffer.from(ivHex, "hex"));
   return Buffer.concat([decipher.update(Buffer.from(encHex, "hex")), decipher.final()]).toString("utf8");
 }
+
+/** True if `text` looks like our "ivHex:cipherHex" ciphertext format. */
+export function looksEncrypted(text: string): boolean {
+  return /^[0-9a-f]{32}:[0-9a-f]+$/i.test(text);
+}
+
+/**
+ * Decrypt a value that MAY be legacy plaintext (e.g. a broker token stored
+ * before at-rest encryption was added). Returns the plaintext either way.
+ */
+export function decryptMaybe(text: string): string {
+  if (!looksEncrypted(text)) return text;
+  try {
+    return decryptApiKey(text);
+  } catch {
+    return text;
+  }
+}
