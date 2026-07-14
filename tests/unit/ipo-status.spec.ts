@@ -58,6 +58,16 @@ describe("computeIpoStatus", () => {
     ).toBe("upcoming");
   });
 
+  it("returns listed when a listing row exists even if listingDate is null/future (hasListing)", () => {
+    // both surfaces (badge + status cron) must agree via this flag
+    expect(
+      computeIpoStatus({ openDate: daysFromNow(-10), closeDate: daysFromNow(-3), listingDate: null, status: "closed", hasListing: true }),
+    ).toBe("listed");
+    expect(
+      computeIpoStatus({ openDate: daysFromNow(-1), closeDate: daysFromNow(2), listingDate: daysFromNow(5), status: "live", hasListing: true }),
+    ).toBe("listed");
+  });
+
   it("prefers listed over date-derived live/closed when listingDate passed", () => {
     // even if open/close would say 'closed', a passed listingDate wins
     expect(

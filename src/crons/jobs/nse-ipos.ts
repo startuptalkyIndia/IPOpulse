@@ -133,8 +133,8 @@ async function advanceStaleStatuses(): Promise<{ changed: number; note: string }
   let changed = 0;
   const samples: string[] = [];
   for (const ipo of ipos) {
-    // A listing row means it's trading even if listingDate wasn't captured.
-    const next = ipo.listing ? "listed" : computeIpoStatus(ipo);
+    // Single rule for both surfaces: computeIpoStatus with the listing-row flag.
+    const next = computeIpoStatus({ ...ipo, hasListing: !!ipo.listing });
     if (next !== ipo.status) {
       await prisma.ipo.update({ where: { id: ipo.id }, data: { status: next } });
       changed++;

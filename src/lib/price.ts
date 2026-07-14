@@ -27,9 +27,16 @@ const PRICE_TTL = 120;
 export const SOURCE_PRECEDENCE = ["nse", "bse", "kite", "fyers", "yahoo", "seed"] as const;
 
 // Lower = preferred. Constant SQL — never interpolates user input.
-const SRC_RANK = Prisma.raw(
+// The ONE source-precedence definition. Exported so raw-SQL consumers order by the
+// same rank instead of hand-copying the CASE (re-audit: it had drifted into 3 copies).
+export const SRC_RANK = Prisma.raw(
   `CASE source WHEN 'nse' THEN 1 WHEN 'bse' THEN 2 WHEN 'kite' THEN 3 WHEN 'fyers' THEN 4 WHEN 'yahoo' THEN 5 ELSE 9 END`,
 );
+
+/** JS equivalent of SRC_RANK for callers picking a best row in application code. */
+export function sourceRank(source: string): number {
+  return (({ nse: 1, bse: 2, kite: 3, fyers: 4, yahoo: 5 }) as Record<string, number>)[source] ?? 9;
+}
 
 export interface CanonRow {
   companyId: number;
@@ -83,7 +90,7 @@ const cachedLatestDate = unstable_cache(
     return r?.date ? r.date.toISOString() : null;
   },
   ["latest-trading-date"],
-  { revalidate: PRICE_TTL, tags: ["bhavcopy"] },
+  { revalidate: PRICE_TTL },
 );
 export async function latestTradingDate(): Promise<Date | null> {
   const iso = await cachedLatestDate();
@@ -101,7 +108,7 @@ const cachedPrevDate = unstable_cache(
     return r?.date ? r.date.toISOString() : null;
   },
   ["prev-trading-date"],
-  { revalidate: PRICE_TTL, tags: ["bhavcopy"] },
+  { revalidate: PRICE_TTL },
 );
 export async function prevTradingDate(before: Date): Promise<Date | null> {
   const iso = await cachedPrevDate(before.toISOString().slice(0, 10));
@@ -146,7 +153,7 @@ async function queryRowsForDate(dateISO: string, idsCsv: string): Promise<FlatRo
 const cachedRowsForDate = unstable_cache(
   (dateISO: string) => queryRowsForDate(dateISO, ""),
   ["canon-rows-for-date"],
-  { revalidate: PRICE_TTL, tags: ["bhavcopy"] },
+  { revalidate: PRICE_TTL },
 );
 
 /** One canonical row per company for a given date (best source wins). */
@@ -221,6 +228,20 @@ export async function canonicalRange(
 }
 
 /** The single canonical row for one company on ITS OWN latest available day. */
+/**
+ * Canonical close for a company on the FIRST trading day on/after `target`
+ * (best source wins). Used for post-listing interval returns (1M/3M/6M/1Y).
+ */
+export async function canonicalCloseOnOrAfter(companyId: number, target: Date): Promise<number | null> {
+  const rows = await prisma.$queryRaw<Array<{ close: unknown }>>(Prisma.sql`
+    SELECT DISTINCT ON (company_id) close
+    FROM bhavcopy_daily
+    WHERE company_id = ${companyId} AND date >= ${target}
+    ORDER BY company_id, date ASC, ${SRC_RANK}
+  `);
+  return rows.length ? toNum(rows[0].close) : null;
+}
+
 export async function latestCanonicalRow(companyId: number): Promise<CanonRow | null> {
   const rows = await prisma.$queryRaw<RawRow[]>(Prisma.sql`
     SELECT DISTINCT ON (company_id) company_id, date, close, open, high, low, volume, delivery_pct

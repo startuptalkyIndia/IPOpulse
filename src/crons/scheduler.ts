@@ -51,7 +51,7 @@ async function reapStaleIngestionRuns() {
       data: {
         status: "failed",
         finishedAt: new Date(),
-        errorMsg: "Reaped on scheduler startup: still running after 2h (process restart)",
+        errorMsg: "Reaped: still 'running' after 2h (process restart or hung job)",
       },
     });
     if (res.count > 0) console.log(`[scheduler] reaped ${res.count} stale ingestion_runs`);
@@ -77,6 +77,13 @@ export function startScheduler() {
   // Best-effort: close out any ingestion_runs left "running" by a prior
   // process restart so dashboards don't show zombie work.
   reapStaleIngestionRuns().catch(() => {});
+
+  // Re-audit: run the reaper HOURLY too (not just at boot), so a job that hangs
+  // mid-run gets its stale "running" row flipped to failed and the heartbeat's
+  // freshness/liveness checks surface the source going dark.
+  cron.schedule("30 * * * *", () => {
+    reapStaleIngestionRuns().catch(() => {});
+  }, { timezone: "Asia/Kolkata" });
 
   // NSE FII/DII — daily at 7:15 PM IST (data is published ~6:30 PM)
   cron.schedule("15 19 * * 1-5", async () => {

@@ -73,7 +73,7 @@ export default async function IpoDetailPage({ params }: Props) {
   });
 
   if (!ipo) notFound();
-  const status = computeIpoStatus(ipo);
+  const status = computeIpoStatus({ ...ipo, hasListing: !!ipo.listing });
 
   // ─── Find listed peers in same sector ──────────────────────────────────
   // 1) Try matching by nseSymbol (post-listing). 2) Fall back to normalized name.

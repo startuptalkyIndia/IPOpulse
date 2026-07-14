@@ -14,6 +14,7 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+import { sourceRank } from "@/lib/price";
 
 export async function syncIpoListings(): Promise<IngestionResult> {
   // Find IPOs that have a listingDate in the past but no IpoListing record
@@ -72,8 +73,7 @@ export async function syncIpoListings(): Promise<IngestionResult> {
         where: { companyId, date: { gte: listingDay, lt: nextDay } },
         select: { open: true, high: true, low: true, close: true, volume: true, source: true },
       });
-      const rank = (s: string) => (({ nse: 1, bse: 2, kite: 3, fyers: 4, yahoo: 5 }) as Record<string, number>)[s] ?? 9;
-      bhavRow = rows.sort((a, b) => rank(a.source) - rank(b.source))[0] ?? null;
+      bhavRow = rows.sort((a, b) => sourceRank(a.source) - sourceRank(b.source))[0] ?? null;
     }
 
     // We need at least a listing price to proceed

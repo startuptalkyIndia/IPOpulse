@@ -115,10 +115,9 @@ export async function checkIpoAlerts(): Promise<{
   const apiKey = process.env.RESEND_API_KEY;
   const resend = apiKey ? new Resend(apiKey) : null;
 
-  if (!apiKey) {
-    // Still run the check and mark firedAt — just don't send emails
-    // so alerts don't pile up and re-fire once the key is added.
-  }
+  // If no RESEND_API_KEY, the check still runs but alerts whose condition is met
+  // are HELD (left active, not counted as failed attempts) so they fire once a key
+  // is added — see the delivery logic below.
 
   // Fetch all active, un-fired alerts with their user data
   const alerts = await prisma.alert.findMany({
@@ -231,11 +230,15 @@ export async function checkIpoAlerts(): Promise<{
       const ipoName = ipo?.name ?? alert.ipoName;
       const conditionLine = describeCondition(alert.type, alert.threshold ?? null, gmpValueForEmail);
 
-      // Only mark an alert fired once the email is actually DELIVERED (audit HIGH:
-      // it previously marked firedAt even with no API key / on send failure, so
-      // notifications were silently dropped forever). Undelivered alerts retry,
-      // capped by attemptCount so a permanently-bad address can't loop forever.
+      // Mark an alert fired only once the email is actually DELIVERED. Two distinct
+      // failure modes must NOT be conflated (re-audit HIGH):
+      //  - NO key configured at all → hold the alert active (don't count an attempt),
+      //    so it fires once a key is added. Otherwise a routine key lapse would burn
+      //    through the retry cap and permanently drop every pending alert.
+      //  - A real send failure (Resend returns an `error` field — it does NOT throw —
+      //    or a network throw) → retry, capped by attemptCount for bad addresses.
       let delivered = false;
+      let keyMissing = false;
       if (resend) {
         const html = buildEmailHtml({
           userName: alert.user.name ?? "",
@@ -245,7 +248,7 @@ export async function checkIpoAlerts(): Promise<{
         });
 
         try {
-          await resend.emails.send({
+          const { error } = await resend.emails.send({
             from: FROM_ADDR,
             to: alert.user.email,
             subject: buildSubject(ipoName, conditionLine),
@@ -254,18 +257,22 @@ export async function checkIpoAlerts(): Promise<{
               "List-Unsubscribe": `<https://ipopulse.talkytools.com/my/alerts>`,
             },
           });
-          delivered = true;
+          delivered = !error; // Resend reports API errors via `error`, not by throwing
         } catch {
-          delivered = false;
+          delivered = false; // network/transport error → treat as undelivered (retry)
         }
+      } else {
+        keyMissing = true;
       }
 
       if (delivered) {
         firedIds.push(alert.id);
         fired++;
-      } else {
+      } else if (!keyMissing) {
+        // real send failure — retry next run, capped by attemptCount
         undeliveredIds.push(alert.id);
       }
+      // keyMissing: leave the alert untouched (active) — it will fire once a key exists
     } catch {
       failed++;
     }
@@ -292,7 +299,7 @@ export async function checkIpoAlerts(): Promise<{
 
   const notes = apiKey
     ? `check_alerts: fired=${fired} failed=${failed} total_checked=${alerts.length}`
-    : `check_alerts: RESEND_API_KEY missing — alerts marked fired without email. fired=${fired} total_checked=${alerts.length}`;
+    : `check_alerts: RESEND_API_KEY missing — matched alerts HELD (will fire once a key is added). total_checked=${alerts.length}`;
 
   return { rowsIn: fired, rowsError: failed, notes };
 }

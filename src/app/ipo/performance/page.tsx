@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Award, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { latestTradingDate, canonicalCloseMap, canonicalSeries } from "@/lib/price";
+import { latestTradingDate, canonicalCloseMap, canonicalSeries, canonicalCloseOnOrAfter } from "@/lib/price";
 import { Sparkline } from "@/components/Sparkline";
 
 export const metadata: Metadata = {
@@ -105,13 +105,10 @@ export default async function IpoPerformancePage({ searchParams }: { searchParam
         const target = new Date(ipo.listingDate.getTime() + iv.days * 86400000);
         // Skip if interval target is in the future
         if (target > new Date()) continue;
-        const row = await prisma.bhavcopyDaily.findFirst({
-          where: { companyId: co.id, date: { gte: target } },
-          orderBy: { date: "asc" },
-          select: { close: true },
-        });
-        if (row) {
-          const closeAt = Number(row.close);
+        // Canonical price (best source) on/after the interval date — re-audit HIGH:
+        // a plain findFirst picked an arbitrary source, corrupting published returns.
+        const closeAt = await canonicalCloseOnOrAfter(co.id, target);
+        if (closeAt != null) {
           const ret = ((closeAt - issue) / issue) * 100;
           if (iv.key === "ret1m") ret1m = ret;
           if (iv.key === "ret3m") ret3m = ret;

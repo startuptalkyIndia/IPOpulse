@@ -67,7 +67,10 @@ html[data-theme="dark"] {
   /* Hovers */
   & .hover\:bg-gray-50:hover, & .hover\:bg-gray-100:hover { background-color: var(--border) !important; }
 
-  /* Colored tints → translucent dark versions (covers /30 /40 /50 /60 /70 too) */
+  /* Colored -50/-100 tints → translucent dark versions. Uses [class~=] (whole-token)
+     so solid bars like bg-green-500 are NOT caught. Trade-off: opacity variants
+     (bg-indigo-50/30 etc.) are separate tokens and stay their faint light tint in
+     dark mode — acceptable; keeping solid data bars correct matters more. */
   & [class~="bg-indigo-50"] { background-color: rgba(99, 102, 241, 0.14) !important; }
   & [class~="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.22) !important; }
   & [class~="bg-violet-50"] { background-color: rgba(139, 92, 246, 0.14) !important; }

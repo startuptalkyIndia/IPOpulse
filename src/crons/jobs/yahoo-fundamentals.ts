@@ -10,6 +10,7 @@
 
 import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
+import { SRC_RANK } from "@/lib/price";
 
 const DELAY_MS = 1200;
 const STALE_HOURS = 144; // 6 days — skip if updated recently
@@ -126,7 +127,7 @@ export async function recalcMarketCap(): Promise<IngestionResult> {
       SELECT DISTINCT ON (company_id) company_id, close
       FROM bhavcopy_daily
       WHERE date = ${latestBhav.date}
-      ORDER BY company_id, CASE source WHEN 'nse' THEN 1 WHEN 'bse' THEN 2 WHEN 'kite' THEN 3 WHEN 'fyers' THEN 4 WHEN 'yahoo' THEN 5 ELSE 9 END
+      ORDER BY company_id, ${SRC_RANK}
     ) canon
     WHERE canon.company_id = c.id
       AND c.shares_outstanding IS NOT NULL

@@ -2,10 +2,19 @@ import type { Ipo } from "@prisma/client";
 
 export type IpoStatus = "upcoming" | "live" | "closed" | "listed" | "withdrawn";
 
-export function computeIpoStatus(ipo: { openDate: Date | null; closeDate: Date | null; listingDate: Date | null; status: string }): IpoStatus {
+export function computeIpoStatus(ipo: {
+  openDate: Date | null;
+  closeDate: Date | null;
+  listingDate: Date | null;
+  status: string;
+  /** true when an IpoListing row exists — an IPO with a listing IS listed even if
+   * listingDate is null/future. Pass this on BOTH the badge and the status cron so
+   * the two agree (re-audit regression: they used different rules). */
+  hasListing?: boolean;
+}): IpoStatus {
   const now = new Date();
   if (ipo.status === "withdrawn") return "withdrawn";
-  if (ipo.listingDate && now >= ipo.listingDate) return "listed";
+  if (ipo.hasListing || (ipo.listingDate && now >= ipo.listingDate)) return "listed";
   if (ipo.openDate && ipo.closeDate) {
     // Close date is stored at UTC midnight; an IPO stays open through the whole
     // close day, so treat the live window as ending at end of the close day.

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, AlertTriangle, Info, TrendingUp, Coins, Building2, Sparkles, Award, Scale, Crown } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { canonicalRowsForDate, canonicalSeries } from "@/lib/price";
+import { canonicalRowsForDate, canonicalSeries, SRC_RANK } from "@/lib/price";
 import { Prisma } from "@prisma/client";
 import { bestStocksCategories, getCategoryBySlug } from "@/lib/best-stocks-categories";
 import { formatCurrency } from "@/lib/format";
@@ -85,7 +85,7 @@ export default async function BestStocksCategoryPage({ params }: Props) {
         SELECT DISTINCT ON (company_id) company_id, close, volume
         FROM bhavcopy_daily
         WHERE date = ${latestBhav.date}
-        ORDER BY company_id, CASE source WHEN 'nse' THEN 1 WHEN 'bse' THEN 2 WHEN 'kite' THEN 3 WHEN 'fyers' THEN 4 WHEN 'yahoo' THEN 5 ELSE 9 END
+        ORDER BY company_id, ${SRC_RANK}
       ) b
       JOIN companies c ON c.id = b.company_id
       WHERE b.close >= ${priceMin}
