@@ -1,5 +1,24 @@
 # Changelog — IPOpulse
 
+## 2026-08-11 · fix(infra): Claude CLI auth mount pointed at /root/.claude, container runs as non-root 'app'
+
+**Root cause found via platform log audit:** DRHP AI / Concall AI / daily market summary
+were silently failing with "Not logged in · Please run /login" from the `claude` CLI.
+docker-compose.yml mounted the host's shared Claude Code credential to `/root/.claude`,
+but the Dockerfile (security hardening pass, `useradd -m -u 1001 app` + `USER app`)
+runs the app as non-root user `app` with `HOME=/home/app` — so the container was reading
+its own empty local `~/.claude` (created by the app itself, no `.credentials.json`) while
+the real host credential sat inaccessible at `/root/.claude` (permission denied for `app`).
+This has likely been broken since whichever commit added the non-root Dockerfile step.
+
+**Fix:** mount target changed to `/home/app/.claude:rw`, matching the actual container user.
+
+**Caveat:** the shared host credential itself is currently also rejected at the Anthropic
+org level ("organization has disabled Claude subscription access for Claude Code") — this
+mount fix alone does not restore the AI features; it only removes a second, independent
+bug so they'll work once the org-level access is restored. See PayDesk CHANGELOG.md
+2026-08-11 entry for the fuller root-cause writeup (same shared credential, same day).
+
 ## 2026-06-06 · Root cause: Pass 1 perf agent called nextDynamic({ssr:false}) inside Server Components — Next 16 build fails. Fix: extracted 6 Client Component loader files; pages import from loaders instead.
 
 ## 2026-06-06 · perf + seo: Stage 5 — performance optimizations + SEO improvements

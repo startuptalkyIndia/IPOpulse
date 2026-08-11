@@ -33,10 +33,11 @@ services:
     volumes:
       # Mount Claude CLI binary + auth from host into container.
       # Host (ubuntu user): binary at /usr/bin/claude, auth at /home/ubuntu/.claude
-      # Container (root): binary at /usr/local/bin/claude, auth at /root/.claude
+      # Container runs as non-root user 'app' (Dockerfile: useradd -m -u 1001 app),
+      # so HOME=/home/app — auth must land there, not /root (unreadable, wrong user).
       # This activates DRHP AI, Concall AI, market summary — no ANTHROPIC_API_KEY needed.
       - /usr/lib/node_modules/@anthropic-ai/claude-code/bin/claude.exe:/usr/local/bin/claude:ro
-      - /home/ubuntu/.claude:/root/.claude:rw
+      - /home/ubuntu/.claude:/home/app/.claude:rw
     depends_on:
       postgres:
         condition: service_healthy
