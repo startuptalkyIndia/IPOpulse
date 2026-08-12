@@ -1,5 +1,16 @@
 # IPOpulse — COMMS
 
+## 2026-08-12 — fix + DEPLOYED: /ipo/[slug] Open Graph image (await params + Satori) — commit 21f0b26
+
+SDD-lite: **What** — the per-IPO Open Graph / social-share + SEO image was rendering the generic "IPOpulse" fallback for every `/ipo/[slug]` URL (and Twitter/X, which reuses it). Root cause: `src/app/ipo/[slug]/opengraph-image.tsx` read `params.slug` synchronously but Next 16 makes `params` a Promise, so `slug` was `undefined` and `findUnique` failed into the silent `.catch`. Awaiting `params` (mirroring the sibling `page.tsx`) exposed a **second, previously-masked bug**: the dates-strip `<div>` had >1 child with no explicit `display`, which Satori rejects — so the fix alone would have 500'd every real IPO. Fixed both (single-string date children + `display:flex`) and switched the catch to log instead of swallow. **Why** — every IPO's link preview/SEO card was degraded; the hidden Satori bug would have turned that into a hard 500. **Done when** — tsc 0, `next build` ok, live render shows the rich card. **Verify (prod, done)** — deployed `7dd0725 → 21f0b26`; real IPO `ens-enterprises-sme-ipo` OG = HTTP 200 image/png 74,759 B (rich card) vs 21,494 B fallback, on both localhost:3065 and https://ipopulse.talkytools.com; no Satori/500 in logs; home 200 healthy. **Lesson** — opengraph-image/metadata-image routes are NOT type-checked by Next 16 build validation; always render dynamic OG routes against real data (tsc+build passed while the route was broken).
+
+Status table:
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Fix OG params-await + Satori multi-child bug | ✅ Done | commit 21f0b26 |
+| 2 | TypeScript errors | ✅ 0 errors | tsc --noEmit clean |
+| 3 | Deployed to server | ✅ HTTP 200 | prod OG rich card 74.7KB verified (localhost + public domain) |
+
 ## 2026-07-14 — re-audit fixes: 2 HIGH holes + 2 self-inflicted regressions
 
 SDD-lite: **What** — a post-remediation re-audit (grade C-→B-) flagged issues the remediation itself caused or missed; fixed them: (1) HIGH check-alerts — now checks Resend's `{error}` return (it doesn't throw) so API errors don't mark alerts delivered, AND holds alerts (no attempt counted) when RESEND_API_KEY is entirely absent so a key lapse can't burn the retry cap and drop every pending alert; (2) HIGH ipo/performance interval returns (1M/3M/6M/1Y) now use new canonicalCloseOnOrAfter() instead of an arbitrary-source findFirst; (3) REGRESSION status split — folded the listing-row rule into computeIpoStatus via a `hasListing` flag used by BOTH the detail badge and advanceStaleStatuses (one rule); (4) REGRESSION precedence CASE was copy-pasted in 3 sites — now exported SRC_RANK (Prisma.raw) + sourceRank() from price.ts and routed best-stocks/recalcMarketCap/bse-listing-sync through them; (5) dropped dead unstable_cache `tags` (revalidateTag can't run from in-process node-cron); (6) reaper now runs hourly (not just at boot); (7) fixed misleading dark-mode + check-alerts comments. **Why** — a remediation that introduces bugs is a process problem; fix them immediately. **Done when** — tsc clean, 98 unit tests green (added hasListing case). **Verify** — deploy + trigger check_alerts + spot-check /ipo/performance.
