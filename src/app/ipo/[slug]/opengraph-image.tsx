@@ -10,11 +10,19 @@ function fmtDate(d: Date | null | undefined) {
   return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(d);
 }
 
-export default async function OG({ params }: { params: { slug: string } }) {
+export default async function OG({ params }: { params: Promise<{ slug: string }> }) {
+  // Next 16: params is a Promise — must be awaited, otherwise `slug` is undefined
+  // and findUnique runs with an all-undefined filter, silently rendering the
+  // generic fallback image for every /ipo/[slug] URL. Mirrors page.tsx.
+  const { slug } = await params;
   const ipo = await prisma.ipo.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { gmpEntries: { orderBy: { date: "desc" }, take: 1 }, subscriptions: { orderBy: { capturedAt: "desc" }, take: 1 } },
-  }).catch(() => null);
+  }).catch((err) => {
+    // Don't swallow silently — a broken OG image should be visible in logs.
+    console.error("[og:ipo] failed to load IPO for slug", slug, err);
+    return null;
+  });
 
   if (!ipo) {
     // Fallback if IPO not found
@@ -93,9 +101,10 @@ export default async function OG({ params }: { params: { slug: string } }) {
         {/* Dates strip */}
         {ipo.openDate || ipo.listingDate ? (
           <div style={{ display: "flex", gap: 32, marginTop: 28, fontSize: 22, color: "#374151" }}>
-            {ipo.openDate ? <div>📅 Opens {fmtDate(ipo.openDate)}</div> : null}
-            {ipo.closeDate ? <div>🔒 Closes {fmtDate(ipo.closeDate)}</div> : null}
-            {ipo.listingDate ? <div>🚀 Lists {fmtDate(ipo.listingDate)}</div> : null}
+            {/* Satori requires explicit display on any element with >1 child — keep each as a single string child. */}
+            {ipo.openDate ? <div style={{ display: "flex" }}>{`📅 Opens ${fmtDate(ipo.openDate)}`}</div> : null}
+            {ipo.closeDate ? <div style={{ display: "flex" }}>{`🔒 Closes ${fmtDate(ipo.closeDate)}`}</div> : null}
+            {ipo.listingDate ? <div style={{ display: "flex" }}>{`🚀 Lists ${fmtDate(ipo.listingDate)}`}</div> : null}
           </div>
         ) : null}
 

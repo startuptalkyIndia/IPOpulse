@@ -5,7 +5,7 @@
       "name": "ipopulse-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3145
+      "port": 3065
     }
   ]
 }

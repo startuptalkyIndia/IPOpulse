@@ -1,5 +1,39 @@
 # Changelog — IPOpulse
 
+## 2026-08-12 · fix(og): /ipo/[slug] Open Graph image — await params (Next 16) + Satori multi-child div
+
+**Two bugs in one code path; the second was hidden by the first.**
+
+**Bug 1 — params not awaited:** `src/app/ipo/[slug]/opengraph-image.tsx` typed `params` as a
+plain object and read `params.slug` synchronously. Under Next 16 `params` is a Promise, so
+`slug` was `undefined` → `prisma.ipo.findUnique({ where: { slug: undefined } })` rejected →
+the route's `.catch(() => null)` swallowed it → EVERY `/ipo/[slug]` URL (and Twitter/X, which
+falls back to the OG image since there is no `twitter-image.tsx`) rendered the generic
+"IPOpulse" card instead of the IPO-specific one. Not a 500 and not deploy-blocking (Next does
+not type-check opengraph-image routes, so `next build` passed) — but degraded every
+social/SEO preview.
+
+**Bug 2 — Satori multi-child div (previously invisible):** because Bug 1 meant the rich-card
+branch never executed (always fell back), a latent error in the dates strip was masked:
+`<div>📅 Opens {fmtDate(...)}</div>` has two children (text + value) with no explicit
+`display`, which Satori rejects ("Expected <div> to have explicit display: flex … if it has
+more than one child node"). Fixing Bug 1 alone would have turned "generic image (200)" into a
+500 for every real IPO — a regression. Only a live render against a seeded IPO exposed it;
+tsc and `next build` both passed clean.
+
+**Fix:** (1) `params: Promise<{ slug: string }>` + `const { slug } = await params;` mirroring
+the sibling `page.tsx`; log the catch instead of swallowing it. (2) the three date divs now
+use single-string children with explicit `display: flex`.
+
+**Verified:** tsc 0 errors; `next build` success (OG route is dynamic `ƒ`); live render of a
+seeded IPO returns HTTP 200 `image/png` 1200×630 showing the full rich card (name, price band,
+GMP, subscription, dates) — dev log shows the 500→200 flip after the Satori fix.
+
+**Lesson:** opengraph-image / metadata image routes are NOT covered by Next 16 build-time
+route type validation — a wrong `params` type compiles and ships. Always render dynamic OG
+routes against real data; tsc + build are not sufficient. Also corrected `.claude/launch.json`
+dev port 3145 → 3065 (matches `next dev --port 3065`).
+
 ## 2026-08-11 · fix(infra): Claude CLI auth mount pointed at /root/.claude, container runs as non-root 'app'
 
 **Root cause found via platform log audit:** DRHP AI / Concall AI / daily market summary
