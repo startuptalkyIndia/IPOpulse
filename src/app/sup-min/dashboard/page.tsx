@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { TrendingUp, FileText, Database, Mail, LogOut, Users } from "lucide-react";
+import { TrendingUp, FileText, Database, Mail, LogOut, Users, Cpu } from "lucide-react";
 
 const tiles = [
   { href: "/sup-min/ipos", icon: TrendingUp, title: "IPO Manager", desc: "Add/edit IPOs manually" },
@@ -10,6 +10,7 @@ const tiles = [
   { href: "/sup-min/ingestion", icon: Database, title: "Ingestion Runs", desc: "Cron logs, manual triggers" },
   { href: "/sup-min/newsletter", icon: Mail, title: "Newsletter", desc: "Subscriber list, digest status" },
   { href: "/sup-min/users", icon: Users, title: "Admin Users", desc: "Add / remove admin accounts" },
+  { href: "/sup-min/ai-settings", icon: Cpu, title: "AI Provider Settings", desc: "Subscription vs API key, saved Anthropic key" },
 ];
 
 export default async function AdminDashboardPage() {

@@ -213,6 +213,21 @@ export async function analyzeDrhpViaClaudeCli(opts: {
   ipoType: string;
   sourceType: "DRHP" | "RHP";
 }): Promise<{ analysis: DrhpAnalysis; modelUsed: string }> {
+  // DRHP analysis needs the Claude CLI's agentic PDF-fetching tool use — the
+  // Anthropic API path (api_key mode) cannot fetch an external URL on its own.
+  // Fail closed with an honest message rather than silently trying the CLI
+  // regardless of the admin-set provider mode, or worse, sending a broken
+  // "fetch this URL" prompt to a plain API call that has no fetch tool.
+  const { getAiProviderMode } = await import("./ai-provider-setting");
+  const mode = await getAiProviderMode();
+  if (mode !== "subscription") {
+    throw new Error(
+      "DRHP document analysis requires Subscription AI mode (it needs the Claude CLI's live PDF-fetching " +
+        "ability, which the Anthropic API key path does not support). Switch AI provider back to Subscription " +
+        "at /sup-min/ai-settings to use this feature.",
+    );
+  }
+
   const { spawn } = await import("node:child_process");
 
   const userPrompt = `Fetch the PDF at this URL and analyze it as an Indian IPO prospectus.

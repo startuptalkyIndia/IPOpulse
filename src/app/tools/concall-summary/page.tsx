@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { ConcallSummarizer } from "./ConcallSummarizer";
+import { claudeAvailable } from "@/lib/claude-runner";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Earnings Concall AI Summary — instant 3-line takeaway",
@@ -8,8 +11,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools/concall-summary" },
 };
 
-export default function ConcallSummaryPage() {
-  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
+export default async function ConcallSummaryPage() {
+  // Reflects the CURRENT AI provider setting (subscription CLI or saved API
+  // key) — not a bare env-var presence check (platform B.20, 2026-08-12).
+  const { available: aiEnabled } = await claudeAvailable();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">

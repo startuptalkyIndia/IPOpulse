@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { callClaudeJson, claudeAvailable, ClaudeUnavailableError } from "@/lib/claude-runner";
 import { checkBudget, recordSpend } from "@/lib/ai-budget";
+import { friendlyAiError, aiErrorStatus } from "@/lib/ai-errors";
 
 /**
- * Earnings concall summarizer — works via Anthropic SDK OR Claude CLI.
+ * Earnings concall summarizer — uses whichever AI provider is set in
+ * AI Provider Settings (/sup-min/ai-settings): Subscription CLI (default) or a
+ * saved Anthropic API key.
  * Paste a transcript, get structured JSON: TL;DR, sentiment, guidance, takeaways, red flags, numbers, quotes.
  */
 
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
 
   const { available, via } = await claudeAvailable();
   if (!available) {
-    return NextResponse.json({ error: "Concall AI not available. Claude CLI is not installed on the server." }, { status: 503 });
+    return NextResponse.json({ error: "Concall AI is currently unavailable. An admin needs to check AI Provider Settings." }, { status: 503 });
   }
 
   const body = await request.json().catch(() => ({}));
@@ -74,13 +77,13 @@ Be precise. Quote actual numbers. Do NOT invent figures.`;
       user: `Company: ${company || "(unspecified)"}\nQuarter: ${quarter || "(unspecified)"}\n\nTranscript:\n\n${transcript}`,
       maxTokens: 2000,
     });
-    // Estimated tokens (CLI): ~transcript.length/4 input chars + 2000 output tokens
+    // Estimated tokens: ~transcript.length/4 input chars + 2000 output tokens
     const estInput = Math.ceil(transcript.length / 4);
-    await recordSpend(userId, "claude-cli", estInput, 2000);
+    await recordSpend(userId, via === "cli" ? "claude-cli" : "claude-api", estInput, 2000, via === "cli");
     return NextResponse.json({ summary, via });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error("[ai] request failed:", err);
-    return NextResponse.json({ error: "AI request failed. Please try again in a moment." }, { status: 500 });
+    return NextResponse.json({ error: friendlyAiError(err) }, { status: aiErrorStatus(err) });
   }
 }

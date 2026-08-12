@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { claudeAvailable } from "@/lib/claude-runner";
 import { DrhpQa } from "./DrhpQa";
 import { FileText } from "lucide-react";
 import Link from "next/link";
@@ -20,7 +21,9 @@ export default async function DrhpPage() {
     take: 30,
   });
 
-  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
+  // Reflects the CURRENT AI provider setting (subscription CLI or saved API
+  // key) — not a bare env-var presence check (platform B.20, 2026-08-12).
+  const { available: aiEnabled } = await claudeAvailable();
 
   return (
     <div className="space-y-6">
@@ -40,9 +43,8 @@ export default async function DrhpPage() {
       {!aiEnabled ? (
         <div className="card bg-yellow-50 border-yellow-200">
           <p className="text-xs text-yellow-800">
-            <span className="font-semibold">AI Q&amp;A is waiting on configuration.</span> Once the
-            ANTHROPIC_API_KEY environment variable is set on the server, this feature becomes live — no
-            code changes needed.
+            <span className="font-semibold">AI Q&amp;A is currently unavailable.</span> An admin needs to check
+            AI Provider Settings (subscription access down, or no API key saved).
           </p>
         </div>
       ) : null}

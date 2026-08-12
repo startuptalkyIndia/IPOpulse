@@ -42,12 +42,12 @@ const jobMeta: Record<string, { label: string; schedule: string; desc: string }>
   daily_market_summary: {
     label: "Daily market summary (Mon–Fri 16:30 IST)",
     schedule: "Mon–Fri at 16:30 IST",
-    desc: "AI-generated EOD market wrap — top gainers/losers, FII/DII, sentiment. Stores in market_summaries table. Works via ANTHROPIC_API_KEY or Claude CLI.",
+    desc: "AI-generated EOD market wrap — top gainers/losers, FII/DII, sentiment. Stores in market_summaries table. Uses whichever AI provider is set in AI Provider Settings (Subscription or API key).",
   },
   drhp_analyze: {
     label: "DRHP AI analysis (every 6h)",
     schedule: "Every 6 hours",
-    desc: "Auto-extracts risk factors, governance flags, related-party transactions, peer comparables, and risk score from new DRHP/RHP filings. Cap: DRHP_MAX_PER_RUN (default 3) per run. Works via ANTHROPIC_API_KEY or Claude CLI.",
+    desc: "Auto-extracts risk factors, governance flags, related-party transactions, peer comparables, and risk score from new DRHP/RHP filings. Cap: DRHP_MAX_PER_RUN (default 3) per run. Requires Subscription AI mode (needs the Claude CLI's live PDF fetching) — see AI Provider Settings.",
   },
   us_ipos: {
     label: "US IPO tracker — SEC EDGAR S-1 filings (every 6h)",

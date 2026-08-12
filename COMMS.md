@@ -1,5 +1,36 @@
 # IPOpulse — COMMS
 
+## 2026-08-12 — feat: per-product AI-provider setting (Subscription CLI vs API key), fail-closed — NOT deployed
+
+SDD-lite: **What** — built the platform-wide B.20 AI-provider toggle for IPOpulse: a DB-backed
+`ai_provider_mode` setting (default "subscription") in the existing generic `settings` table, an admin UI at
+`/sup-min/ai-settings` to switch modes and paste/validate/save an Anthropic API key (encrypted at rest,
+never shown again, never auto-populated from `.env`), and a rewritten `src/lib/claude-runner.ts` that is
+fail-closed per mode: subscription mode tries the CLI only and never falls through to any API key even if
+one is saved; api_key mode uses only the DB-saved key and fails closed if none is saved. **Why** — 5
+products previously shared one `ANTHROPIC_API_KEY` and silently hit its cap with no visibility into which
+product caused it (see CHANGELOG same date for full detail). **Done when** — tsc 0 errors, real DB-backed
+test of get/set/fail-closed behavior, dev server end-to-end check of `/api/health` + the 3 user-facing AI
+tool pages flipping between "enabled"/"currently unavailable" as the DB setting changes. **Out of scope** —
+DRHP AI (`analyze` route + `drhp-analyzer.ts` PDF fetch) requires Subscription mode specifically since it
+needs the CLI's own tool-use to fetch the prospectus URL; api_key mode fails closed there with an honest
+message rather than a broken answer. Did not touch the separate, pre-existing per-user BYOK feature at
+`/api/settings/ai` (`/my/account`) — different feature, not wired into any live AI call site. **Verify** —
+see CHANGELOG.md same-date entry for full command output. **Not deployed** — built and tested locally only
+per task boundary; deploy needs founder "go".
+
+Status table:
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | `ai_provider_mode` + encrypted key setting (reuses `settings` table, no migration) | ✅ Done | `src/lib/ai-provider-setting.ts` |
+| 2 | `/sup-min/ai-settings` admin UI + `/api/admin/ai-settings` (key validated live before saving) | ✅ Done | `src/app/sup-min/ai-settings/*`, `src/app/api/admin/ai-settings/route.ts` |
+| 3 | `claude-runner.ts` fail-closed per mode, typed errors | ✅ Done | `src/lib/claude-runner.ts`, `src/lib/ai-errors.ts` |
+| 4 | DRHP PDF-fetch routes gated to Subscription mode only | ✅ Done | `src/lib/drhp-analyzer.ts`, `src/app/api/drhp/analyze/route.ts`, `src/crons/jobs/drhp-analyze.ts` |
+| 5 | `/api/health` + 3 UI pages + 4 AI routes stop reading `ANTHROPIC_API_KEY` env var | ✅ Done | see CHANGELOG for full file list |
+| 6 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` |
+| 7 | Local build + local DB end-to-end test | ✅ Done | see CHANGELOG for command output |
+| 8 | Deployed to server | ⏭️ Not done | local-only per task; awaiting founder "go" |
+
 ## 2026-08-12 — fix + DEPLOYED: /ipo/[slug] Open Graph image (await params + Satori) — commit 21f0b26
 
 SDD-lite: **What** — the per-IPO Open Graph / social-share + SEO image was rendering the generic "IPOpulse" fallback for every `/ipo/[slug]` URL (and Twitter/X, which reuses it). Root cause: `src/app/ipo/[slug]/opengraph-image.tsx` read `params.slug` synchronously but Next 16 makes `params` a Promise, so `slug` was `undefined` and `findUnique` failed into the silent `.catch`. Awaiting `params` (mirroring the sibling `page.tsx`) exposed a **second, previously-masked bug**: the dates-strip `<div>` had >1 child with no explicit `display`, which Satori rejects — so the fix alone would have 500'd every real IPO. Fixed both (single-string date children + `display:flex`) and switched the catch to log instead of swallow. **Why** — every IPO's link preview/SEO card was degraded; the hidden Satori bug would have turned that into a hard 500. **Done when** — tsc 0, `next build` ok, live render shows the rich card. **Verify (prod, done)** — deployed `7dd0725 → 21f0b26`; real IPO `ens-enterprises-sme-ipo` OG = HTTP 200 image/png 74,759 B (rich card) vs 21,494 B fallback, on both localhost:3065 and https://ipopulse.talkytools.com; no Satori/500 in logs; home 200 healthy. **Lesson** — opengraph-image/metadata-image routes are NOT type-checked by Next 16 build validation; always render dynamic OG routes against real data (tsc+build passed while the route was broken).

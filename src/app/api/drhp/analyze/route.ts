@@ -3,10 +3,18 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { callClaude, ClaudeUnavailableError } from "@/lib/claude-runner";
 import { checkBudget, recordSpend } from "@/lib/ai-budget";
+import { getAiProviderMode } from "@/lib/ai-provider-setting";
+import { friendlyAiError, aiErrorStatus } from "@/lib/ai-errors";
 
 /**
  * Per-IPO DRHP deep-dive. Pass `slug` + `question` and we fetch the IPO's
  * DRHP/RHP PDF URL, ask Claude to analyze it, and return a grounded answer.
+ *
+ * Requires Subscription AI mode — the prompt asks Claude to fetch a live PDF
+ * URL, which only the Claude CLI's own tool-use loop can do. The Anthropic
+ * API path (api_key mode) has no URL-fetch tool wired up here, so it fails
+ * closed with an honest message rather than silently returning a broken
+ * "I can't access external URLs" answer.
  *
  * Auth: signed-in users only.
  * Rate limit: 3 req/min/user.
@@ -55,6 +63,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No DRHP/RHP URL on file for this IPO yet" }, { status: 404 });
   }
 
+  const mode = await getAiProviderMode();
+  if (mode !== "subscription") {
+    return NextResponse.json(
+      { error: "DRHP deep-dive requires Subscription AI mode (it fetches the live prospectus PDF). Ask an admin to switch AI Provider Settings back to Subscription." },
+      { status: 503 },
+    );
+  }
+
   // AI budget gate (DPDP + cost control)
   const budget = await checkBudget(userId);
   if (!budget.allowed) {
@@ -75,7 +91,7 @@ Question: ${question}`,
     });
 
     // Estimated tokens (CLI — no token count returned): 1200 input + 400 output per DRHP query
-    await recordSpend(userId, "claude-cli", 1200, 400);
+    await recordSpend(userId, "claude-cli", 1200, 400, true);
 
     return NextResponse.json({
       answer,
@@ -88,9 +104,6 @@ Question: ${question}`,
       return NextResponse.json({ error: err.message }, { status: 503 });
     }
     console.error("[drhp/analyze] AI request failed:", err);
-    return NextResponse.json(
-      { error: "AI request failed. Please try again in a moment." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: friendlyAiError(err) }, { status: aiErrorStatus(err) });
   }
 }

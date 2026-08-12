@@ -3,10 +3,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { callClaude, claudeAvailable, ClaudeUnavailableError } from "@/lib/claude-runner";
 import { checkBudget, recordSpend } from "@/lib/ai-budget";
+import { friendlyAiError, aiErrorStatus } from "@/lib/ai-errors";
 
 /**
- * DRHP corpus Q&A — works via Anthropic SDK OR Claude CLI.
- * No ANTHROPIC_API_KEY required if `claude` binary is installed on the server.
+ * DRHP corpus Q&A — uses whichever AI provider is set in AI Provider Settings
+ * (/sup-min/ai-settings): Subscription CLI (default) or a saved Anthropic API key.
  */
 
 const rateMap = new Map<string, { count: number; resetAt: number }>();
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
   const { available, via } = await claudeAvailable();
   if (!available) {
     return NextResponse.json(
-      { error: "DRHP AI not available. Claude CLI is not installed on the server." },
+      { error: "DRHP AI is currently unavailable. An admin needs to check AI Provider Settings." },
       { status: 503 },
     );
   }
@@ -71,12 +72,12 @@ export async function POST(request: Request) {
       user: question,
       maxTokens: 800,
     });
-    // Estimated tokens (CLI): corpus ~2400 chars = 600 tokens input + 800 output
-    await recordSpend(userId, "claude-cli", 600 + Math.ceil(corpusText.length / 4), 800);
+    // Estimated tokens: corpus ~2400 chars = 600 tokens input + 800 output
+    await recordSpend(userId, via === "cli" ? "claude-cli" : "claude-api", 600 + Math.ceil(corpusText.length / 4), 800, via === "cli");
     return NextResponse.json({ answer, via });
   } catch (err) {
     if (err instanceof ClaudeUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error("[ai] request failed:", err);
-    return NextResponse.json({ error: "AI request failed. Please try again in a moment." }, { status: 500 });
+    return NextResponse.json({ error: friendlyAiError(err) }, { status: aiErrorStatus(err) });
   }
 }

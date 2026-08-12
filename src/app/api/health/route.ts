@@ -12,6 +12,8 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { claudeAvailable } from "@/lib/claude-runner";
+import { getAiProviderMode } from "@/lib/ai-provider-setting";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -48,15 +50,36 @@ function envCheck(varNames: string[]): DepCheck {
   return { status: present ? "ok" : "unconfigured" };
 }
 
+// AI dep check (platform B.20, 2026-08-12): honest per the CURRENT admin-set
+// provider mode, not a bare env-var presence check. "subscription" mode is
+// "ok" only if the Claude CLI binary is actually found; "api_key" mode is
+// "ok" only if a key has actually been saved via /sup-min/ai-settings.
+// Never reports "ok" based on ANTHROPIC_API_KEY in .env — that path is
+// deliberately no longer read.
+async function anthropicCheck(): Promise<DepCheck> {
+  const t = Date.now();
+  try {
+    const mode = await getAiProviderMode();
+    const { available } = await claudeAvailable();
+    return {
+      status: available ? "ok" : "unconfigured",
+      latencyMs: Date.now() - t,
+      error: available ? undefined : `mode=${mode}`,
+    };
+  } catch (e: unknown) {
+    return { status: "fail", latencyMs: Date.now() - t, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export async function GET() {
-  const dbResult = await pingDb();
+  const [dbResult, anthropicResult] = await Promise.all([pingDb(), anthropicCheck()]);
 
   const checks: Record<string, DepCheck> = {
     db: dbResult,
     // Kite Connect — live prices, OHLC historical data (₹500/mo plan)
     kite: envCheck(["KITE_API_KEY", "KITE_API_SECRET"]),
     // Anthropic — DRHP AI analysis, listing predictor features
-    anthropic: envCheck(["ANTHROPIC_API_KEY"]),
+    anthropic: anthropicResult,
     // Resend — email notifications
     resend: envCheck(["RESEND_API_KEY"]),
   };

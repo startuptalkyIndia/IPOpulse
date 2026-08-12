@@ -69,7 +69,7 @@ export function PromoterCheck({ enabled }: { enabled: boolean }) {
 
       {!enabled ? (
         <div className="card bg-yellow-50 border-yellow-200 text-xs text-yellow-800">
-          <span className="font-semibold">AI is not enabled yet</span> — set ANTHROPIC_API_KEY on the server to switch this on.
+          <span className="font-semibold">AI is currently unavailable</span> — an admin needs to check AI Provider Settings (subscription access down, or no API key saved).
         </div>
       ) : null}
 

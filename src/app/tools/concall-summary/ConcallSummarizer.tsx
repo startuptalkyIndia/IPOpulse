@@ -81,7 +81,7 @@ export function ConcallSummarizer({ enabled }: { enabled: boolean }) {
       {!enabled ? (
         <div className="card bg-yellow-50 border-yellow-200">
           <p className="text-xs text-yellow-800">
-            <span className="font-semibold">Concall AI is waiting on configuration.</span> Set ANTHROPIC_API_KEY on the server and this works instantly.
+            <span className="font-semibold">Concall AI is currently unavailable.</span> An admin needs to check AI Provider Settings (subscription access down, or no API key saved).
           </p>
         </div>
       ) : null}

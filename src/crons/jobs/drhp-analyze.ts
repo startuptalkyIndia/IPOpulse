@@ -21,11 +21,19 @@ import { enrichPeers } from "@/lib/drhp-peer-enrichment";
 const MAX_PER_RUN = parseInt(process.env.DRHP_MAX_PER_RUN ?? "3", 10);
 
 export async function analyzePendingDrhps(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
-  // Check if Claude CLI is available
+  // DRHP analysis needs the Claude CLI's live PDF-fetching tool use — it only
+  // runs in Subscription AI mode, regardless of whether an API key is also
+  // saved (see analyzeDrhpViaClaudeCli). Check mode directly here so a run
+  // under api_key mode skips cleanly instead of marking every candidate failed.
+  const { getAiProviderMode } = await import("@/lib/ai-provider-setting");
   const { claudeAvailable } = await import("@/lib/claude-runner");
+  const mode = await getAiProviderMode();
+  if (mode !== "subscription") {
+    return { rowsIn: 0, notes: "AI provider is set to API key mode — DRHP analysis needs Subscription mode (live PDF fetching). Switch it in AI Provider Settings to resume." };
+  }
   const { available } = await claudeAvailable();
   if (!available) {
-    return { rowsIn: 0, notes: "Claude CLI not available. Install @anthropic-ai/claude-code and run `claude` once to authenticate." };
+    return { rowsIn: 0, notes: "Subscription AI is unavailable (Claude CLI not found on the server). DRHP analysis paused until it's restored." };
   }
 
   // Candidate IPOs:

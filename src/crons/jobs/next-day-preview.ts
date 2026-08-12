@@ -2,7 +2,8 @@
  * Next-Day Market Preview
  * ------------------------
  * Runs at 8:00 PM IST (after bhavcopy + FII/DII are in).
- * Analyses today's data and generates a "what to watch tomorrow" report via Claude CLI.
+ * Analyses today's data and generates a "what to watch tomorrow" report via
+ * whichever AI provider is set in AI Provider Settings (Subscription CLI or API key).
  *
  * Inputs:
  *   - Top 5 gainers + top 5 losers (today's bhavcopy)
@@ -213,7 +214,7 @@ Rules:
       fiiSignal = result.fiiSignal;
       stocksToWatch = result.stocksToWatch ?? stocksToWatch;
       if (result.keyEvents?.length) keyEvents.push(...result.keyEvents);
-      generatedBy = `claude-cli (${via})`;
+      generatedBy = via === "cli" ? "claude-cli" : "claude-api";
     } catch (e) {
       // Fall back to structured template
       headline = `${topSector || "Mixed"} in focus; FII ${fiiNet != null ? (fiiNet > 0 ? "buyers" : "sellers") : "data pending"}`;

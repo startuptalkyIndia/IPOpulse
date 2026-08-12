@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { PromoterCheck } from "./PromoterCheck";
+import { claudeAvailable } from "@/lib/claude-runner";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Promoter Background Check (AI) — research IPO promoters & founders",
@@ -8,8 +11,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tools/promoter-check" },
 };
 
-export default function PromoterCheckPage() {
-  const aiEnabled = !!process.env.ANTHROPIC_API_KEY;
+export default async function PromoterCheckPage() {
+  // Reflects the CURRENT AI provider setting (subscription CLI or saved API
+  // key) — not a bare env-var presence check (platform B.20, 2026-08-12).
+  const { available: aiEnabled } = await claudeAvailable();
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">

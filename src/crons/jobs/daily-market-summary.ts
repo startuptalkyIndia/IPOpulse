@@ -12,8 +12,9 @@ import { canonicalCloseMap } from "@/lib/price";
  * Outputs:
  *   - 200-word market summary stored in market_summaries (one row per day)
  *
- * Falls back gracefully if ANTHROPIC_API_KEY is missing — writes a templated
- * summary using just the structured data, no narrative.
+ * Falls back gracefully if AI is unavailable under the current provider setting
+ * (see src/lib/ai-provider-setting.ts) — writes a templated summary using just
+ * the structured data, no narrative. Does not fall through to any other provider.
  */
 export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; notes?: string }> {
   // Latest trading day's bhavcopy snapshot
@@ -66,7 +67,7 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
   let sentiment: string | null = null;
   let generatedBy: string | null = null;
 
-  // Uses SDK or CLI — whichever is available
+  // Uses whichever provider is set in AI Provider Settings — CLI (subscription) or SDK (api_key)
   const { callClaudeJson, claudeAvailable } = await import("@/lib/claude-runner");
   const { available, via } = await claudeAvailable();
   if (available) {
@@ -87,7 +88,7 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
       headline = parsed.headline;
       body = parsed.body;
       sentiment = parsed.sentiment;
-      generatedBy = via === "cli" ? "claude-cli" : "claude-sonnet-4-5";
+      generatedBy = via === "cli" ? "claude-cli" : "claude-api";
     } catch (err) {
       console.error("[daily-summary] AI call failed:", err);
     }

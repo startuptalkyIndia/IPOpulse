@@ -1,5 +1,78 @@
 # Changelog — IPOpulse
 
+## 2026-08-12 · feat(ai): per-product AI-provider setting (Subscription CLI vs API key), fail-closed — B.20 policy change
+
+**Root cause / why:** platform policy change (AGENT_OPERATING_STANDARDS.md B.20, 2026-08-12): 5 TalkyTools
+products shared one `ANTHROPIC_API_KEY` in `.env`, it silently hit its usage cap, and there was no
+visibility into which product caused it. Every product now defaults to the founder's Claude subscription
+(fixed cost, no per-token billing) via the local `claude` CLI, with per-token API billing only switched on
+explicitly per product via an admin-pasted key — never auto-picked up from `.env`. IPOpulse's
+`ANTHROPIC_API_KEY` was already removed from the server `.env` (done outside this change).
+
+**What changed:**
+- New `src/lib/ai-provider-setting.ts` — reads/writes `ai_provider_mode` ("subscription" default | "api_key")
+  and the encrypted Anthropic key, reusing the EXISTING generic `settings` key-value table (same one
+  `kite_access_token`/`fyers_access_token` already use — no new table, no migration needed) and the existing
+  `encrypt.ts` AES helper (same one broker tokens use).
+- New `src/lib/ai-errors.ts` — typed `AiError` (`rate_limit | timeout | auth | unavailable | unknown`),
+  `friendlyAiError()`, `aiErrorStatus()`, `mapAnthropicApiError()`.
+- `src/lib/claude-runner.ts` rewritten to be provider-gated: mode "subscription" tries the CLI ONLY and
+  fails closed (never falls through to any API key, even a saved one, even one lingering in `.env`); mode
+  "api_key" uses the Anthropic SDK ONLY with the DB-saved key (lazy-loaded, never `process.env.ANTHROPIC_API_KEY`)
+  and fails closed if no key is saved. `callViaApi()` resolves the model from `ANTHROPIC_MODEL` env (Haiku-class
+  default, `-latest` alias — never a hardcoded dated id), sets `max_tokens` (default 4096) and a 60s timeout,
+  and maps SDK errors to typed `AiError`s (401/403→auth, 429→rate_limit with retry-after when present,
+  timeout→timeout).
+- `src/lib/drhp-analyzer.ts` (`analyzeDrhpViaClaudeCli`) and `src/app/api/drhp/analyze/route.ts` gated to
+  Subscription mode only — both ask Claude to fetch a live PDF URL, which only the CLI's own tool-use loop
+  can do; the plain Anthropic Messages API has no fetch tool wired up here, so api_key mode fails closed with
+  an honest message instead of silently returning a broken "I can't access external URLs" answer.
+  `src/crons/jobs/drhp-analyze.ts` checks the mode up front so a run under api_key mode skips cleanly with one
+  note instead of marking every candidate IPO "failed".
+- New admin UI: `/sup-min/ai-settings` (`src/app/sup-min/ai-settings/page.tsx` + `AiSettingsClient.tsx`,
+  server-guarded like `/sup-min/kite-token`) — radio toggle Subscription/API key, masked key input, "•••• saved"
+  state (never re-renders the raw key), tile added to `/sup-min/dashboard`.
+- New `src/app/api/admin/ai-settings/route.ts` (GET status incl. live CLI-found check, POST to switch mode
+  and/or save a key) — role-gated (admin/superadmin), and a pasted key is validated with a tiny live
+  `messages.create` test call BEFORE it is encrypted and stored, so a bad paste is rejected immediately
+  instead of silently "saving" and failing on the next real user request.
+- `/api/health` — the `anthropic` check now reflects the CURRENT provider setting (CLI found in subscription
+  mode / key saved in api_key mode) instead of a bare `ANTHROPIC_API_KEY` env-var presence check.
+- The 4 live AI routes (`concall/summarize`, `promoter/check`, `drhp/ask`, `drhp/analyze`) and the 3
+  "AI not configured" UI surfaces (`tools/concall-summary`, `tools/promoter-check`, `ipo/drhp`) now check
+  `claudeAvailable()` (the real, current provider state) instead of `!!process.env.ANTHROPIC_API_KEY`, and use
+  `friendlyAiError()`/`aiErrorStatus()` for typed, honest error messages (429 for rate limit, 504 for timeout,
+  503 for unavailable/auth) instead of a flat "AI request failed" 500. `recordSpend()` calls now log the
+  actual provider used (`claude-cli` vs `claude-api`) instead of a hardcoded `"claude-cli"`.
+- `.env.example` — `ANTHROPIC_API_KEY` line removed with a comment explaining it's no longer read at all;
+  the provider is a runtime DB setting now.
+- **Note:** there is a separate, pre-existing, UNRELATED per-user BYOK feature at `/api/settings/ai` +
+  `src/lib/byok.ts` + `src/components/AISettings.tsx` (rendered on `/my/account`) that lets an individual
+  signed-in user connect their OWN Anthropic/OpenAI/Gemini key on the `User` model. It is dead-wired (`callUserAI`
+  is exported but not called from any live AI route) and untouched by this change — different feature,
+  different table, different purpose (customer BYOK vs platform billing-path control).
+
+**Verified (local only — no deploy):**
+- `npx tsc --noEmit` → 0 errors. `npm run build` → compiles clean (Next 16 route-type validation passes;
+  the only errors during build were pre-existing "can't reach DB" static-generation warnings because no local
+  DB was running at that point, unrelated to this change).
+- Ran against a real local Postgres (`docker-compose.dev.yml`) with `prisma db push` confirming NO schema
+  drift (no migration needed — reused the existing `settings` table). A direct script exercised
+  `ai-provider-setting.ts` + `claude-runner.ts` against the live DB: default mode is `subscription`;
+  encrypt/decrypt round-trips correctly; switching to `api_key` mode with no key saved makes
+  `claudeAvailable()` report `{available:false}` and `callClaude()` throw `ClaudeUnavailableError` (fail
+  closed, confirmed it never reads any API key or falls through); saving then clearing a key round-trips
+  the masked status correctly.
+- Ran the actual dev server end-to-end: `/api/health` anthropic check flips `ok`→`unconfigured` live when
+  switching modes in the DB; `/sup-min/ai-settings` and `/api/admin/ai-settings` correctly redirect/403
+  unauthenticated; `/tools/concall-summary`, `/tools/promoter-check`, `/ipo/drhp` correctly show the
+  "currently unavailable" banner when api_key mode has no key saved, and show no banner (AI enabled) back
+  in default subscription mode with the CLI present on this machine.
+
+**Out of scope / not done:** deploy (awaiting founder "go" — someone else handles it per task boundary);
+did not touch the unrelated per-user BYOK feature; did not attempt to give api_key mode PDF-fetching parity
+with the CLI (would need a real tool-use loop — separate, larger piece of work if ever wanted).
+
 ## 2026-08-12 · fix(og): /ipo/[slug] Open Graph image — await params (Next 16) + Satori multi-child div
 
 **Two bugs in one code path; the second was hidden by the first.**
