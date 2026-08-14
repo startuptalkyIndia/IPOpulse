@@ -6,8 +6,19 @@
 // Copy to: src/components/shared/EmptyState.tsx
 //
 // Deps: react, lucide-react
-
-"use client";
+//
+// IPOpulse fix (2026-08-14): removed the "use client" directive. This
+// component is purely presentational (no hooks/state) and is rendered from
+// BOTH Server Components (my/watchlist/page.tsx, ipo/IpoTable.tsx) and
+// Client Components (news/NewsClient.tsx). When it was a Client Component,
+// any Server Component passing a Lucide icon (a function/forwardRef
+// component, not a plain serializable value) as the `icon` prop crashed the
+// RSC render with "Functions cannot be passed directly to Client
+// Components..." — this is exactly what crashed a brand-new user's first
+// landing page, /my/watchlist, on its empty-watchlist state. Dropping
+// "use client" removes the server->client serialization boundary entirely;
+// files that import this from within an existing "use client" tree (like
+// NewsClient.tsx) are unaffected — they still bundle/run on the client.
 
 import * as React from "react";
 import type { LucideIcon } from "lucide-react";

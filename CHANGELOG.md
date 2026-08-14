@@ -1,5 +1,49 @@
 # Changelog — IPOpulse
 
+## 2026-08-14 · fix(critical): `/my/watchlist` crashed for every brand-new user — the page a fresh signup lands on immediately after login
+
+**Symptom:** Confirmed via real-browser synthetic journey test: a freshly signed-up user with zero watchlist
+items landed on `/my/watchlist` and got a server error screen ("Something went wrong... Reference: ...").
+Browser console showed `Error: An error occurred in the Server Components render` — twice.
+
+**Root cause:** `src/components/shared/EmptyState.tsx` had a `"use client"` directive, making it a Client
+Component. Both `src/app/my/watchlist/page.tsx` and `src/components/ipo/IpoTable.tsx` are Server Components
+that render it with `icon={Bookmark}` / `icon={Star}` / `icon={TrendingUp}` — a Lucide icon is a
+function/forwardRef component, not a plain serializable value. Passing a non-serializable value from a
+Server Component across the React Server Components boundary into a Client Component throws
+`Error: Functions cannot be passed directly to Client Components...` at render time. This fired on
+`/my/watchlist` specifically because it's the very first authenticated page every new signup hits, and a
+fresh account always has an empty watchlist — which is exactly the code path (`ipos.length === 0` /
+`stocks.length === 0`) that renders `<EmptyState icon={...} .../>`. Reproduced locally: dev server log showed
+`⨯ Error: Functions cannot be passed directly to Client Components...` for both the `Bookmark` and `Star`
+icons on every `GET /my/watchlist` for a fresh account (matches the "twice" the browser console showed).
+
+**Fix:** removed the `"use client"` directive from `src/components/shared/EmptyState.tsx`. The component has
+no hooks/state — it's pure presentation with an optional `onClick` prop — so it renders correctly as either a
+Server or Client Component depending on where it's imported. This removes the serialization boundary
+entirely for the Server Component call sites (`my/watchlist/page.tsx`, `ipo/IpoTable.tsx`, which had the
+identical latent bug on any empty IPO list) while leaving the one Client Component call site
+(`app/news/NewsClient.tsx`, which passes a real `onClick` function) working unchanged, since it's already
+inside a client-rendered tree.
+
+**Verification (real, not assumed):** local dev server against local Postgres — created a fresh account via
+`POST /api/signup`, signed in via NextAuth credentials flow to get a real session cookie, hit
+`/my/watchlist` before and after the fix. Before: dev log showed
+`⨯ Error: Functions cannot be passed directly to Client Components... render: function Bookmark` /
+`...function Star`, RSC payload showed the error digest embedded in the HTML. After: `HTTP 200`, RSC payload
+contains `"No IPOs saved yet"` / `"No stocks saved yet"` empty-state copy, zero errors in the dev log. Fully
+repeated end-to-end with a SECOND brand-new account after `rm -rf .next` (clean rebuild, no cache carryover)
+— same clean result. `npx tsc --noEmit` — 0 errors. `npm run build` — `✓ Compiled successfully in 12.4s`.
+
+**Also checked (documentation staleness, not fixed here — out of this project's workspace boundary):**
+`_shared/FLEET_INVENTORY.md` lists IPOpulse's protected route as `/advisor/dashboard`. Confirmed
+`/advisor/dashboard` is a real, separate route (not stale/removed) but 404s by design — it's gated behind
+the `advisor.enabled` feature flag (`src/lib/feature-flags.ts`), which defaults OFF (`defaultEnabled: false`)
+and is a whole separate advisor/referral-affiliate feature, not the general post-login landing page. The
+actual universal protected route every logged-in user reaches is `/my/watchlist`. Flagging for whoever
+maintains `FLEET_INVENTORY.md` to correct — did not edit that shared file from this session per the
+IPOpulse workspace boundary (only edit files inside `IPOpulse/`).
+
 ## 2026-08-12 · feat(ai): per-product AI-provider setting (Subscription CLI vs API key), fail-closed — B.20 policy change
 
 **Root cause / why:** platform policy change (AGENT_OPERATING_STANDARDS.md B.20, 2026-08-12): 5 TalkyTools
