@@ -8,7 +8,7 @@
 - **Server:** 13.202.189.233 (SSH: `ssh -i ~/.ssh/linkbuilder-deploy.pem ubuntu@13.202.189.233`)
 - **Stack:** Next.js · TypeScript · Prisma · Postgres · Docker
 
-> After `/clear` or a fresh session, re-read `COMMS.md` and `PRODUCT.md` to restore full context.
+> After `/clear` or a fresh session, re-read `COMMS.md` (no `PRODUCT.md` exists in this project as of 2026-08-14 — the "Product" section further down this file is the current substitute; a 2026-05-17 broadcast asked every project to create one but IPOpulse never did).
 
 ---
 
@@ -22,7 +22,7 @@
 # 🚦 START HERE — Run This Every Session Before Anything Else
 
 **Step 1 — Read context (5 min)**
-- Read `PRODUCT.md` → understand what this product does and what's built
+- Read the "Product" section in this file → understand what this product does and what's built (`PRODUCT.md` doesn't exist for this project — don't try to read it)
 - Read `COMMS.md` → see all pending tasks (work through them TOP TO BOTTOM, in order)
 - Read `CHANGELOG.md` → know what broke before, don't repeat it
 
@@ -316,24 +316,24 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 
 ---
 
-## State as of 2026-06-06 (post Pass 2)
+## State as of 2026-08-14
 
-**Live:** No (pre-launch)
-**Compliance score:** 88/100
-**Last commit:** `588c84d` 2026-06-06 21:41 IST — Stage 5 perf + SEO
-**Tests:** 8 spec files
-**TS errors:** 0
+**Live:** Yes — https://ipopulse.talkytools.com confirmed HTTP 200 (home + `/api/health`), server `git rev-parse HEAD` matches local `main` tip, app container rebuilt/restarted within the last hour matching the latest deploy commit's timestamp (all checked directly, 2026-08-14).
+**Compliance score:** stale — last numeric score was 88/100 on 2026-06-06 (pre-launch snapshot). Multiple security/data-integrity audit remediation waves ran since (CRIT-1/CRIT-2 fixes, ~20 HIGH + ~20 MEDIUM findings, a re-audit graded qualitatively "C-→B-" on 2026-07-14) but none produced a new numeric score — needs re-scoring, don't quote 88/100 as current.
+**Last commit:** `23ebbe0` 2026-08-14 15:45 IST — fix(critical): `/my/watchlist` crashed for every brand-new user (RSC Server→Client boundary error; `EmptyState.tsx` dropped its unneeded `"use client"`). Deployed and verified live (see Recent work below).
+**Tests:** unit + API integration suite (grew from 8 spec files in June to ~97-98 tests across the audit waves per CHANGELOG; exact current count not re-verified this pass — run `npm test` to confirm).
+**TS errors:** 0 (`npx tsc --noEmit`, verified 2026-08-14).
 
-**Today's major work (Pass 2):**
-- Stage 5: perf + SEO hardening (DB indexes, JSON-LD, OG, sitemap)
-- Health endpoint upgraded to enumerate AI/email/payment deps (not bare `status:ok`)
-- DPDP compliance endpoint added
-- 41 commits in the last 7 days (highest velocity of all projects)
+**Recent work (last few days, verified against CHANGELOG.md + git + live server):**
+- **2026-08-14 (`23ebbe0`, deployed):** fixed `/my/watchlist` — the page every brand-new signup lands on — 500'ing for every fresh account (Lucide icon passed from a Server Component into a Client Component across the RSC boundary). Root-caused, fixed, verified end-to-end against two fresh test accounts locally, then deployed; confirmed live via server `git rev-parse HEAD` match + container restart timestamp.
+- **2026-08-13/12 (`0597bfc`):** per-product AI-provider toggle at `/sup-min/ai-settings` (Subscription CLI default, or an admin-pasted API key — never a silent `.env` fallback), per platform policy B.20. COMMS.md's 2026-08-12 entry says "NOT deployed," but this commit sits in `main` history *before* `23ebbe0`, and the 2026-08-14 deploy pulled the full branch — live-server checks (2026-08-14) confirm `/sup-min/ai-settings` returns 302 (redirect-to-login, not 404) and `/api/admin/ai-settings` returns 403 (route exists, admin-gated). **This feature is live now even though COMMS.md still says otherwise — see COMMS.md correction entry.**
+- **2026-08-12 (`21f0b26`), deployed:** fixed `/ipo/[slug]` Open Graph image silently falling back to the generic site card for every IPO (unawaited `params` + a Satori multi-child bug). Verified live with a real IPO slug (rich card image, not the fallback).
+- A next-auth CVE patch this week was mentioned as context for this docs pass but **could not be verified** — no matching commit in `git log`, no `next-auth` version bump in `package.json`/`package-lock.json` this month, and no CHANGELOG/COMMS entry. `npm audit --audit-level=high` (2026-08-14) shows 0 next-auth findings but does show unrelated HIGH/CRITICAL findings in `sharp` and `undici` — needs verification / follow-up, not documented as done.
 
-**Known gaps / vendor blockers:**
-- Zerodha Kite Connect subscription (₹500/mo) — not yet active; live prices unavailable
-- WhatsApp Channel CTA banner pending
-- Free vs Premium tier feature gate not yet built
+**Known gaps — corrected (the 2026-06-06 list below was stale):**
+- ~~Zerodha Kite Connect subscription not yet active~~ — Kite live prices shipped (`691389d`), then Fyers v3 added as a Kite backup (`ec822f7`); `/api/health` shows `kite: ok` (env-configured). Note: the health check only verifies env vars are set, not that the live token is currently valid — needs verification if prices look stale.
+- ~~WhatsApp Channel CTA banner pending~~ — built (`src/components/WhatsAppBanner.tsx`, present on homepage/IPO detail/pricing pages).
+- ~~Free vs Premium tier feature gate not yet built~~ — partially built: `src/components/PremiumGate.tsx` + `/pricing` page exist, but there is **no payment processor wired** (no `razorpay` in `package.json`) — a user cannot actually purchase Premium yet, only an admin can flip the plan field manually. Still an open gap, just a different one than stated before.
 
 **Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
 
@@ -341,6 +341,8 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 **SSH key:** `~/.ssh/linkbuilder-deploy.pem`
 
 **Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
+
+**Known doc drift not fixed here (outside this file's/project's boundary):** `_shared/FLEET_INVENTORY.md` lists IPOpulse's protected route as `/advisor/dashboard`. That route is real but 404s by design (feature-flagged off, unrelated advisor/referral feature) — the actual universal post-login route is `/my/watchlist`. Already flagged in CHANGELOG.md's 2026-08-14 entry for whoever maintains that shared file; not edited here since it's outside `IPOpulse/`.
 
 
 ---

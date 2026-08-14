@@ -1,5 +1,29 @@
 # IPOpulse — COMMS
 
+## 2026-08-14 — docs correction (append-only, not a rewrite): AI-provider toggle is actually LIVE now
+
+The entry immediately below this one ("2026-08-12 — feat: per-product AI-provider setting... — NOT
+deployed") was accurate when written on 2026-08-12. It is now stale and should not be read as current
+status. Leaving the original entry untouched (COMMS.md is append-only) and flagging the correction here.
+
+**What changed:** the 2026-08-14 15:45 IST deploy of commit `23ebbe0` (the `/my/watchlist` crash fix) pulled
+the full `main` branch to the server, which includes `0597bfc` (the AI-provider toggle) since it sits
+earlier in the same branch history. That deploy rebuilt and restarted the app container.
+
+**Verified live on 2026-08-14 (this session, docs specialist, read-only checks only — no deploy performed):**
+- Server `git rev-parse HEAD` = `23ebbe0`, matches local `main` tip.
+- `ipopulse-ipopulse-1` container `StartedAt` ≈ 36 minutes before this check, consistent with a rebuild at
+  deploy time.
+- `curl https://ipopulse.talkytools.com/sup-min/ai-settings` → `HTTP 302` (redirect to login — route exists,
+  not 404).
+- `curl https://ipopulse.talkytools.com/api/admin/ai-settings` → `HTTP 403` (route exists, admin-gated).
+- `curl https://ipopulse.talkytools.com/` and `/api/health` → both `HTTP 200`.
+
+**Net effect:** the AI-provider toggle at `/sup-min/ai-settings` is live in production now, not "awaiting
+founder go" as the 2026-08-12 entry states. No further deploy action needed for that feature. This is a
+status correction only — no code was touched this session (docs-only pass, see CLAUDE.md "State as of
+2026-08-14" for the full reconciliation).
+
 ## 2026-08-12 — feat: per-product AI-provider setting (Subscription CLI vs API key), fail-closed — NOT deployed
 
 SDD-lite: **What** — built the platform-wide B.20 AI-provider toggle for IPOpulse: a DB-backed
