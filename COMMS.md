@@ -1,5 +1,22 @@
 # IPOpulse — COMMS
 
+## 2026-08-15 — security fix: next-auth CVE patch (GHSA-8fpg-xm3f-6cx3 + GHSA-7rqj-j65f-68wh), committed but NOT pushed
+
+Fleet-wide next-auth CVE patch, already applied in 7 other repos today. `package.json`/`package-lock.json`
+had already been partially bumped (uncommitted, from an earlier partial run) to `next-auth@5.0.0-beta.32` +
+`@auth/prisma-adapter@2.11.3` — this session finished verification and committed it.
+
+**Verified:** `npm ls @auth/core --all` deduped to `0.41.3` (patched, single copy). `npm audit
+--audit-level=high` shows zero next-auth/@auth/core findings. Clean `npm run build`, `npx tsc --noEmit` 0
+errors, `npm test` 98/98 passing. Local dev-server smoke test: `/signin` 200, `/api/auth/providers` 200
+(correct credentials provider JSON), `/api/auth/session` 200 (null, unauth as expected), `/api/auth/csrf`
+200 with token, `/sup-min` 200 (public login page), `/sup-min/dashboard` and `/my/watchlist` both 302
+(protected routes still gated). Zero errors in dev log. Full detail in CHANGELOG.md same date.
+
+**Not done, deliberately:** not pushed to `origin/main` and not deployed. Push/deploy are outside
+security-specialist standing authority — need explicit founder "go" (push) and a separate go for
+`talkytools-deploy` (server deploy). Commit is sitting locally on `main`, ready to push whenever authorized.
+
 ## 2026-08-14 — docs correction (append-only, not a rewrite): AI-provider toggle is actually LIVE now
 
 The entry immediately below this one ("2026-08-12 — feat: per-product AI-provider setting... — NOT

@@ -1,5 +1,39 @@
 # Changelog — IPOpulse
 
+## 2026-08-15 · security(critical): next-auth CVE patch (GHSA-8fpg-xm3f-6cx3 auth-fail-open + GHSA-7rqj-j65f-68wh email homoglyph bypass)
+
+**Symptom / risk:** `next-auth` was pinned to `^5.0.0-beta.30`, a version affected by two disclosed CVEs — an
+auth-fail-open condition and an email-homoglyph account-takeover bypass in `@auth/core`. This CVE was
+already patched fleet-wide in 7 other repos (SignalDrop, SeizeLead, ToolsTalky, DIYPR, Optimo, Mailprobe,
+LaunchKit, HireTrack) using the same fix pattern.
+
+**Root cause:** `next-auth@5.0.0-beta.30` transitively pinned `@auth/core@0.41.2` (the vulnerable version).
+`@auth/prisma-adapter@2.11.2` independently pinned the same old `@auth/core@0.41.2`, so bumping `next-auth`
+alone would not have deduped the fix — the adapter needed its own bump too (matches the pattern seen in the
+other 7 repos this week).
+
+**Fix:** bumped `next-auth` to `5.0.0-beta.32` and `@auth/prisma-adapter` to `2.11.3` in `package.json`. Ran
+`npm install`; `npm ls @auth/core --all` confirms a single deduped `@auth/core@0.41.3` (patched) resolution
+across both `next-auth` and `@auth/prisma-adapter` — no second, older copy hanging around.
+
+**Verification (real, not assumed):**
+- `npm audit --audit-level=high` — zero `next-auth` / `@auth/core` findings (previously present). 11
+  unrelated pre-existing HIGH/CRITICAL findings remain (next.js core, sharp, undici, postcss, form-data,
+  js-yaml, nanoid, brace-expansion) — out of scope for this fix, already flagged as a known gap in this
+  file's 2026-08-14 state note; not touched here.
+- `rm -rf .next && npm run build` — clean build, all routes compiled, zero errors.
+- `npx tsc --noEmit` — 0 errors.
+- `npm test` (vitest) — 98/98 tests passed across 8 files.
+- Local dev server (port 3065, local Postgres dev container) login-stack smoke test: `GET /signin` → 200;
+  `GET /api/auth/providers` → 200 with correct `credentials` provider JSON; `GET /api/auth/session` → 200
+  (`null`, no session, as expected unauthenticated); `GET /api/auth/csrf` → 200 with a token; `GET /sup-min`
+  (public login page) → 200; `GET /sup-min/dashboard` and `GET /my/watchlist` (protected routes) → both 302
+  (auth gate intact, no `-L`). Zero errors in the dev server log across all of the above.
+
+**Scope note:** this fix was applied and verified locally; commit is local only, **not pushed** — pushing to
+`origin/main` is outside standing security-specialist authority (push/deploy require an explicit founder
+"go" or `talkytools-deploy`), so it is deliberately withheld pending that authorization.
+
 ## 2026-08-14 · fix(critical): `/my/watchlist` crashed for every brand-new user — the page a fresh signup lands on immediately after login
 
 **Symptom:** Confirmed via real-browser synthetic journey test: a freshly signed-up user with zero watchlist
