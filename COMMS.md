@@ -1,5 +1,51 @@
 # IPOpulse — COMMS
 
+## 2026-08-19 — fix: GMP multi-source failover (built + tested locally, NOT deployed) + status corrections
+
+SDD-lite: **What** — `gmp_tracker` now fails over across an ordered list of GMP sources instead of depending
+on one hardcoded site; fetching/parsing extracted to `src/lib/scrapers/gmp-sources.ts`, with `ipowatch.in`
+still first and `ipoji.com` added as fallback. **Why** — ipowatch.in went down (HTTP 522) at 06:50 UTC today
+and GMP, the product's most-used number, stopped updating for the whole day with no fallback and no degraded
+mode. **Done when** — both parsers pinned by tests against captured fixtures, all four failover paths tested,
+tsc 0 errors, clean `npm run build`. **Out of scope** — did not touch the manual `/sup-min/gmp` entry path or
+the GMP chart UI; did not add a third source. **Verify** — `npx vitest run` 117/117 (was 98, +19 new);
+`npx tsc --noEmit` 0 errors; `npm run build` clean; real ipoji HTML fetched from the server and parser output
+checked by hand. Full detail in CHANGELOG.md same date.
+
+**Sign bug found while testing:** GMP cells matched `/-?\d+/` after stripping only commas, so `-₹5` parsed as
+**+5** — the sign inverted on exactly the IPOs where a negative GMP is the whole signal. Fixed in the shared
+`parseSignedNumber`, pinned by a test. This affected the old single-source path too, so it has been live.
+
+**Not deployed** — needs founder "go". While it sits undeployed, GMP remains stale whenever ipowatch is down.
+
+### Status corrections to earlier entries (append-only, originals left untouched)
+
+1. **The 2026-08-15 entry says the next-auth CVE patch was "committed but NOT pushed" and not deployed. Both
+   are now done.** Verified today: local `main`, `origin/main` and the server's `/home/ubuntu/IPOpulse` HEAD
+   are all `9da0432`; `ipopulse-ipopulse-1` is up 4 days and healthy. No action left on that item.
+
+2. **AI features are working again.** The credential mount was pointing at `/root/.claude` while the container
+   runs as non-root user `app` (`HOME=/home/app`), so every AI call failed silently with "Not logged in" —
+   `[daily-summary] AI call failed: ClaudeUnavailableError` at 11:00 UTC on 08-17, 08-18 and 08-19. Fixed by
+   commit `7dd0725` plus a host-side credential refresh at ~13:20 UTC today. Verified live afterwards:
+   `docker exec ipopulse-ipopulse-1 claude -p` returns a real answer as user `app`, and `/api/health` reports
+   `anthropic: ok`. The next `daily-summary` run (11:00 UTC daily) is the end-to-end confirmation.
+
+3. **Provider mode is subscription, and stays that way** (founder, 2026-08-19: "always use subscription cli").
+   Confirmed in prod: the `settings` table has no `ai_provider_mode` row and no saved key, so
+   `getAiProviderMode()` returns its `"subscription"` default. Do not paste an API key into
+   `/sup-min/ai-settings` and do not add `ANTHROPIC_API_KEY` to `.env` — if the CLI is down, fail closed and
+   tell the founder.
+
+### Open, not addressed this session
+
+- **`super_investor` cron has not succeeded in ~65 days** (crawler-health: "last success 1561h ago").
+- **`yahoo_fundamentals` failing** — "last success 56h ago", runs report `updated=0 failed=2`.
+- **`npm run lint` is broken project-wide** — `@eslint/eslintrc` throws a circular-reference error during
+  config validation, reproducible on files this session never touched. The lint gate is not running at all.
+- **`/api/health` reports `degraded` purely because Resend is unconfigured.** Per the platform health standard
+  unconfigured is not a failure, so this should read `ok` with Resend marked `unconfigured`.
+
 ## 2026-08-15 — security fix: next-auth CVE patch (GHSA-8fpg-xm3f-6cx3 + GHSA-7rqj-j65f-68wh), committed but NOT pushed
 
 Fleet-wide next-auth CVE patch, already applied in 7 other repos today. `package.json`/`package-lock.json`

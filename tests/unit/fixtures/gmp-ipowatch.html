@@ -1,0 +1,14 @@
+<!--
+  ipowatch.in GMP table, reduced to the columns the parser reads:
+  IPO Name | IPO GMP | Trend | Price Band | Est. Listing | Date | Type | Status | Last Updated
+  Hand-built rather than captured: ipowatch.in was returning HTTP 522 when this
+  fixture was written (2026-08-19) — that outage is what prompted the fallback.
+  Row 3 carries a NEGATIVE GMP, the case that used to lose its minus sign.
+-->
+<table>
+  <tr><th>IPO Name</th><th>IPO GMP</th><th>Trend</th><th>Price Band</th><th>Est. Listing</th><th>Date</th><th>Type</th><th>Status</th><th>Last Updated</th></tr>
+  <tr><td>Shankesh Jewellers</td><td>₹3</td><td>up</td><td>₹88-93</td><td>₹96</td><td>18-20 August</td><td>Mainboard</td><td>Open</td><td>19 Aug</td></tr>
+  <tr><td>Dhanwel Hybrid Seeds</td><td>₹12</td><td>flat</td><td>₹95-99</td><td>₹111</td><td>19-21 August</td><td>BSE SME</td><td>Open</td><td>19 Aug</td></tr>
+  <tr><td>Weak Listing Co</td><td>-₹5</td><td>down</td><td>₹100-105</td><td>₹100</td><td>12-16 August</td><td>Mainboard</td><td>Closed</td><td>19 Aug</td></tr>
+  <tr><td>No Premium Yet</td><td>—</td><td>flat</td><td>₹50-55</td><td>—</td><td>22-26 August</td><td>NSE SME</td><td>Upcoming</td><td>19 Aug</td></tr>
+</table>

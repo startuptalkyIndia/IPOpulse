@@ -1,5 +1,52 @@
 # Changelog — IPOpulse
 
+## 2026-08-19 · fix(gmp): multi-source failover — GMP stopped updating for a whole day when one site went down
+
+**Symptom:** `gmp_tracker` failed every run from 06:50 UTC on 2026-08-19 (`error=fetch failed`, then
+`error=IPO Watch GMP page returned HTTP 522` at 10:50 and 14:50). Grey Market Premium — the number retail
+investors check most before applying to an IPO, and the thing our GMP chart is built on — showed nothing new
+for the day. The last good run was 02:50 UTC (`rowsIn=17`).
+
+**Root cause:** the job had exactly one hardcoded source, `ipowatch.in`. That site's Cloudflare edge was
+returning 522 (its origin was unreachable — verified from the server: 522 after a 19.5s wait). Nothing was
+wrong on our side, but a single hardcoded upstream is a single point of failure on the product's most
+important feature, and it had no fallback and no degraded mode: source down = feature dead.
+
+**Fix:** fetching + parsing moved out of the cron job into `src/lib/scrapers/gmp-sources.ts`, which holds an
+ordered list of sources and tries each until one yields rows:
+  1. `ipowatch.in` — unchanged, still first.
+  2. `ipoji.com` — new. Server-rendered table, absolute dates, verified live from the server the same day
+     (HTTP 200, 22 rows, timestamps current to the hour).
+A source is treated as broken — and skipped — if it 5xx's, times out, throws, *or* loads but parses to zero
+rows (a silent layout change is a failure, not a successful empty run). Only when every source fails does the
+job throw, with each source's reason in the message, so the crawler-health heartbeat still flags a real
+outage instead of the job quietly reporting success. The winning source's name is written to `ipo_gmp.source`,
+so any row's origin stays auditable.
+
+**Second bug found while writing the tests (sign inversion):** GMP cells were matched with `/-?\d+/` *after*
+only stripping commas, so on `-₹5` the minus is not adjacent to the digit — the regex skipped it and stored
+**+5**. That inverts the sign on exactly the IPOs where a negative GMP is the entire signal (a discount, i.e.
+the market expecting a listing below issue price). Currency symbols are now stripped before matching
+(`parseSignedNumber`). Both parsers share it.
+
+**Also:** `ipoji.com` glues name + type + status into one cell ("Shankesh Jewellers IPO Mainboard Open"), so
+the parser peels the trailing status, type and "IPO" back off — otherwise no scraped name would ever match an
+IPO in our DB and every row would land as `unmatched`.
+
+**Verify:**
+- `npx vitest run` → **117/117 passing** (was 98; +19 new in `tests/unit/gmp-sources.spec.ts`), covering both
+  parsers against captured fixtures, the sign bug, both date formats, and all four failover paths
+  (5xx → next source, zero-rows → next source, throw → next source, all-fail → throws with every reason).
+- `npx tsc --noEmit` → 0 errors. `npm run build` → clean.
+- Real `ipoji.com` HTML captured from the server as a fixture; parser output verified by hand against the live
+  page (4 of 8 rows carry a quoted GMP; the 4 showing "—" are correctly skipped).
+
+**Not done:** not deployed — needs founder "go". Until it ships, GMP stays stale whenever ipowatch is down.
+
+**Pre-existing issue found, not fixed (out of scope):** `npm run lint` / `npx eslint <any file>` crashes with a
+circular-reference error in `@eslint/eslintrc` config validation. Reproduced on files this change never
+touched, so it predates it — the lint gate is currently not running at all for this project.
+
 ## 2026-08-15 · security(critical): next-auth CVE patch (GHSA-8fpg-xm3f-6cx3 auth-fail-open + GHSA-7rqj-j65f-68wh email homoglyph bypass)
 
 **Symptom / risk:** `next-auth` was pinned to `^5.0.0-beta.30`, a version affected by two disclosed CVEs — an
