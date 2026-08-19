@@ -1,5 +1,38 @@
 # IPOpulse — COMMS
 
+## 2026-08-19 (deploy) — all four fixes LIVE, verified in production
+
+Founder gave "go". Pushed `b0bb7b8`, `c1a5d66`, `796b251`; server pulled to `796b251`, detached rebuild took
+~3 min, container recreated and healthy. **Rollback SHA: `9da0432`** (`git reset --hard 9da0432` + rebuild).
+
+**Verified live, not assumed — each fix exercised against the real failure it was built for:**
+
+- **GMP failover.** ipowatch.in was *still* returning 522 at deploy time, so this was a real test, not a
+  simulated one: `{"ok":true,"rowsIn":12,"notes":"source=ipoji; 12/12 matched+saved"}`, with
+  `[gmp-tracker] fell back to ipoji — ipowatch: HTTP 522` in the log. GMP is updating again after a full day
+  stalled.
+- **yahoo_fundamentals.** `{"ok":true,"rowsIn":1,"rowsError":0,"notes":"3 symbol(s) not served by Yahoo (need
+  remap): TATAMOTORS, ZOMATO, VISASTEEL"}`. Same input that used to record FAILED with "all N rows errored"
+  now records an honest success naming what a human needs to fix.
+- **super_investor.** `{"ok":false,"error":"api.bseindia.com redirected to its error page (HTTP 302) — this
+  server's IP is blocked... Aborted after 0 of 500 companies"}`. Fails in under a second with the real reason
+  instead of 3.5 minutes of doomed requests. Still blocked by design — the feature needs a new source.
+- **/api/health.** Now `{"status":"ok",...,"resend":{"status":"unconfigured"}}` — verdict is meaningful again,
+  and the unconfigured dep is still visible.
+- **AI credential mount survived the container recreate:** container user is `app`, `/home/app/.claude/.credentials.json`
+  present, `anthropic: ok` in health.
+- No new errors in 20 minutes of logs. `/`, `/ipo`, `/api/health` all HTTP 200. Container healthy.
+
+**Still open and deliberately NOT done in this deploy:**
+
+1. **Three symbol remaps need founder approval** (data change): `ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`,
+   `VISASTEEL`→ likely `active=false`. Until applied, those companies' fundamentals stay frozen at 2026-05-09
+   and the job will keep naming them every run.
+2. **super_investor needs a new source** to actually work — `screener.in` and `moneycontrol.com` both answer
+   this server, but neither is confirmed to expose *named* individual holders. Scope before building.
+3. **111 lint findings** exposed by the revived gate (74 errors, 37 warnings) — cosmetic majority, but the 13
+   `react-hooks/set-state-in-effect` touch live components.
+
 ## 2026-08-19 (later) — the four open items from the entry below are now fixed (built + tested, NOT deployed)
 
 SDD-lite: **What** — closed all four items listed as open earlier today. **Why** — three of the 27 cron jobs
