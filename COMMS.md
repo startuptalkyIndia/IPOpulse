@@ -1,5 +1,34 @@
 # IPOpulse — COMMS
 
+## 2026-08-19 (later) — the four open items from the entry below are now fixed (built + tested, NOT deployed)
+
+SDD-lite: **What** — closed all four items listed as open earlier today. **Why** — three of the 27 cron jobs
+were red and two of them had been lying about it for months; the lint gate was not running at all; the health
+endpoint's verdict field was stuck. **Done when** — tsc 0 errors, vitest 121/121, clean build, eslint clean on
+every changed file. **Out of scope** — the 111 lint findings the revived gate exposes, the super-investor
+rebuild against a new source, and the three Yahoo symbol remaps (data change, needs approval). **Verify** —
+full command output in CHANGELOG.md same date.
+
+| # | Item | Status | Note |
+|---|------|--------|------|
+| 1 | `yahoo_fundamentals` failing | ✅ Fixed | dead tickers no longer fail the run; named in notes instead |
+| 2 | `super_investor` dead ~65 days | ⚠️ Made honest | BSE blocks this server's IP; aborts fast with the real reason. Feature still needs a new source |
+| 3 | `npm run lint` broken | ✅ Fixed | FlatCompat misuse; gate runs again — and reports 111 pre-existing problems |
+| 4 | `/api/health` stuck on "degraded" | ✅ Fixed | unconfigured no longer degrades the verdict; matches Optimo/SeizeLead |
+
+**⚠ Needs founder approval before anyone applies it (data change, per the never-auto-apply rule):** three
+company symbol mappings are stale, and those companies' fundamentals have been frozen since 2026-05-09 —
+`ZOMATO` → `ETERNAL` (renamed to Eternal Limited), `TATAMOTORS` → `TMPV` (demerged into Tata Motors Passenger
+Vehicles; the commercial-vehicles entity is a separate decision), and `VISASTEEL` (no longer served by Yahoo —
+looks delisted/suspended, so probably `active = false`). Each was verified against Yahoo directly, but this is
+exactly the kind of change that gets confirmed, not auto-applied.
+
+**Also still open:** `super_investor` can only be restored with a different source — `screener.in` and
+`moneycontrol.com` both answer this server, but neither is confirmed yet to expose *named* individual holders,
+which is the whole point of the feature. Worth scoping before building.
+
+**Not deployed** — commits `b0bb7b8` and `c1a5d66` are sitting on local `main`, 2 ahead of origin.
+
 ## 2026-08-19 — fix: GMP multi-source failover (built + tested locally, NOT deployed) + status corrections
 
 SDD-lite: **What** — `gmp_tracker` now fails over across an ordered list of GMP sources instead of depending
