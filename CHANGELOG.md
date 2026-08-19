@@ -1,5 +1,13 @@
 # Changelog — IPOpulse
 
+## 2026-08-19 · fix(db): widen `opm` (operating profit margin) from Decimal(6,2) to Decimal(10,2) on AnnualFinancial + QuarterlyFinancial
+
+Production log check found `prisma.annualFinancial.upsert()` failing with Postgres `22003 numeric field overflow` ("A field with precision 6, scale 2 must round to an absolute value less than 10^4") during the `screener-deep` ingest job — 7 occurrences since the container's last restart (2026-08-15). `opm` (operating profit margin %) was the only ratio field on either model still at `Decimal(6,2)` (max ±9999.99); the sibling ratio fields `roe`/`roce` already use `Decimal(10,2)`. A margin computed as ≥10000% or ≤-10000% is almost certainly a divide-by-near-zero artifact from the scraper's own calculation (didn't change that logic — out of scope, no evidence it's wrong vs. just an extreme edge case), but the column should hold whatever the ingest computes rather than silently dropping the row. Widened both `opm` fields to match `roe`/`roce`'s precision — additive, no data loss (every value that fit in `Decimal(6,2)` fits in `Decimal(10,2)`).
+
+Also investigated, NOT fixed: the earlier-flagged `prisma.ipo.findUnique()` invocation error (57x in an older scan) and a Next.js "functions cannot be passed to Client Components" error (14x) haven't recurred since the Aug 15 container restart — current logs show zero occurrences of either, and there are 11 different `findUnique` call sites, so there's no live evidence to safely pinpoint which one to fix. Left alone rather than guess.
+
+**Verified:** `npx prisma validate` — valid. `npx tsc --noEmit` — 0 errors. Schema change committed, **not yet applied to the production DB** (this project runs `prisma db push` in its container entrypoint — the next deploy will apply it. Per DB standard: back up DB first, additive-only, confirmed additive here).
+
 ## 2026-08-19 · fix(crons+lint+health): the three remaining red jobs, the dead lint gate, and a permanently-degraded health check
 
 Follow-up to the GMP failover entry below. Every job on the box is now green or honest; a 30-day audit of
