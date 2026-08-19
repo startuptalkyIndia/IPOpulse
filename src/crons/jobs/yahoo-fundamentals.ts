@@ -6,6 +6,16 @@
  * Runs at ~1 req/1.2s → ~47 min for 2,300 companies.
  * Only processes companies where fundamentalsAt < 6 days ago.
  * Ends with market_cap recalculation from shares × latest bhavcopy price.
+ *
+ * Error handling (2026-08-19): a symbol Yahoo no longer serves — renamed,
+ * demerged or delisted — fails forever. Because a failed fetch never stamps
+ * `fundamentalsAt`, those symbols requeue every single day, and on a day when
+ * the queue holds nothing else the run is 100% errors and the whole job is
+ * recorded as FAILED. That is how a healthy job spent months looking broken and
+ * masked real failures. Dead symbols are now counted separately from transient
+ * ones: only transient errors fail the run, and the dead list is logged by name
+ * because the actual cure is remapping the symbol (a data change a human must
+ * approve), not retrying it.
  */
 
 import { prisma } from "@/lib/db";
@@ -24,6 +34,25 @@ function round2(v: number | undefined | null): number | null {
   return Math.round(v * 100) / 100;
 }
 
+/**
+ * Does this error mean "Yahoo will never serve this symbol" rather than
+ * "something went wrong just now"? Matched case-insensitively: Yahoo says
+ * "Quote not found for symbol: X" — the old filter tested for "Not Found" and
+ * so never actually matched.
+ *
+ * "Failed Yahoo Schema validation" counts as dead too: that is what a renamed
+ * ticker returns (ZOMATO.NS after the Eternal rename), not a transient blip.
+ */
+export function isDeadSymbol(msg: string): boolean {
+  const m = msg.toLowerCase();
+  return (
+    m.includes("quote not found") ||
+    m.includes("not found") ||
+    m.includes("no fundamentals") ||
+    m.includes("schema validation")
+  );
+}
+
 export async function runYahooFundamentals(): Promise<IngestionResult> {
   const staleThreshold = new Date(Date.now() - STALE_HOURS * 3600 * 1000);
 
@@ -40,7 +69,8 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
 
   console.log(`[yahoo-fundamentals] Processing ${companies.length} companies`);
   let rowsIn = 0;
-  let rowsError = 0;
+  let rowsError = 0;      // transient only — these are real problems
+  const deadSymbols: string[] = []; // gone from Yahoo; needs a symbol remap
 
   // Import yahoo-finance2 at function scope so Next.js doesn't bundle it for client
   // v3 API requires `new YahooFinance()` instantiation
@@ -91,18 +121,35 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (!msg.includes("Not Found") && !msg.includes("No fundamentals")) {
+      if (isDeadSymbol(msg)) {
+        deadSymbols.push(co.nseSymbol!);
+      } else {
         console.warn(`[yahoo-fundamentals] ${sym}: ${msg.slice(0, 80)}`);
+        rowsError++;
       }
-      rowsError++;
     }
 
     await sleep(DELAY_MS);
   }
 
-  console.log(`[yahoo-fundamentals] Done. updated=${rowsIn} failed=${rowsError}`);
+  if (deadSymbols.length) {
+    // Named, not just counted: each one is a company whose fundamentals have
+    // been frozen since the rename, and the fix is a human-approved remap.
+    console.warn(
+      `[yahoo-fundamentals] ${deadSymbols.length} symbol(s) Yahoo no longer serves — these need remapping, retrying will not help: ${deadSymbols.join(", ")}`,
+    );
+  }
+  console.log(
+    `[yahoo-fundamentals] Done. updated=${rowsIn} transientErrors=${rowsError} deadSymbols=${deadSymbols.length}`,
+  );
   await recalcMarketCap();
-  return { rowsIn, rowsError };
+  return {
+    rowsIn,
+    rowsError,
+    notes: deadSymbols.length
+      ? `${deadSymbols.length} symbol(s) not served by Yahoo (need remap): ${deadSymbols.join(", ")}`
+      : undefined,
+  };
 }
 
 /**

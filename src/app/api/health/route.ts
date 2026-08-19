@@ -7,8 +7,18 @@
 // Honesty rule (LESSON-2026-06-06-health-honesty):
 //   Bare {"status":"ok"} without per-dep state is a lie monitor.
 //   Every external dep MUST appear in checks with: "ok" | "unconfigured" | "fail".
-//   "unconfigured" = env var missing, app can still run. Returns 200 degraded.
+//   "unconfigured" = env var missing, app can still run.
 //   "fail" = dep unreachable. Returns 503 for critical deps (db).
+//
+// Overall verdict (corrected 2026-08-19): "unconfigured" is reported per dep but
+// does NOT degrade the overall status. It used to, which meant that with Resend
+// deliberately not wired the endpoint answered "degraded" every single time —
+// so the field could never change, and no monitor could tell a known-missing
+// integration apart from something newly broken. A permanently-degraded health
+// check is exactly the lie monitor this rule exists to prevent. Per-dep state
+// still shows Resend as "unconfigured", so nothing is hidden. This also matches
+// the convention already used by Optimo and SeizeLead, where unconfigured never
+// flips the verdict.
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -85,13 +95,10 @@ export async function GET() {
   };
 
   // Verdict:
-  //   - db fail → 503 unhealthy
-  //   - any unconfigured → 200 degraded (honest about what's not wired)
-  //   - all ok → 200 ok
+  //   - db fail                  → 503 unhealthy
+  //   - a CONFIGURED dep failing → 200 degraded (something is actually broken)
+  //   - otherwise                → 200 ok (unconfigured deps still listed above)
   const criticalFail = checks.db.status === "fail";
-  const anyUnconfigured = Object.values(checks).some(
-    (c) => c.status === "unconfigured"
-  );
   const anyFail = Object.values(checks).some((c) => c.status === "fail");
 
   let status: "ok" | "degraded" | "unhealthy";
@@ -99,7 +106,7 @@ export async function GET() {
   if (criticalFail) {
     status = "unhealthy";
     httpCode = 503;
-  } else if (anyFail || anyUnconfigured) {
+  } else if (anyFail) {
     status = "degraded";
     httpCode = 200;
   } else {

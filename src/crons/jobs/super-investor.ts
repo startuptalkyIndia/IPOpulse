@@ -9,6 +9,21 @@
  *
  * Schedule: Monthly on 15th (BSE filings lag quarter-end by ~45 days)
  * Also manually triggerable from /sup-min/ingestion
+ *
+ * ⚠️ CURRENTLY BLOCKED (verified 2026-08-19): api.bseindia.com refuses this
+ * server's cloud IP — it answers with a 302 to its own error page rather than a
+ * 4xx, even with browser headers and a warmed cookie jar. (Plain
+ * www.bseindia.com file downloads still work, which is why bse_bhavcopy and
+ * bse_listing_sync are healthy; only the API host is blocked.) This job has
+ * therefore never ingested a single row: May and June 2026 recorded "success"
+ * with 0 rows, July and August recorded "all 500 rows errored".
+ *
+ * Until a reachable source replaces BSE, the job aborts on the first blocked
+ * response instead of spending ~3.5 minutes issuing 500 requests that cannot
+ * succeed, and it says why in the failure so the heartbeat reports the real
+ * cause. Restoring the feature needs a different source (screener.in and
+ * moneycontrol both answer this server) or an India residential proxy — a
+ * scoped piece of work, not a retry.
  */
 
 import { prisma } from "@/lib/db";
@@ -124,11 +139,38 @@ interface BseHolder {
   PERC_OF_TOTAL_SHARES: number;
 }
 
+/**
+ * Raised when BSE is refusing this host outright — a whole-job condition, not a
+ * per-company one, so it aborts the run instead of being counted as one of 500
+ * identical failures.
+ */
+class BseBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BseBlockedError";
+  }
+}
+
 async function fetchBseHolders(bseCode: string): Promise<BseHolder[]> {
   // BSE public shareholding API — returns individual holders ≥1% (disclosed names)
   const url = `https://api.bseindia.com/BseIndiaAPI/api/ShareHoldings/w?scripCode=${bseCode}`;
-  const res = await fetch(url, { headers: BSE_HEADERS, signal: AbortSignal.timeout(12000) });
+  // redirect:"manual" so the block stays visible: followed automatically, the
+  // 302 lands on BSE's error page and arrives as a perfectly healthy-looking
+  // 200 full of HTML, which is how this failed as an unexplained JSON parse
+  // error 500 times in a row.
+  const res = await fetch(url, { headers: BSE_HEADERS, redirect: "manual", signal: AbortSignal.timeout(12000) });
+  if (res.status >= 300 && res.status < 400) {
+    throw new BseBlockedError(
+      `api.bseindia.com redirected to its error page (HTTP ${res.status}) — this server's IP is blocked, so no company can be fetched`,
+    );
+  }
   if (!res.ok) return [];
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("json")) {
+    throw new BseBlockedError(
+      `api.bseindia.com returned "${contentType || "no content-type"}" instead of JSON — blocked, or the API changed`,
+    );
+  }
   const json = await res.json();
   // Response shape: { Table: BseHolder[] } or { Table1: BseHolder[] }
   return (json?.Table ?? json?.Table1 ?? []) as BseHolder[];
@@ -206,7 +248,14 @@ export async function ingestSuperInvestorHoldings(): Promise<IngestionResult> {
         });
         rowsIn++;
       }
-    } catch {
+    } catch (err) {
+      // A block is not a per-company failure — every remaining company would
+      // fail identically. Stop now and report the real reason.
+      if (err instanceof BseBlockedError) {
+        throw new Error(
+          `${err.message}. Aborted after ${i} of ${companies.length} companies; ${rowsIn} holdings ingested.`,
+        );
+      }
       errors++;
     }
 

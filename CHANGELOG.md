@@ -1,5 +1,88 @@
 # Changelog — IPOpulse
 
+## 2026-08-19 · fix(crons+lint+health): the three remaining red jobs, the dead lint gate, and a permanently-degraded health check
+
+Follow-up to the GMP failover entry below. Every job on the box is now green or honest; a 30-day audit of
+`ingestion_runs` showed only three problem jobs out of 27 (`gmp_tracker`, `yahoo_fundamentals`,
+`super_investor`) — everything else was 0 failures.
+
+### 1. `yahoo_fundamentals` — a handful of dead tickers made a healthy job report FAILED
+
+**Symptom:** 10 failed runs in 30 days, heartbeat red at "last success 56h ago", runs reporting
+`updated=0 failed=2`.
+
+**Root cause:** a failed fetch never stamps `fundamentalsAt`, so a symbol Yahoo no longer serves requeues
+every single day, forever. `runIngestion` marks a run failed when `rowsIn === 0 && rowsError > 0`, so on any
+day the stale queue held nothing *but* those dead symbols, the whole job was recorded as failed. Only 4
+companies were even in the queue, and 2 of them had been frozen since 2026-05-09.
+
+**Verified against Yahoo directly:** `ZOMATO.NS` → "Failed Yahoo Schema validation" (renamed —
+**`ETERNAL.NS` works**, "Eternal Limited"); `TATAMOTORS.NS` → not found (demerged — **`TMPV.NS` works**,
+"Tata Motors Passenger Vehicles Limited"); `VISASTEEL.NS` → not found (delisted/suspended); `RELIANCE.NS`
+fine. So this was never a broken job — it is three stale symbol mappings.
+
+**Fix:** errors are now classified. Permanently-dead symbols are collected and named in the log and in the
+run's notes; only transient errors (network, rate-limit, timeout) count toward `rowsError` and can fail the
+run. Also fixed the classifier itself: the old filter tested for `"Not Found"` while Yahoo actually says
+`"Quote not found for symbol: X"` — different case, so it never matched anything.
+
+**Not done — needs founder approval (data change):** remapping `ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`, and
+marking `VISASTEEL` inactive. Those three companies' fundamentals stay frozen until that is applied.
+
+### 2. `super_investor` — has never ingested a single row; BSE blocks this server
+
+**Symptom:** heartbeat "last success 1561h ago" (~65 days). Full history: 2026-05-15 "success" with 0 rows,
+06-15 "success" with 0 rows, 07-15 and 08-15 "all 500 rows errored". It has never worked.
+
+**Root cause:** `api.bseindia.com` refuses this server's cloud IP. It answers with a **302 to its own error
+page** rather than a 4xx — so with `fetch`'s default redirect-following the job received a perfectly
+healthy-looking 200 full of HTML, which then died in `res.json()` and was swallowed by a bare `catch`, 500
+times per run. Verified from the server: 302 with browser headers, and still 302 with a cookie jar warmed
+from `www.bseindia.com`. Plain `www.bseindia.com` downloads are unaffected, which is why `bse_bhavcopy` and
+`bse_listing_sync` are healthy — only the API host is blocked.
+
+**Fix:** the block is now detected explicitly (`redirect: "manual"`, plus a content-type check) and raised as
+a distinct `BseBlockedError` that aborts the run immediately with the real reason, instead of spending ~3.5
+minutes issuing 500 requests that cannot succeed and reporting a meaningless "all 500 rows errored".
+
+**Still blocked, by design:** this does not restore the feature — no reachable source replaces BSE for
+*named* individual holders. `screener.in` and `moneycontrol.com` both answer this server (verified), so a
+rebuild against one of them, or an India residential proxy, is the path. That is scoped work, not a retry.
+
+### 3. `npm run lint` — the gate had not run at all
+
+**Root cause:** `eslint.config.mjs` loaded `eslint-config-next` through `FlatCompat.extends()`. That shim is
+for old eslintrc-style configs, but `eslint-config-next@16` already exports **flat config arrays** — so it
+failed schema validation, and then the validator's own error formatter crashed on the circular plugin object
+("Converting circular structure to JSON"). ESLint died before linting a line, on every file, including files
+untouched for months.
+
+**Fix:** spread `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript` directly, plus an
+explicit `ignores` block. `npx eslint` now runs clean on every file this session touched.
+
+**Newly revealed backlog (not fixed — reporting only):** with the gate working, the project reports **111
+problems (74 errors, 37 warnings)** accumulated while it was silently off: 45 `react/no-unescaped-entities`,
+36 `@typescript-eslint/no-unused-vars`, 13 `react-hooks/set-state-in-effect`, 5 `react-hooks/purity`, 5
+`react-hooks/static-components`, and 7 others. The first two groups are cosmetic and safe; the `react-hooks`
+ones touch live components and deserve their own pass.
+
+### 4. `/api/health` — permanently "degraded", so the field carried no signal
+
+**Root cause:** any dep in state `unconfigured` degraded the overall verdict. With Resend deliberately not
+wired, the endpoint answered `"status":"degraded"` on every single call — the field could never change, so no
+monitor could tell a known-missing integration from something newly broken. A permanently-degraded health
+check is precisely the lie monitor the file's own honesty rule exists to prevent.
+
+**Fix:** `unconfigured` is still reported per dep (nothing hidden), but only a **configured** dep actually
+failing degrades the overall verdict; db failure still returns 503. This also matches the convention already
+in Optimo and SeizeLead, where unconfigured never flips the verdict. Prod now returns `"status":"ok"` with
+`resend: unconfigured` still visible.
+
+**Verify:** `npx vitest run` → **121/121 passing** (+4 new for the dead-symbol classifier); `npx tsc --noEmit`
+→ 0 errors; `npm run build` → compiled successfully; `npx eslint` → clean on all changed files.
+
+**Not deployed** — needs founder "go".
+
 ## 2026-08-19 · fix(gmp): multi-source failover — GMP stopped updating for a whole day when one site went down
 
 **Symptom:** `gmp_tracker` failed every run from 06:50 UTC on 2026-08-19 (`error=fetch failed`, then
