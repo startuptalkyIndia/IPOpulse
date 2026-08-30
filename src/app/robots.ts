@@ -2,22 +2,18 @@ import type { MetadataRoute } from "next";
 
 const BASE = "https://ipopulse.talkytools.com";
 
+// Platform-wide SEO policy (founder-confirmed 2026-08-30): talkytools.com is a
+// pure portfolio brand — every *.talkytools.com subdomain, including ones that
+// are a product's only live domain, is deindexed from Google/Bing. Blanket
+// disallow, no sitemap advertised.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: [
-          "/sup-min",      // admin login + dashboard
-          "/sup-min/",
-          "/api/",         // internal APIs
-          "/my/",          // private user pages
-          "/embed/gmp",    // iframe target — index docs page only
-          "/r/",           // affiliate redirects
-        ],
+        disallow: "/",
       },
     ],
-    sitemap: `${BASE}/sitemap.xml`,
+    host: BASE,
   };
 }

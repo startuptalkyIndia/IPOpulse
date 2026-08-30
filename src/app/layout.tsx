@@ -35,7 +35,9 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "IPOpulse" },
-  robots: { index: true, follow: true },
+  // Platform-wide SEO policy (founder-confirmed 2026-08-30): talkytools.com is a
+  // pure portfolio brand — deindex every *.talkytools.com subdomain from search.
+  robots: { index: false, follow: false, nocache: true },
   verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined,
     other: process.env.NEXT_PUBLIC_BING_VERIFICATION
