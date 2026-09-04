@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 export default function GlobalError({
   error,
   reset,
@@ -7,6 +9,17 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    // A build-specific Server Action ID from a stale tab/cache — reload once, not a real bug
+    const msg = error.message || "";
+    if (
+      msg.includes("Failed to find Server Action") ||
+      msg.includes("Server Reference ID did not match")
+    ) {
+      window.location.reload();
+    }
+  }, [error]);
+
   return (
     <html lang="en">
       <body>
