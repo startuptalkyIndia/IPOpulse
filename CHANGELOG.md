@@ -1,5 +1,43 @@
 # Changelog — IPOpulse
 
+## 2026-09-05 · fix: remove static `public/robots.txt` shadowing the dynamic noindex route — commit `a519379`
+
+The 2026-08-30 deindex fix (below) built and deployed cleanly but was **never actually reaching
+production**: a leftover `public/robots.txt` was silently overriding `src/app/robots.ts` (Next.js serves a
+static `public/` file over an app-router dynamic route at the same path). Found by checking the live
+`robots.txt` response after deploy instead of trusting the deploy script's green exit code — same root
+cause independently found and fixed in DIYPR first. Deleted the static file. **Verified live 2026-09-21:**
+`https://ipopulse.talkytools.com/robots.txt` now returns `Disallow: /` and the homepage carries
+`<meta name="robots" content="noindex, nofollow, nocache">`.
+
+## 2026-09-04 · fix: reload once on a stale Server Action ID instead of a dead-end error — commit `75f6117`
+
+A browser tab left open across a deploy (or a stale cached page) can POST a build-specific Server Action ID
+the current build no longer recognizes ("Failed to find Server Action" / "Server Reference ID did not match
+the expected format") — not a real app bug, just a stale client. `global-error.tsx` now detects this case
+and reloads the page once instead of showing the user a dead end. Existing branded error UI untouched.
+
+## 2026-08-30 · seo: deindex ipopulse.talkytools.com per platform portfolio policy — commit `4cc67ae`
+
+**Founder decision (2026-08-30): `talkytools.com` is a pure portfolio brand.** Every `*.talkytools.com`
+subdomain — including IPOpulse — is deindexed from Google/Bing regardless of current live/paying status.
+Blanket `Disallow: /` in `src/app/robots.ts` + `noindex,nofollow` meta on the root layout. This directly
+supersedes the SEO-led growth strategy in this project's "Goal" section and its 12/24/36-month traffic
+projections (see CLAUDE.md/memory correction dated 2026-09-22) — organic search is no longer a channel this
+product can rely on while this policy stands. (Turned out not to be live until `a519379`, above — the static
+`robots.txt` was shadowing it.)
+
+## 2026-08-28 · docs(db): document required `connection_limit=5&pool_timeout=10` on `DATABASE_URL` — commit `e8fc259`
+
+Per `_shared/DB_STANDARD.md` (SCALE-01). `.env.example` updated + a one-line comment in `src/lib/db.ts` noting
+the requirement — `PrismaClient` reads `DATABASE_URL` as-is from env, so no code change was needed. **Not yet
+applied:** the real server `.env` still needs the founder to append the params by hand.
+
+## 2026-08-20 · docs(tasks): reflect 2026-08-19 work — commit `5388341`
+
+`TASKS.md` updated to move the GMP failover + cron/lint/health fixes to Done, referencing deploy commits
+`b0bb7b8`/`c1a5d66`/`796b251` and the verified-live entries in COMMS.md same date.
+
 ## 2026-08-19 · fix(db): widen `opm` (operating profit margin) from Decimal(6,2) to Decimal(10,2) on AnnualFinancial + QuarterlyFinancial
 
 Production log check found `prisma.annualFinancial.upsert()` failing with Postgres `22003 numeric field overflow` ("A field with precision 6, scale 2 must round to an absolute value less than 10^4") during the `screener-deep` ingest job — 7 occurrences since the container's last restart (2026-08-15). `opm` (operating profit margin %) was the only ratio field on either model still at `Decimal(6,2)` (max ±9999.99); the sibling ratio fields `roe`/`roce` already use `Decimal(10,2)`. A margin computed as ≥10000% or ≤-10000% is almost certainly a divide-by-near-zero artifact from the scraper's own calculation (didn't change that logic — out of scope, no evidence it's wrong vs. just an extreme edge case), but the column should hold whatever the ingest computes rather than silently dropping the row. Widened both `opm` fields to match `roe`/`roce`'s precision — additive, no data loss (every value that fit in `Decimal(6,2)` fits in `Decimal(10,2)`).

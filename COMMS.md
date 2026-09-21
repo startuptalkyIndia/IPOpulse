@@ -1,5 +1,120 @@
 # IPOpulse — COMMS
 
+## 2026-09-22 (docs sync) — 5 undeployed-doc commits reconciled; ⚠️ site is now deindexed platform-wide
+
+**Ask:** "update ipopulse" → "update all information." No code change requested; read-only reconciliation of
+docs against git + live state.
+
+**Found:** COMMS.md, CHANGELOG.md and TASKS.md all stopped at 2026-08-19/20, but 6 more commits had landed
+since (`b0bb7b8`…`a519379`, through 2026-09-05) with **zero** COMMS/CHANGELOG entries for the last 5 of them.
+Backfilled into CHANGELOG.md (see same dates there for full detail). Summary:
+
+| Commit | Date | What |
+|---|---|---|
+| `5388341` | 08-20 | docs: TASKS.md caught up to the 08-19 deploy |
+| `e8fc259` | 08-28 | docs: documented required `connection_limit=5&pool_timeout=10` on `DATABASE_URL` (not yet applied to server `.env`) |
+| `4cc67ae` | 08-30 | **seo: founder deindexed all `*.talkytools.com` subdomains, including this one, as platform policy** |
+| `75f6117` | 09-04 | fix: stale Server Action ID (deploy-during-open-tab) now reloads once instead of dead-ending |
+| `a519379` | 09-05 | fix: a leftover static `public/robots.txt` was silently shadowing the 08-30 deindex fix — it never actually reached production until this commit |
+
+**⚠️ Most important thing in this update:** IPOpulse is **deindexed from Google/Bing as of 2026-09-05**
+(`robots.txt: Disallow: /` + `noindex,nofollow` on every page), confirmed live today. This is a deliberate
+founder call on the whole `talkytools.com` portfolio, not a bug — but it directly invalidates the "Goal" /
+growth-trajectory section further down this file and in the cross-session project memory
+(`~/.claude/projects/.../memory/project_ipopulse.md`), both of which assume SEO long-tail traffic as the
+primary growth channel. Whoever picks up growth/marketing work on this project next should know organic
+search is off the table while this policy stands — memory file flagged with the same correction.
+
+**Verified live today (2026-09-22, no deploy performed — already current):**
+- Server `git rev-parse HEAD` = `a519379`, matches local `main` and `origin/main` (checked in a prior turn
+  this session via the deploy agent — server was already up to date, nothing rebuilt).
+- `/api/health` → `{"status":"ok","checks":{"db":"ok","kite":"ok","anthropic":"ok","resend":"unconfigured"}}`.
+- `robots.txt` → `Disallow: /` (deindex confirmed live, not just committed).
+- Homepage `<meta name="robots">` → `noindex, nofollow, nocache` (confirmed live).
+- `npx tsc --noEmit` → 0 errors.
+
+**Not checked this pass** (out of scope for a docs-only sync): `npm test`, `npm run lint`, `npm audit`. The
+three items still open from 08-19 (Yahoo symbol remaps awaiting founder approval, `super_investor` needing a
+new data source, 111 lint findings) are untouched and still open — see TASKS.md.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Reconcile COMMS/CHANGELOG/TASKS against git history | ✅ Done | 5 commits backfilled into CHANGELOG.md |
+| 2 | Flag the deindex policy's impact on the growth-strategy docs | ✅ Done | this entry + memory file correction |
+| 3 | TypeScript errors | ✅ 0 errors | `npx tsc --noEmit` |
+| 4 | Deployed to server | ➖ N/A | docs-only, no code change; server already matched `origin/main` |
+
+## 2026-08-19 (data) — company master had never run; 198 missing companies ingested
+
+**Ask:** "update data" on the live site.
+
+**What I found.** Most crons were healthy and current (bhavcopy, GMP, subscription, FII/DII, NAVs all
+fresh today). But `nse_company_master` had **never run once** — 0 rows in `ingestion_runs`. Diffing the
+scheduler showed why: 7 jobs are registered in `availableJobs` (manually triggerable) but have **no
+`cron.schedule()` entry** — `nse_company_master`, `nse_sector_map`, `screener_fundamentals`,
+`bse_announcements`, `bse_ipos`, and the two one-time historical backfills. Those 7 are exactly the 7
+stale/never-run jobs in `ingestion_runs`. The `companies` table had not gained a row since **2026-05-06**.
+
+**The damage chain.** No new companies → `nse_bhavcopy` drops every unmatched symbol
+(`if (!companyId) continue`) → newly listed IPOs have no price row → nothing can derive a listing date →
+`computeIpoStatus` never promotes them → 80 IPOs stuck in `closed` with `listing_date` NULL (all 80) →
+`bse_listing_sync` finds 0 → **no listing gains and no GMP-accuracy data since 2026-05-13**. The stock
+side was hit too: /ticker, /screener and /movers were missing every company listed since May 6.
+
+**Fixed now (ran the existing jobs — no code change, no deploy):**
+
+| Job | Result |
+|---|---|
+| `nse_company_master` | `rowsIn=2547, rowsError=6` → **+198 companies** (Shiprocket, Milky Mist, Molbio, Manipal Health, Dhoot Transmission, Behari Lal …) |
+| `nse_bhavcopy` | matched **2508** of 2855 CSV rows, up from 2323 — the 198 new companies now have prices |
+| `nse_sector_map` | 500 symbols mapped, 3 companies updated |
+| `yahoo_fundamentals` | `rowsIn=197` — market cap / P/E for the new companies |
+
+Verified live: `/ticker/shiprocket-limited` returns 200 and search returns it as both IPO and stock.
+Companies 2367 → **2565**; priced today 2323 → **2537**.
+
+**Still broken — needs founder approval (see below).** Listing gains are NOT yet fixed. Every one of the
+198 new companies has price history starting only at 2026-08-19, so `bse_listing_sync` still computes
+nothing: it needs the bhavcopy row on the *actual listing day*, which was discarded at the time.
+
+### APPLIED with founder "go" — listing-date backfill
+
+Founder approved the data fix only; code fixes held.
+
+- Snapshot table `_bak_ipo_listing_date_20260819` created first (id, slug, old_status, old_listing_date,
+  new_listing_date) — **rollback** = `UPDATE ipos i SET listing_date=b.old_listing_date, status=b.old_status
+  FROM _bak_ipo_listing_date_20260819 b WHERE i.id=b.id;`
+- Backfilled `listing_date` on **26** closed IPOs from `companies.listed_on` (NSE EQUITY_L CSV). Guarded on
+  `listing_date IS NULL AND c.listed_on > i.close_date` so nothing already set could be clobbered.
+- `nse_ipos` → `status-advance: 26 corrected (closed→listed)`. IPO statuses now **listed 38 → 64, closed 80 → 54**.
+- `bse_listing_sync` → `rowsIn=2`: Shiprocket ₹97 → ₹131 (**+35.1%**, GMP had predicted 36) and Behari Lal
+  ₹285 → ₹465 (**+63.2%**, GMP 133). Both listed today, so today's bhavcopy covered them.
+- Verified live: `/ipo/listed` renders all 26 with correct listing dates, and the site-wide ticker strip now
+  carries "Behari Lal +63.2%" / "Shiprocket +35.0%".
+
+The other 24 show listing gain as "—" rather than a wrong number: they listed before 19 Aug and we have no
+listing-day price for them. That stays true until fix 3 below ships.
+
+### Still open — awaiting "go" (code, needs a deploy)
+
+1. **Schedule `nse_company_master`** (weekly). Root cause. Without it the chain re-rots as soon as new
+   companies list, and this whole exercise has to be repeated by hand.
+2. **Make `nse_bhavcopy_historical` backfill per-company, not per-date.** It skips any date already present
+   (`existingDates.has(targetKey)`), so re-running it adds nothing for the 198 new companies. Required
+   before listing gains / GMP accuracy can be recomputed for the 24 above.
+3. **Derive `listing_date` in `nse_ipos`** from `companies.listed_on` so the backfill just applied happens
+   automatically from here on.
+
+54 closed IPOs remain unresolvable — BSE-SME, no `nse_symbol`, and BSE blocks this server's IP.
+`nse_sector_map` and `screener_fundamentals` are also still unscheduled. `bse_ipos` / `bse_announcements` /
+`super_investor` need a new source, not a schedule.
+
+### Noticed in passing — NOT touched
+
+`ipo_listings` holds two seeded rows that look wrong: Kalpataru Projects **+1162%** and Swiggy **-34.3%**.
+Both predate this session and smell like an issue-price/price-band mismatch in the original seed. Flagged
+only; no change made.
+
 ## 2026-08-19 (deploy) — all four fixes LIVE, verified in production
 
 Founder gave "go". Pushed `b0bb7b8`, `c1a5d66`, `796b251`; server pulled to `796b251`, detached rebuild took

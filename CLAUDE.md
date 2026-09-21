@@ -316,24 +316,26 @@ Every message re-sends the whole chat, so long sessions get expensive. Keep cont
 
 ---
 
-## State as of 2026-08-14
+## State as of 2026-09-22
 
-**Live:** Yes — https://ipopulse.talkytools.com confirmed HTTP 200 (home + `/api/health`), server `git rev-parse HEAD` matches local `main` tip, app container rebuilt/restarted within the last hour matching the latest deploy commit's timestamp (all checked directly, 2026-08-14).
-**Compliance score:** stale — last numeric score was 88/100 on 2026-06-06 (pre-launch snapshot). Multiple security/data-integrity audit remediation waves ran since (CRIT-1/CRIT-2 fixes, ~20 HIGH + ~20 MEDIUM findings, a re-audit graded qualitatively "C-→B-" on 2026-07-14) but none produced a new numeric score — needs re-scoring, don't quote 88/100 as current.
-**Last commit:** `23ebbe0` 2026-08-14 15:45 IST — fix(critical): `/my/watchlist` crashed for every brand-new user (RSC Server→Client boundary error; `EmptyState.tsx` dropped its unneeded `"use client"`). Deployed and verified live (see Recent work below).
-**Tests:** unit + API integration suite (grew from 8 spec files in June to ~97-98 tests across the audit waves per CHANGELOG; exact current count not re-verified this pass — run `npm test` to confirm).
-**TS errors:** 0 (`npx tsc --noEmit`, verified 2026-08-14).
+**Live:** Yes — https://ipopulse.talkytools.com confirmed HTTP 200 (home + `/api/health`), server `git rev-parse HEAD` matches local `main`/`origin/main` tip `a519379` (checked directly 2026-09-22 via the deploy agent — server was already current, nothing rebuilt this pass).
+**⚠️ Deindexed from search since 2026-09-05:** `robots.txt` is a blanket `Disallow: /` and every page carries `noindex,nofollow,nocache` — a deliberate founder policy call (2026-08-30) that ALL `*.talkytools.com` subdomains are deindexed regardless of live/paying status, not a bug. **This invalidates the SEO-led growth strategy in the "Goal" section below and the 12/24/36-month traffic projections in the cross-session memory file** (`~/.claude/projects/.../memory/project_ipopulse.md`) — both assume organic search as the primary channel. Don't propose SEO-driven growth work here without first checking whether this policy still stands.
+**Compliance score:** still stale — last numeric score was 88/100 on 2026-06-06 (pre-launch snapshot), qualitatively re-graded "C-→B-" on 2026-07-14. No numeric re-score since. Not re-scored this pass either (docs-only sync, not a full audit).
+**Last commit:** `a519379` 2026-09-05 16:15 IST — fix: removed a leftover static `public/robots.txt` that had been silently shadowing the deindex fix above for 6 days.
+**Tests:** unit + API integration suite last counted at 121/121 (2026-08-19, `npx vitest run`). Not re-run this pass — run `npm test` to confirm current count.
+**TS errors:** 0 (`npx tsc --noEmit`, verified 2026-09-22).
 
-**Recent work (last few days, verified against CHANGELOG.md + git + live server):**
-- **2026-08-14 (`23ebbe0`, deployed):** fixed `/my/watchlist` — the page every brand-new signup lands on — 500'ing for every fresh account (Lucide icon passed from a Server Component into a Client Component across the RSC boundary). Root-caused, fixed, verified end-to-end against two fresh test accounts locally, then deployed; confirmed live via server `git rev-parse HEAD` match + container restart timestamp.
-- **2026-08-13/12 (`0597bfc`):** per-product AI-provider toggle at `/sup-min/ai-settings` (Subscription CLI default, or an admin-pasted API key — never a silent `.env` fallback), per platform policy B.20. COMMS.md's 2026-08-12 entry says "NOT deployed," but this commit sits in `main` history *before* `23ebbe0`, and the 2026-08-14 deploy pulled the full branch — live-server checks (2026-08-14) confirm `/sup-min/ai-settings` returns 302 (redirect-to-login, not 404) and `/api/admin/ai-settings` returns 403 (route exists, admin-gated). **This feature is live now even though COMMS.md still says otherwise — see COMMS.md correction entry.**
-- **2026-08-12 (`21f0b26`), deployed:** fixed `/ipo/[slug]` Open Graph image silently falling back to the generic site card for every IPO (unawaited `params` + a Satori multi-child bug). Verified live with a real IPO slug (rich card image, not the fallback).
-- A next-auth CVE patch this week was mentioned as context for this docs pass but **could not be verified** — no matching commit in `git log`, no `next-auth` version bump in `package.json`/`package-lock.json` this month, and no CHANGELOG/COMMS entry. `npm audit --audit-level=high` (2026-08-14) shows 0 next-auth findings but does show unrelated HIGH/CRITICAL findings in `sharp` and `undici` — needs verification / follow-up, not documented as done.
+**Recent work (verified against CHANGELOG.md + git + live server, this pass — 2026-09-22 docs-only sync, no code changed):**
+Five commits between 2026-08-20 and 2026-09-05 had landed with no COMMS/CHANGELOG entries; backfilled into CHANGELOG.md this pass. Highlights: the deindex policy (`4cc67ae`, actually live only from `a519379`), required `DATABASE_URL` connection-pool params documented but **not yet applied to the real server `.env`** (`e8fc259`), and a stale-Server-Action-ID reload fix (`75f6117`). Full detail + verification evidence in COMMS.md's 2026-09-22 entry.
 
-**Known gaps — corrected (the 2026-06-06 list below was stale):**
-- ~~Zerodha Kite Connect subscription not yet active~~ — Kite live prices shipped (`691389d`), then Fyers v3 added as a Kite backup (`ec822f7`); `/api/health` shows `kite: ok` (env-configured). Note: the health check only verifies env vars are set, not that the live token is currently valid — needs verification if prices look stale.
-- ~~WhatsApp Channel CTA banner pending~~ — built (`src/components/WhatsAppBanner.tsx`, present on homepage/IPO detail/pricing pages).
-- ~~Free vs Premium tier feature gate not yet built~~ — partially built: `src/components/PremiumGate.tsx` + `/pricing` page exist, but there is **no payment processor wired** (no `razorpay` in `package.json`) — a user cannot actually purchase Premium yet, only an admin can flip the plan field manually. Still an open gap, just a different one than stated before.
+**Known gaps — as of 2026-08-14, not re-verified this pass:**
+- Zerodha Kite Connect: live prices shipped, Fyers v3 backup added; `/api/health` shows `kite: ok` (env-configured only — doesn't confirm the live token is still valid).
+- WhatsApp Channel CTA banner: built (`src/components/WhatsAppBanner.tsx`).
+- Free vs Premium tier: `PremiumGate.tsx` + `/pricing` exist, but **no payment processor wired** (no `razorpay` in `package.json`) — a user still cannot actually purchase Premium; only an admin can flip the plan field manually.
+- Three Yahoo symbol remaps (`ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`, `VISASTEEL`→inactive) still awaiting founder approval (data change) — see TASKS.md.
+- `super_investor` cron still blocked — BSE blocks this server's IP; needs a new data source, not a retry.
+- 111 lint findings from the revived lint gate (74 errors, 37 warnings) still unaddressed — see TASKS.md.
+- `connection_limit=5&pool_timeout=10` documented in `.env.example` (2026-08-28) but not yet applied to the live server's `DATABASE_URL`.
 
 **Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
 
