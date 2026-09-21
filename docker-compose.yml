@@ -29,7 +29,7 @@ services:
     environment:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
       - NEXTAUTH_URL=${NEXTAUTH_URL:?NEXTAUTH_URL is required}
-      - DATABASE_URL=postgresql://ipopulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/ipopulse
+      - DATABASE_URL=postgresql://ipopulse:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/ipopulse?connection_limit=5&pool_timeout=10
     volumes:
       # Mount Claude CLI binary + auth from host into container.
       # Host (ubuntu user): binary at /usr/bin/claude, auth at /home/ubuntu/.claude
