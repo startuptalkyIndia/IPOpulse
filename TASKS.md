@@ -25,6 +25,7 @@
 
 ## ✅ Done  (strike through, newest at top)
 
+- [x] ~~Learn articles + legal pages had no heading/list CSS (headings looked like body text, no bullets)~~ — ✅ 2026-09-22 (root cause: `@tailwindcss/typography` was never installed despite `prose`/`prose-*` classes used throughout `/learn/[slug]` + Terms/Privacy/Refund; installed + registered via `@plugin` in `globals.css`. Verified locally: built CSS now generates real `.prose h2`/`.prose ul` rules. Reported by founder on `/learn/what-are-futures-options`.)
 - [x] ~~Deindex ipopulse.talkytools.com (robots.txt + noindex meta)~~ — ✅ 2026-08-30, actually reaching prod 2026-09-05 (commits `4cc67ae` then `a519379` — a leftover static `public/robots.txt` was shadowing the fix for 6 days; caught by checking the live `robots.txt` response, not the deploy log. Founder policy: all `*.talkytools.com` subdomains deindexed regardless of live/paying status. Verified live 2026-09-22.)
 - [x] ~~Reload once on stale Server Action ID instead of dead-ending~~ — ✅ 2026-09-04 (commit `75f6117`, deployed)
 - [x] ~~Document required `connection_limit=5&pool_timeout=10` on `DATABASE_URL`~~ — ✅ 2026-08-28 (commit `e8fc259`, docs + `.env.example` only — real server `.env` still needs it, tracked above)

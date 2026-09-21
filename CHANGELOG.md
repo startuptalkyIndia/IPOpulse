@@ -1,5 +1,34 @@
 # Changelog — IPOpulse
 
+## 2026-09-22 · fix: every Learn article + legal page rendered with no heading/list styling — `@tailwindcss/typography` was never installed
+
+**Symptom (reported by founder on a live URL):** `/learn/what-are-futures-options` — headings like "F&O Lot
+Sizes and Expiry" and "Is F&O Suitable for You?" rendered as plain paragraph text indistinguishable from body
+copy, and bulleted lists ("Key features of futures:") showed no bullets and no indentation, reading as a
+run-on paragraph.
+
+**Root cause:** `src/app/learn/[slug]/page.tsx` (and the three legal pages — Terms/Privacy/Refund) wrap their
+content in `prose prose-sm ... prose-h2:text-lg prose-h2:font-semibold ... prose-ul:pl-5 ... prose-li:mb-1.5
+...` — Tailwind Typography plugin classes. But `@tailwindcss/typography` was **not in `package.json` at
+all**, and Tailwind v4's CSS-first config had no `@plugin` directive registering it either. Unrecognized
+utility classes generate zero CSS in Tailwind v4, so every `prose*` class was a no-op — meanwhile Tailwind's
+own Preflight reset (which unsets default browser heading font-size/weight and strips list bullets/padding)
+was still active with nothing to counteract it. The underlying HTML was always semantically correct
+(`<h2>`, `<ul><li>`, `<strong>`) — this was purely a missing-CSS bug, not a content bug.
+
+**Fix:** `npm install -D @tailwindcss/typography`, then `@plugin "@tailwindcss/typography";` added to
+`src/app/globals.css` right after `@import "tailwindcss";` (Tailwind v4's CSS-first plugin registration —
+there is no `tailwind.config.js` in this project). No content or component code changed.
+
+**Verified locally before deploy:** built the CSS chunk for a real `/learn/[slug]` page render and confirmed
+the plugin now generates real rules — `.prose-h2\:text-lg :where(h2)...{font-size:var(--text-lg)}`,
+`.prose-h2\:font-semibold` → `font-weight: semibold`, and the base `.prose ul` rule now carries
+`list-style-type: disc` + `padding-inline-start`. `npx tsc --noEmit` — 0 errors.
+
+**Scope:** affects every `/learn/[slug]` article (35+) and `/terms`, `/privacy`, `/refund` — all four are the
+only files in the repo using `prose`/`prose-*` classes. Nothing else in the site uses this pattern (checked
+via `grep -rl "prose-h2:\|prose prose-sm" src/`).
+
 ## 2026-09-05 · fix: remove static `public/robots.txt` shadowing the dynamic noindex route — commit `a519379`
 
 The 2026-08-30 deindex fix (below) built and deployed cleanly but was **never actually reaching
