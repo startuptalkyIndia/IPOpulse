@@ -1,5 +1,61 @@
 # Changelog — IPOpulse
 
+## 2026-09-22 · fix: `nse_company_master`/`nse_sector_map` still never scheduled since Aug 19 (34-day recurrence of the same incident) + fixed `nse_bhavcopy_historical`'s per-date (not per-company) coverage bug
+
+**Ask:** "check all features, make sure all data is latest and cron is set for it, and every AI insight uses the Claude CLI — the platform should run 100% on its own."
+
+**Found (cron audit):** cross-referencing every job in `availableJobs` against what's actually registered in
+`cron.schedule()` (scheduler.ts) and each job's real run history in `ingestion_runs` — `nse_company_master`
+and `nse_sector_map` had each run **exactly once**, on 2026-08-19 (the manual trigger from that incident), and
+**zero times since**. COMMS.md's own 2026-08-19 entry explicitly listed "Schedule `nse_company_master`
+(weekly) — root cause" as still open and awaiting deploy; it was never actually done. Result: `companies`
+table gained zero new rows in 34 days, silently reproducing the exact 2026-08-19 damage chain (new IPO
+listings' bhavcopy rows dropped as unmatched symbols → stuck in `closed` status forever → invisible on
+`/ticker`/`/screener`/`/movers`, no listing-gain/GMP-accuracy data) for every company that listed since then.
+
+**Fix 1 — actually scheduled them:** `src/crons/scheduler.ts` — added a weekly Sunday 4:00 AM IST cron
+running `nse_company_master` then `nse_sector_map` in sequence (before `screener_deep` at 5 AM, which needs
+the company list current).
+
+**Fix 2 — ran the catch-up now, not just next Sunday:** triggered both jobs live via
+`/api/cron/run/[job]` (the existing `CRON_SECRET`-gated manual-trigger route). Result: `companies` went from
+2565 → 2598 (**+33** new companies added since 2026-08-19), sector map updated 499 symbols.
+
+**Found (second bug, same root cause family):** `src/crons/jobs/nse-bhavcopy-historical.ts` — the
+2026-08-19 entry also flagged "`nse_bhavcopy_historical` skips any date already present, so re-running it
+adds nothing for newly-added companies" as open, unfixed work. Confirmed still present: the job tracked
+coverage as a flat `Set<dateKey>` — a trading day counted as "done" the moment **any** company had a row for
+it, so once the first month of history existed, the 33 companies added today would never get backfilled no
+matter how many times this job re-runs.
+
+**Fix 3:** rewrote the coverage check to be per-(date, company): loads existing `(date, companyId)` pairs for
+the backfill window into `Map<dateKey, Set<companyId>>`, and a date only counts as fully covered once **every**
+currently-known company has a row for it. Preserves the original holiday-date-aliasing optimization (a
+holiday `target` date now shares the same coverage Set reference as the real trading day it resolves to,
+rather than a separate boolean flag) and the existing wall-time cap / bulk symbol-map load. Not deployed to
+schedule (this job stays manual-trigger-only via `/sup-min/ingestion`, by design — it's a backfill utility,
+not a recurring feed) — but now actually usable when triggered instead of being a permanent no-op for new
+companies.
+
+**AI-insight audit (no code change needed — verification only):** checked every feature that produces an
+AI-generated insight (DRHP Q&A + deep-dive, concall summary, promoter check, daily market summary, next-day
+preview) against the B.20 CLI-first standard. All of them correctly call through `src/lib/claude-runner.ts`'s
+`callClaude`/`callClaudeJson`, which shells out to the local `claude` CLI by default and only falls to the
+Anthropic SDK when an admin explicitly sets `api_key` mode — never a silent `process.env.ANTHROPIC_API_KEY`
+read (confirmed via repo-wide grep, zero hits outside comments). One exception found: the DRHP background
+extractor (`src/lib/drhp-analyzer.ts`) spawns the `claude` CLI directly with its own inline implementation
+instead of reusing `claude-runner.ts` — still CLI-only, still correct, just duplicated code (cosmetic, not
+fixed this pass). Two pieces of confirmed **dead code** noted, not touched: `src/lib/claude-cli.ts` (a second,
+unused CLI wrapper, imported nowhere) and `src/lib/byok.ts`'s `callUserAI` (per-user BYOK keys — a `/my/account`
+settings feature exists to save them, but nothing in the app ever calls `callUserAI` to actually use them for
+anything). Also worth noting: the project's own CLAUDE.md/AGENT_OPERATING_STANDARDS.md reference
+`lib/ai/claudeRunner.ts` (`runClaude()`) — that path doesn't exist in this repo; the real, correctly-used file
+is `src/lib/claude-runner.ts` with `callClaude()`/`callClaudeJson()`. Doc drift, not a code bug.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121 passing. Live catch-up run results
+above (2598 companies, +33). Not yet re-run: `bhavcopy_historical` against the fixed code (queued for after
+deploy).
+
 ## 2026-09-22 · fix: every Learn article + legal page rendered with no heading/list styling — `@tailwindcss/typography` was never installed
 
 **Symptom (reported by founder on a live URL):** `/learn/what-are-futures-options` — headings like "F&O Lot

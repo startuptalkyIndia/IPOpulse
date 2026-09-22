@@ -12,6 +12,13 @@
  *   - This job is long-running. We bulk-load the symbol→id map ONCE and
  *     bound total wall-time so a stuck NSE response cannot leave the
  *     ingestion_runs row in "running" forever.
+ *   - (Fixed 2026-09-22, flagged 2026-08-19) Coverage MUST be tracked per
+ *     (date, company), not per date alone. The old check skipped a whole
+ *     trading day the moment ANY company had a row for it — so once the
+ *     first ~30 days of history existed, re-running this job added nothing
+ *     for a newly-added company (e.g. from nse_company_master), even though
+ *     that company had zero historical rows. A date now only counts as
+ *     "done" once every currently-known company has a row for it.
  *
  * Triggerable from /sup-min/ingestion.
  */
@@ -41,13 +48,6 @@ function dateKey(d: Date): string {
 export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
   const startedAt = Date.now();
 
-  const existing = await prisma.bhavcopyDaily.findMany({
-    where: { source: "nse" },
-    select: { date: true },
-    distinct: ["date"],
-  });
-  const existingDates = new Set(existing.map((r) => dateKey(r.date)));
-
   // Bulk-load the symbol→id map ONCE. Previously findUnique was called per
   // row (~2,300 rows × 30 days = 69k DB roundtrips → multi-hour runs).
   const companies = await prisma.company.findMany({
@@ -55,14 +55,50 @@ export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
     select: { id: true, nseSymbol: true },
   });
   const symbolMap = new Map(companies.map((c) => [c.nseSymbol!, c.id]));
+  const allCompanyIds = [...new Set(companies.map((c) => c.id))];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Per-(date, company) coverage within the backfill window — see header
+  // comment. A single query covering the whole window is far cheaper than
+  // the multi-hour findUnique-per-row bug this file already fixed once.
+  const windowStart = subtractDays(today, MAX_DAYS * 2 + 1);
+  const existingRows = await prisma.bhavcopyDaily.findMany({
+    where: { source: "nse", date: { gte: windowStart } },
+    select: { date: true, companyId: true },
+  });
+  const existingByDate = new Map<string, Set<number>>();
+  for (const r of existingRows) {
+    const k = dateKey(r.date);
+    let set = existingByDate.get(k);
+    if (!set) {
+      set = new Set();
+      existingByDate.set(k, set);
+    }
+    set.add(r.companyId);
+  }
+  function dateFullyCovered(key: string): boolean {
+    const set = existingByDate.get(key);
+    if (!set) return false;
+    for (const id of allCompanyIds) {
+      if (!set.has(id)) return false;
+    }
+    return true;
+  }
+  function markCovered(key: string, companyId: number) {
+    let set = existingByDate.get(key);
+    if (!set) {
+      set = new Set();
+      existingByDate.set(key, set);
+    }
+    set.add(companyId);
+  }
 
   let rowsIn = 0;
   let attempted = 0;
   let skipped = 0;
   let timedOut = false;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   let daysBack = 1;
   while (attempted < MAX_DAYS) {
@@ -80,7 +116,7 @@ export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
     if (isWeekend(target)) continue;
 
     const targetKey = dateKey(target);
-    if (existingDates.has(targetKey)) {
+    if (dateFullyCovered(targetKey)) {
       skipped++;
       attempted++;
       continue;
@@ -100,12 +136,25 @@ export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
       csvDate.setHours(0, 0, 0, 0);
       const csvKey = dateKey(csvDate);
 
-      if (existingDates.has(csvKey)) {
-        // Already have this trading day under a different `target`; skip.
-        existingDates.add(targetKey);
+      if (dateFullyCovered(csvKey)) {
+        // Already fully covered this trading day under a different `target`
+        // walked earlier in this run; skip re-fetching/re-upserting.
         skipped++;
         attempted++;
         continue;
+      }
+
+      // Alias the holiday-shifted targetKey to the same coverage Set as the
+      // real trading day, so future runs treat the holiday date as covered
+      // too once the real day is (same optimization the old code had, now
+      // correct per-company instead of a blanket "date exists" flag).
+      if (targetKey !== csvKey) {
+        let set = existingByDate.get(csvKey);
+        if (!set) {
+          set = new Set();
+          existingByDate.set(csvKey, set);
+        }
+        existingByDate.set(targetKey, set);
       }
 
       for (const row of rows) {
@@ -137,13 +186,12 @@ export async function ingestHistoricalBhavcopy(): Promise<IngestionResult> {
             },
           });
           rowsIn++;
+          markCovered(csvKey, companyId);
         } catch {
           // single-row failure must not abort the whole day
         }
       }
 
-      existingDates.add(csvKey);
-      existingDates.add(targetKey);
       attempted++;
       await new Promise((r) => setTimeout(r, 1000));
     } catch {

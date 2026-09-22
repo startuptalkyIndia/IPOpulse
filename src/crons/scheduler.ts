@@ -144,6 +144,20 @@ export function startScheduler() {
     console.log(`[cron yahoo_fundamentals] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // NSE Company Master + sector map — weekly, Sunday 4:00 AM IST (before screener_deep at 5 AM).
+  // Root-cause fix for the 2026-08-19 incident: without this scheduled, new IPO listings' bhavcopy
+  // rows are silently dropped as unmatched symbols (nse_bhavcopy: `if (!companyId) continue`), so
+  // nothing can ever promote them from closed->listed or show them on /ticker, /screener, /movers.
+  // Documented as "still open — schedule nse_company_master (weekly)" back on 2026-08-19 but never
+  // actually wired up: it had run exactly once (the manual trigger that day) and zero times since —
+  // 34 days with no new company added, silently reproducing the same incident for every IPO since.
+  cron.schedule("0 4 * * 0", async () => {
+    const result = await runIngestion("nse_company_master", ingestNseCompanyMaster);
+    console.log(`[cron nse_company_master] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+    const sectorResult = await runIngestion("nse_sector_map", ingestNseSectorMap);
+    console.log(`[cron nse_sector_map] ${sectorResult.ok ? "ok" : "failed"} rowsIn=${sectorResult.rowsIn ?? 0}${sectorResult.error ? ` error=${sectorResult.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Screener.in deep fundamentals (10-year quarterly + annual + BS + CF + ratios)
   // Sunday 5:00 AM IST — top 200 companies by market cap, ~10 min/run at 3s/req
   cron.schedule("0 5 * * 0", async () => {
@@ -281,7 +295,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
