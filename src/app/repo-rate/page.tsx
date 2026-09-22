@@ -21,14 +21,14 @@ function fmtDate(d: Date): string {
 export default async function RepoRatePage() {
   const rows = await prisma.rbiRepoRate.findMany({ orderBy: { effectiveDate: "desc" } });
   const current = rows[0];
-  const previous = rows[1];
 
-  // Count consecutive holds at the current rate (rows are newest-first).
-  let heldMeetings = 0;
-  for (const r of rows) {
-    if (Number(r.ratePercent) === Number(current?.ratePercent)) heldMeetings++;
-    else break;
-  }
+  // Days since the last actual rate change. Not a meeting count — this table
+  // only stores rows where the rate CHANGED, not every hold decision, so
+  // counting rows would undercount (e.g. 4+ bi-monthly holds since the last
+  // change would show as "1" if only the change itself is a row).
+  const daysSinceChange = current
+    ? Math.floor((Date.now() - current.effectiveDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
@@ -54,7 +54,7 @@ export default async function RepoRatePage() {
             }
             valueColor={current.changeBps != null && current.changeBps > 0 ? "text-red-600" : "text-emerald-600"}
           />
-          <StatTile label="Held for" value={`${heldMeetings} meeting${heldMeetings === 1 ? "" : "s"}`} />
+          <StatTile label="Held for" value={`${daysSinceChange} days`} />
         </div>
       ) : (
         <div className="card text-center py-8">
