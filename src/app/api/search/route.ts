@@ -21,6 +21,8 @@ const STATIC_PAGES: { title: string; href: string; subtitle: string }[] = [
   { title: "FII / DII Activity", href: "/fii-dii", subtitle: "Daily flows + 30-day chart" },
   { title: "Earnings Calendar", href: "/earnings-calendar", subtitle: "Upcoming results dates" },
   { title: "Dividend Yield Stocks", href: "/dividend-yield", subtitle: "Top dividend payers" },
+  { title: "RBI Repo Rate", href: "/repo-rate", subtitle: "Current rate + full MPC decision history" },
+  { title: "Compare Stocks", href: "/ticker/compare", subtitle: "P/E, ROE, margins & returns side-by-side" },
   { title: "Compare Brokers", href: "/compare/brokers", subtitle: "Zerodha vs Groww vs Upstox..." },
   { title: "Compare Credit Cards", href: "/compare/credit-cards", subtitle: "Top Indian credit cards" },
   { title: "All Calculators", href: "/calculators", subtitle: "20+ free financial calculators" },

@@ -1026,3 +1026,17 @@ model Feedback {
   createdAt DateTime @default(now())
 }
 
+// RBI repo rate history — MPC decisions only change ~6x/year, so this is
+// admin-curated reference data (like GMP), not a live-scraped feed.
+model RbiRepoRate {
+  id            Int      @id @default(autoincrement())
+  effectiveDate DateTime @unique @map("effective_date")
+  ratePercent   Decimal  @map("rate_percent") @db.Decimal(5, 2)
+  changeBps     Int?     @map("change_bps") // signed: +25 hike, -50 cut, null for the baseline row
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("rbi_repo_rates")
+}
+

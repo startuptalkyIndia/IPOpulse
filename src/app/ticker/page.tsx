@@ -105,7 +105,10 @@ export default async function TickerPage() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-gray-900">Top 200 by market cap</h2>
-          <Link href="/screener" className="text-sm text-indigo-600 hover:text-indigo-800">Advanced screener →</Link>
+          <div className="flex items-center gap-4">
+            <Link href="/ticker/compare" className="text-sm text-indigo-600 hover:text-indigo-800">Compare stocks →</Link>
+            <Link href="/screener" className="text-sm text-indigo-600 hover:text-indigo-800">Advanced screener →</Link>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">

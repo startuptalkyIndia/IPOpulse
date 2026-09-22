@@ -1,5 +1,47 @@
 # Changelog — IPOpulse
 
+## 2026-09-22 · feat: stock peer comparison (`/ticker/compare`) + RBI repo rate history (`/repo-rate`)
+
+**Ask:** competitor research against Finology's Calculators + Ticker pages surfaced two real product gaps
+that needed no new data pipeline — the fundamentals to power both were already sitting in the `Company`
+table. Founder said "go."
+
+**1. `/ticker/compare`** — search-driven picker (reuses the existing `/api/search` endpoint, filtered to
+`type: "stock"`, rather than a 2,600-option `<select>`) for up to 3 stocks, comparing sector, price, market
+cap, P/E, P/B, ROE, ROCE, debt/equity, dividend yield, EPS, book value, margins, 1-year return, and revenue
+CAGR side-by-side. Modeled on the existing `/ipo/compare` pattern. No new data — every field already exists on
+`Company` (fundamentals from `screener_deep`/`yahoo_fundamentals`, technicals from `compute_signals`) or comes
+from the canonical price helper (`latestCanonicalRow`, already used elsewhere for cross-source price
+precedence). Linked from `/ticker`, added to sitemap + Cmd+K search index.
+
+**2. `/repo-rate`** — current RBI repo rate + full MPC decision history (hikes/cuts, October 2016 onward),
+with FAQ and cross-links to the FD/loan/RD calculators. New data source, but NOT a live API — repo rate only
+changes ~6x/year via scheduled MPC meetings, so this follows the same "admin-curated reference data" pattern
+as GMP rather than a scraper. New table `rbi_repo_rates` (additive, `prisma db push` applies it on next
+container boot — confirmed additive per DB standard, no destructive diff). Seeded via
+`scripts/seed-rbi-repo-rate.ts` (idempotent, upsert-on-effectiveDate).
+
+**Data integrity note:** cross-checked two independent sources for the rate history. One source
+(stableinvestor.com) had a confirmed 2-year gap in its pre-2016 data (March 2011 → May 2013 missing
+entirely) — rather than publish a dataset with a known hole, seeded data is deliberately scoped to the MPC
+era only (Oct 2016–present), which was corroborated end-to-end against a second source
+(tradingeconomics.com) with no gaps found. The 2025 rate-cut path specifically had a real discrepancy between
+a WebSearch AI-summarized answer (claimed 5 separate 25bps cuts) and the granular per-meeting table (shows a
+single 50bps cut in June 2025) — trusted the explicit dated table over the summarized prose. Full seed data +
+sourcing rationale in `scripts/seed-rbi-repo-rate.ts`'s header comment.
+
+**Not built this pass (scope cut, logged in TASKS.md):** an admin UI to add future repo rate rows. Given the
+low update frequency (~6x/year), a one-off `npx tsx scripts/seed-rbi-repo-rate.ts`-style update run by whoever
+does the next MPC-adjacent session is acceptable for now rather than building a full CRUD page immediately.
+
+**Also considered and explicitly skipped:** a standalone "CAGR calculator" page. `/calculators/mf-returns`
+already computes CAGR with near-identical copy — a new page would be near-duplicate content, and since the
+whole site is currently `noindex`'d (2026-09-05 deindex policy), a new SEO-targeted page wouldn't get
+discovered by search anyway. Flagged this reasoning rather than building it.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121 passing. `npx prisma validate` —
+schema valid. Not yet deployed/seeded in production (queued next).
+
 ## 2026-09-22 · fix: `nse_company_master`/`nse_sector_map` still never scheduled since Aug 19 (34-day recurrence of the same incident) + fixed `nse_bhavcopy_historical`'s per-date (not per-company) coverage bug
 
 **Ask:** "check all features, make sure all data is latest and cron is set for it, and every AI insight uses the Claude CLI — the platform should run 100% on its own."
