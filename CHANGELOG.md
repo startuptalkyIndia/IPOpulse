@@ -1,5 +1,28 @@
 # Changelog — IPOpulse
 
+## 2026-09-23 · fix: AMFI NAVs silently broken for weeks (parser bug) + full rebuild of NSE insider-trading ingestion
+
+**Ask:** "do we need to improve any data?" Ran a data-health check (crawler_health heartbeat flagged 3 issues) rather than assume everything was fine.
+
+**1. `amfi_navs` — genuinely broken, fixed.** Reported "success" with `rowsIn=0` every single day for at least 15 consecutive days ("no funds parsed"). Root cause: AMFI split what used to be one combined field into two new columns, "Plan" and "Option" — `src/lib/scrapers/amfi.ts` still destructured a fixed 6-column layout, so `NAV` was read from the new "Plan" text column and `Date` from "Option", both non-numeric — every row failed validation and the parsed list came back empty, silently, for weeks. Fixed by parsing by column count (8 columns = new format with Plan/Option folded back into the scheme name for readability; 6 = old format, kept as a fallback). **Verified against the real live AMFI file**, not a fixture: 14,393 funds parsed (was 0).
+
+**2. `nse_insider` (SEBI PIT / insider-trading disclosures) — rebuilt end-to-end, kept on NSE as the source.** Same "reports success, 0 rows" symptom, but the cause was much bigger: NSE didn't rename a field, they replaced the whole endpoint. The old `/api/corporates-pit?...&from_date=...&to_date=...` (full trade details in one JSON call) now returns HTTP 200 with a genuinely empty `{data: []}`. The real current endpoint, confirmed against NSE's own insider-trading page's actual network calls, is `/api/corporates-pit-gg?index=equities` — but it only returns a **filing index** (company, symbol, a link to a document per filing), no trade details inline.
+
+Initially scoped this as "needs an XBRL parser, too big for this pass" — turned out to be wrong in a good way: fetched one of the linked documents directly and it's **not** binary XBRL, it's clean human-readable HTML with a real `<table>` (richer than the old API — includes CIN/DIN and full before/after holding detail). No NSE session/cookies needed to fetch it either (verified with a bare curl). Considered switching to a third-party aggregator (Trendlyne/MoneyControl/BSE) instead, but the founder's call was to stay on NSE as the primary source since it's the authoritative regulatory filing.
+
+Built:
+- `src/lib/scrapers/nse-insider-filing.ts` — parses a filing's HTML by first flattening its 3-row rowspan/colspan header into one label per column (robust to NSE reordering columns; falls back to "field not found" rather than crashing if a label changes), then reading values by label. Only "Equity" instrument-type rows are mapped (the vast majority of disclosures); other instrument types (Warrants, Options, etc.) are counted and skipped rather than force-mapped into the wrong columns.
+- New table `processed_insider_filings` (additive) tracks which filing `appId`s have already been fetched, since the new index has ~2,700+ filings spanning months with no date-range filter — without this, every run would re-fetch NSE's entire history. A per-run cap (`INSIDER_MAX_FILINGS_PER_RUN`, default 50) plus a 10-minute wall-time cap bound each run's cost; newest filings are processed first, so a large backlog catches up over consecutive daily runs rather than blocking on one giant run.
+- `src/crons/jobs/nse-insider.ts` rewritten around this: fetch index → filter to unprocessed appIds → fetch+parse each filing's HTML → upsert trades → mark the filing processed (only after a successful fetch+parse, so a transient network error leaves it for retry next run instead of silently skipping it forever).
+
+**Verified against real live NSE data**, not fixtures: fetched the real filing index (2,767 filings) and parsed 5 real recent filings end-to-end — correctly extracted rows across different disclosure categories (Promoter Group, Designated Person, Trust, Promoter and Director) and modes (Market Purchase, ESOP, Inter-se-Transfer), both Buy and Sell.
+
+**Why this pattern matters:** both jobs were reporting green while doing nothing, for weeks, with no alert — the same "success that lies" failure mode this project has hit and fixed before (yahoo_fundamentals, Aug 19). `crawler_health`'s heartbeat did flag both as issues, but nobody had read it since — worth checking that report proactively each session, not just when something's reported broken.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121. Both fixes verified against real live external data before deploying, not guessed at.
+
+**Known limitation, not solved this pass:** a revised filing (NSE's `prevAppId` field) is treated as an independent new filing rather than superseding the original — if a company files a correction, both the original and corrected trade rows could end up in the table if their unique key differs (e.g. corrected quantity). Rare in practice; flagged for whoever next touches this job.
+
 ## 2026-09-22 · feat: stock peer comparison (`/ticker/compare`) + RBI repo rate history (`/repo-rate`)
 
 **Ask:** competitor research against Finology's Calculators + Ticker pages surfaced two real product gaps

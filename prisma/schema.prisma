@@ -787,6 +787,19 @@ model InsiderTrade {
   @@map("insider_trades")
 }
 
+// Tracks which NSE PIT filing documents (identified by NSE's own appId) have
+// already been fetched + parsed, so the daily job only processes NEW filings
+// instead of re-fetching and re-parsing NSE's entire filing history every
+// run. NSE's filing-index endpoint has no date-range filter (unlike the old
+// endpoint it replaced), so without this table every run would re-touch
+// thousands of archived documents.
+model ProcessedInsiderFiling {
+  appId       String   @id @map("app_id")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("processed_insider_filings")
+}
+
 model UsIpo {
   id              Int      @id @default(autoincrement())
   symbol          String?  @unique

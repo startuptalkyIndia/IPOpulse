@@ -2,8 +2,18 @@
  * AMFI Mutual Fund NAV scraper.
  * Free public source: portal.amfiindia.com/spages/NAVAll.txt
  *
- * Format is plain text with sections separated by AMC. Each fund row:
- *   <SchemeCode>;<ISIN_GrowthDiv>;<ISIN_DivReinvest>;<SchemeName>;<NAV>;<Date>
+ * Format is plain text with sections separated by AMC. Each fund row (as of
+ * 2026-09, verified live against the real file — AMFI split what used to be
+ * embedded in the scheme name into two standalone columns, breaking the old
+ * fixed 6-column parse silently: it read NAV from what is now the "Plan"
+ * column and Date from "Option", both non-numeric/non-date text, so EVERY
+ * row failed validation and the job ran "successfully" with 0 rows for
+ * weeks with no error surfaced):
+ *   <SchemeCode>;<ISIN_GrowthDiv>;<ISIN_DivReinvest>;<SchemeName>;<Plan>;<Option>;<NAV>;<Date>
+ * Header row confirms the layout: "Scheme Code;ISIN Div Payout/ ISIN
+ * Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date".
+ * Parsed by column COUNT, not a fixed index, so a reversion to the older
+ * 6-column layout (no separate Plan/Option) still works.
  */
 
 import axios from "axios";
@@ -51,10 +61,26 @@ export async function fetchAmfiNavs(): Promise<AmfiFund[]> {
     if (!line) continue;
     if (line.startsWith("Scheme Code")) continue;
     if (line.includes(";")) {
-      // Data row
+      // Data row — column count varies: 8 columns when Plan/Option are
+      // separate (current format), 6 when they're not (older format, kept
+      // as a fallback rather than a hard assumption).
       const parts = line.split(";");
       if (parts.length < 6) continue;
-      const [code, isinG, isinD, name, navStr, dateStr] = parts;
+
+      let code: string, isinG: string, isinD: string, name: string, navStr: string, dateStr: string;
+      if (parts.length >= 8) {
+        const [c, ig, id, n, plan, option, nav, date] = parts;
+        code = c;
+        isinG = ig;
+        isinD = id;
+        const planOption = [plan?.trim(), option?.trim()].filter(Boolean).join(" - ");
+        name = planOption ? `${n.trim()} - ${planOption}` : n;
+        navStr = nav;
+        dateStr = date;
+      } else {
+        [code, isinG, isinD, name, navStr, dateStr] = parts;
+      }
+
       const nav = Number(navStr);
       if (!Number.isFinite(nav)) continue;
       const asOf = parseDate(dateStr);
