@@ -12,6 +12,12 @@ import { financeProducts } from "@/lib/finance-products";
  * Anyone (including logged-out users) can land here. We attribute the click
  * to the advisor whose code is in the URL, regardless of who's viewing.
  */
+
+// Back to the homepage as a path, not new URL("/", url.origin): behind nginx the request URL holds the
+// container's own address, so unknown or unsafe links went to https://0.0.0.0:3065/ until 2026-09-24.
+// A path always resolves against the address the visitor actually used.
+const home = () => new NextResponse(null, { status: 302, headers: { Location: "/" } });
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -27,7 +33,7 @@ export async function GET(
   const category = aff?.category ?? fin?.category ?? null;
 
   if (!targetUrl) {
-    return NextResponse.redirect(new URL("/", url.origin), 302);
+    return home();
   }
 
   // Safety guard: only redirect to HTTPS URLs (prevents http downgrade or
@@ -35,10 +41,10 @@ export async function GET(
   try {
     const parsed = new URL(targetUrl);
     if (parsed.protocol !== "https:") {
-      return NextResponse.redirect(new URL("/", url.origin), 302);
+      return home();
     }
   } catch {
-    return NextResponse.redirect(new URL("/", url.origin), 302);
+    return home();
   }
 
   // Track click against advisor (best-effort, never blocks redirect)

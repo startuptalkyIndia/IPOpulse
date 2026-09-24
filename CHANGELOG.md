@@ -1,5 +1,14 @@
 # Changelog — IPOpulse
 
+## 2026-09-24 (fleet check) · fix: unknown or unsafe /r/ links sent visitors to a dead page (https://0.0.0.0:3065/)
+
+**Cause:** the click redirector `/r/[slug]` sent visitors home with `new URL("/", url.origin)` whenever the slug was unknown or its partner URL was not https. Behind nginx, the request URL in a route handler holds the container's own address — Next builds it from the server's bind host and port (`0.0.0.0:3065`), not from the visitor's Host header — so those visitors landed on `https://0.0.0.0:3065/`. Confirmed live before the fix: `curl -sI https://ipopulse.talkytools.com/r/zz-not-a-real-slug` → `location: https://0.0.0.0:3065/`. Real partner links (e.g. `/r/zerodha`) were never affected: they redirect to the partner's own https URL. The `/sup-min` and `/signin` redirects in `src/proxy.ts` were also fine: Next rewrites its own address out of proxy/middleware redirects.
+**Fix:** the three home fallbacks return `Location: /` (a path), which always resolves against the address the visitor used. Partner redirect and advisor click tracking unchanged.
+**Verified:** `tsc --noEmit` 0 errors · `npm run build` passes · local production server (standalone, `HOSTNAME=0.0.0.0`, nginx's `Host` + `X-Forwarded-Proto: https`) against a throwaway Postgres: `/r/zz-not-a-real-slug` → `302 location: /`; `/r/zerodha` → `302 location: https://zerodha.com/open-account/?c=IPOPULSE` (unchanged). Clean server log.
+**Not deployed** — waiting for the founder's "deploy". After deploy, re-run the curl above: it should show `location: /`.
+**Context:** found in the 2026-09-24 fleet check for the GiftScene sign-in bug (GiftScene `f5609bb`). Built and verified in a separate git worktree so the IPOpulse session's working copy was never touched.
+**Files:** `src/app/r/[slug]/route.ts`
+
 ## 2026-09-24 (later still) · fix: the SME type-correction below created duplicate rows for OTHER already-wrong companies
 
 **Found live, right after deploying the fix below:** triggering `nse_ipos` fixed the 3 target companies correctly, but silently duplicated 2 *other* pre-existing wrong companies (Himalayan Solar, Bench Mark Infotech Services) — each ended up with two rows, one `mainboard` (the original, with accumulated GMP history) and one `sme` (a fresh, empty row the upsert created because a type correction changes the slug too, and `upsert({ where: { slug } })` can't find the existing row under its *old* slug — so it creates a new one instead of fixing the old one in place).
