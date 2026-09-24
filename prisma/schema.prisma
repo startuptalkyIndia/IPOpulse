@@ -787,6 +787,19 @@ model InsiderTrade {
   @@map("insider_trades")
 }
 
+// AI-summarized market news brief — one row per generation (a few times a
+// day, not once), unlike MarketSummary which is one row per trading day.
+model NewsBrief {
+  id          Int      @id @default(autoincrement())
+  brief       String   @db.Text // the ~60-word summary
+  headlines   Json     // the source headlines it was generated from: [{title, link, source}]
+  generatedBy String?  @map("generated_by") // "claude-cli" | "claude-api"
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("news_briefs")
+}
+
 // Tracks which NSE PIT filing documents (identified by NSE's own appId) have
 // already been fetched + parsed, so the daily job only processes NEW filings
 // instead of re-fetching and re-parsing NSE's entire filing history every

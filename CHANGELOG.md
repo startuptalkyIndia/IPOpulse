@@ -1,5 +1,19 @@
 # Changelog — IPOpulse
 
+## 2026-09-24 (later) · feat: AI market news brief + fix: SME IPOs wrongly classified as mainboard forever
+
+**1. Market news brief — `/news`.** New "Market Brief" card: a ~60-word AI-generated summary of the day's top headlines, sitting above the existing raw headline feed. Reuses 100% of the existing headline-fetching (extracted the Google News RSS logic out of `/api/news/route.ts` into a shared `src/lib/scrapers/google-news.ts` so both consumers stay in sync) — no new scraping. Summarized via the same CLI-first `callClaudeJson` pattern already proven in `daily_market_summary`/`next_day_preview`, respecting the admin's subscription/api_key provider setting; skips generation entirely (rather than storing a fabricated fallback) if Claude is unavailable. New `news_briefs` table (additive) — one row per generation, not one per day, since it runs 3x daily (8:30 AM, 1 PM, 6 PM IST) to stay current through market hours.
+
+**2. `nse_ipos` — SME companies silently misfiled as mainboard, permanently.** Reported live: "an NSE IPO is live but why can't I see it" — turned out to mean the SME tab, which showed "No SME IPOs in the pipeline" while 3 real SME IPOs (Green Asia Impex, Pooja Logistics, Coreintegra Consulting Services) were live on NSE right now. Root cause, confirmed against NSE's actual API responses directly:
+- `/api/all-upcoming-issues?category=sme` — the endpoint this job used for SME issues — returns a bare `{}`, not an array. Silently dead the whole time (`fetchNseArray` already degrades this to `[]`, so no error, just zero SME rows from this call, ever).
+- `?category=ipo` (used for mainboard) is a **leaky superset** — confirmed it returns SME-series rows too (forthcoming ones observed live). The old code trusted the *category parameter* to decide `type`, never checked each row's own `series` field (`EQ` vs `SME`), so any SME company leaking through the "ipo" call got stored as `type='mainboard'`. Made worse by the upsert's `update` branch never touching `type` — once wrong, a row stayed wrong forever, immune to every subsequent ingest run.
+
+Fix: switched the data source to `/api/ipo-current-issue` — the endpoint NSE's own live IPO page actually uses for currently-active issues, verified to correctly return both EQ and SME rows with a reliable `series` field — merged with `?category=ipo` for forthcoming issues (its leaked SME rows are now harmless since `series` decides type, not which call found them). `update` now also corrects `type`, so a wrong row self-heals on its next ingest instead of staying wrong. Manually corrected the 3 already-known-wrong production rows (type + slug, since the slug's `-sme-` suffix depends on type and a slug change means the upsert's `where: {slug}` would otherwise create a duplicate row rather than fixing the existing one).
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121. Both the endpoint-merge logic and the 3-company fix verified against NSE's real live API responses before deploying, not guessed at.
+
+**Not done this pass:** a broader historical audit for other pre-existing SME→mainboard misclassifications beyond the 3 caught by this specific live complaint — logged in TASKS.md.
+
 ## 2026-09-24 · fix(critical): NSE bhavcopy scraper silently duplicated prices under the wrong date on every weekend + market holiday since at least March 2024 — 109,312 corrupted rows cleaned up
 
 **Ask:** "data I see is mostly wrong — check Reliance price." Checked Reliance directly against the raw DB rather than the rendered page.

@@ -10,6 +10,28 @@
  *     issueStartDate, issueEndDate, status }
  * status ∈ { "Active" (live), "Closed", "Forthcoming" (upcoming) }
  *
+ * BUG FIXED 2026-09-24 (found via a "why can't I see this live IPO"
+ * complaint — the SME tab showed "no IPOs in the pipeline" while 3 real ones
+ * were live on NSE): two separate problems, confirmed live against NSE's
+ * actual API responses.
+ *   1. `/api/all-upcoming-issues?category=sme` returns a bare `{}` (not an
+ *      array) — has been silently dead the whole time (fetchNseArray already
+ *      degrades this to `[]`, so no crash, just zero SME rows from this call).
+ *   2. `?category=ipo` is a LEAKY superset — confirmed it returns SME-series
+ *      rows too (e.g. forthcoming SME issues showed up in the "ipo" category
+ *      response). The old code trusted the CATEGORY PARAM to set `type`,
+ *      never checked each row's own `series` field, so any SME company
+ *      leaking through the "ipo" call got permanently stored as
+ *      type='mainboard' (the upsert's `update` branch never touched `type`,
+ *      so a wrong type from creation stuck forever).
+ * Fix: pull from `/api/ipo-current-issue` (the endpoint NSE's own live IPO
+ * page actually uses for currently-active issues — verified it correctly
+ * returns both EQ and SME rows with a reliable `series` field, including
+ * live subscription numbers) merged with `?category=ipo` for forthcoming
+ * ones, and derive `type` from each row's OWN `series` field, never from
+ * which call it came from. `update` now also corrects `type`, so a
+ * previously-wrong row self-heals on the next run instead of staying wrong.
+ *
  * Runs every 2 hours via scheduler. Marks IPOs live/closed/upcoming by the
  * NSE status + dates, parses the price band, and links the NSE symbol.
  */
@@ -23,7 +45,7 @@ import { computeIpoStatus } from "@/lib/ipo";
 interface NseIssue {
   companyName: string;
   symbol?: string;
-  series?: string;
+  series?: string;           // "EQ" (mainboard) | "SME" — the real type signal
   issuePrice?: string;       // "Rs.42 to Rs.45"
   issueSize?: string;        // shares count as string
   issueStartDate?: string;   // "05-Jun-2026"
@@ -72,9 +94,31 @@ function mapStatus(nseStatus: string | undefined): string {
   return "upcoming"; // "forthcoming" or unknown; advanceStaleStatuses corrects by date
 }
 
-async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number; note: string }> {
-  const type = category === "sme" ? "sme" : "mainboard";
-  const issues = await fetchNseArray<NseIssue>(`/api/all-upcoming-issues?category=${category}`);
+/** "SME" series → sme; "EQ" or anything else → mainboard. The only reliable type signal — never trust which endpoint/category a row came from. */
+function deriveType(series: string | undefined): "sme" | "mainboard" {
+  return (series ?? "").toUpperCase() === "SME" ? "sme" : "mainboard";
+}
+
+async function fetchAllIssues(): Promise<NseIssue[]> {
+  // /api/ipo-current-issue: what NSE's own live IPO page uses for currently
+  // ACTIVE issues — correctly includes both EQ and SME rows with a reliable
+  // series field (verified live). /api/all-upcoming-issues?category=ipo:
+  // covers FORTHCOMING issues (ipo-current-issue is active-only) — also
+  // leaks in some SME rows, which is fine now that we key off `series`
+  // rather than the category param. category=sme is NOT called — verified
+  // it returns a bare `{}`, contributing nothing.
+  const [current, upcoming] = await Promise.all([
+    fetchNseArray<NseIssue>(`/api/ipo-current-issue`),
+    fetchNseArray<NseIssue>(`/api/all-upcoming-issues?category=ipo`),
+  ]);
+  const byName = new Map<string, NseIssue>();
+  for (const i of upcoming) if (i.companyName) byName.set(i.companyName, i);
+  for (const i of current) if (i.companyName) byName.set(i.companyName, i); // current (has live status) wins on overlap
+  return [...byName.values()];
+}
+
+async function ingestIssues(): Promise<{ rowsIn: number; note: string }> {
+  const issues = await fetchAllIssues();
   let rowsIn = 0;
 
   for (const issue of issues) {
@@ -83,6 +127,7 @@ async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number
     const close = parseNseDate(issue.issueEndDate);
     const band = parsePriceBand(issue.issuePrice);
     const status = mapStatus(issue.status);
+    const type = deriveType(issue.series);
     const slug = slugifyIpoName(issue.companyName, { suffix: type === "sme" ? "sme" : undefined });
 
     await prisma.ipo.upsert({
@@ -94,6 +139,7 @@ async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number
         ...(band.high != null && { priceBandHigh: band.high }),
         ...(issue.symbol && { nseSymbol: issue.symbol }),
         status,
+        type, // self-heal a previously-wrong type on the next run
       },
       create: {
         name: issue.companyName,
@@ -110,7 +156,7 @@ async function ingestCategory(category: "ipo" | "sme"): Promise<{ rowsIn: number
     rowsIn++;
   }
 
-  return { rowsIn, note: `${category}: ${issues.length} fetched, ${rowsIn} upserted` };
+  return { rowsIn, note: `${issues.length} fetched, ${rowsIn} upserted` };
 }
 
 /**
@@ -149,15 +195,13 @@ export async function ingestNseIpos(): Promise<IngestionResult> {
   let rowsIn = 0;
   let rowsError = 0;
 
-  for (const cat of ["ipo", "sme"] as const) {
-    try {
-      const r = await ingestCategory(cat);
-      rowsIn += r.rowsIn;
-      notes.push(r.note);
-    } catch (err) {
-      rowsError++;
-      notes.push(`${cat}: ${err instanceof Error ? err.message : "fetch error"}`);
-    }
+  try {
+    const r = await ingestIssues();
+    rowsIn += r.rowsIn;
+    notes.push(r.note);
+  } catch (err) {
+    rowsError++;
+    notes.push(`issues: ${err instanceof Error ? err.message : "fetch error"}`);
   }
 
   // After ingesting the feed, fix any IPOs the feed no longer reports.

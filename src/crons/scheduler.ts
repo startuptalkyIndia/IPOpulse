@@ -9,6 +9,7 @@ import { ingestBseBhavcopy } from "./jobs/bse-bhavcopy";
 import { ingestBseAnnouncements } from "./jobs/bse-announcements";
 import { sendDailyDigest } from "./jobs/daily-digest";
 import { generateDailyMarketSummary } from "./jobs/daily-market-summary";
+import { generateMarketNewsBrief } from "./jobs/market-news-brief";
 import { analyzePendingDrhps } from "./jobs/drhp-analyze";
 import { ingestUsIpos } from "./jobs/us-ipos";
 import { updateUsAdrs } from "./jobs/us-adrs";
@@ -197,6 +198,17 @@ export function startScheduler() {
     console.log(`[cron daily_market_summary] ${result.ok ? "ok" : "failed"}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // Market news brief — 3x daily (8:30 AM, 1:00 PM, 6:00 PM IST), all days
+  // (market-relevant news, e.g. policy announcements, happens on weekends
+  // too). One row per generation, not one per day — powers the /news page's
+  // AI-summarized brief card.
+  for (const sch of ["30 8 * * *", "0 13 * * *", "0 18 * * *"]) {
+    cron.schedule(sch, async () => {
+      const result = await runIngestion("market_news_brief", generateMarketNewsBrief);
+      console.log(`[cron market_news_brief] ${result.ok ? "ok" : "failed"} ${result.notes ?? ""}`);
+    }, { timezone: "Asia/Kolkata" });
+  }
+
   // DRHP analyzer — every 6 hours. Caps at DRHP_MAX_PER_RUN (default 3) to
   // protect Anthropic spend. Only re-analyzes when sourceUrl changes.
   cron.schedule("17 */6 * * *", async () => {
@@ -295,7 +307,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -308,6 +320,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   bse_announcements: ingestBseAnnouncements,
   daily_digest: sendDailyDigest,
   daily_market_summary: generateDailyMarketSummary,
+  market_news_brief: generateMarketNewsBrief,
   drhp_analyze: analyzePendingDrhps,
   us_ipos: ingestUsIpos,
   us_adrs: updateUsAdrs,

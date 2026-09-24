@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Newspaper, Twitter, Calendar, TrendingUp } from "lucide-react";
 import { NewsClient } from "./NewsClient";
+import { MarketBriefCard } from "@/components/news/MarketBriefCard";
+import { prisma } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Finance & IPO News India — Markets, FII, Deals, Policy | IPOpulse",
@@ -16,7 +20,9 @@ const quickLinks = [
   { href: "/fii-dii", label: "FII/DII Live Data", icon: TrendingUp, desc: "Daily institutional flows" },
 ];
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const latestBrief = await prisma.newsBrief.findFirst({ orderBy: { createdAt: "desc" } });
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
@@ -32,6 +38,14 @@ export default function NewsPage() {
           Aggregated from Google News — latest coverage across Indian equity markets, IPOs, institutional flows, deals, and regulatory news. Updated every 15 minutes.
         </p>
       </div>
+
+      {latestBrief && (
+        <MarketBriefCard
+          brief={latestBrief.brief}
+          headlines={(latestBrief.headlines as { title: string; link: string; source: string }[]) ?? []}
+          generatedAt={latestBrief.createdAt}
+        />
+      )}
 
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
