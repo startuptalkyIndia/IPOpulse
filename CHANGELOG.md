@@ -1,5 +1,13 @@
 # Changelog — IPOpulse
 
+## 2026-09-24 (later still) · fix: the SME type-correction below created duplicate rows for OTHER already-wrong companies
+
+**Found live, right after deploying the fix below:** triggering `nse_ipos` fixed the 3 target companies correctly, but silently duplicated 2 *other* pre-existing wrong companies (Himalayan Solar, Bench Mark Infotech Services) — each ended up with two rows, one `mainboard` (the original, with accumulated GMP history) and one `sme` (a fresh, empty row the upsert created because a type correction changes the slug too, and `upsert({ where: { slug } })` can't find the existing row under its *old* slug — so it creates a new one instead of fixing the old one in place).
+
+Manually cleaned up both (kept the row with accumulated data, deleted the empty duplicate, corrected type+slug on the real row) — but the underlying pattern would have silently repeated for any future company this job touches whose type was ever wrong historically. Fixed properly: `ingestIssues()` now looks up an existing row by **name** first; if found under a different slug than the freshly-computed one, it corrects that row in place (`update` by `id`) instead of upserting by the new slug. Verified `npx tsc --noEmit` 0 errors, `npx vitest run` 121/121 after this second fix.
+
+**Lesson for next time:** after any fix that can change a record's natural key (slug, in this case), check for name/entity-level duplicates across the WHOLE table, not just the specific rows the original complaint was about — a self-healing `update` only helps when the lookup key stays the same.
+
 ## 2026-09-24 (later) · feat: AI market news brief + fix: SME IPOs wrongly classified as mainboard forever
 
 **1. Market news brief — `/news`.** New "Market Brief" card: a ~60-word AI-generated summary of the day's top headlines, sitting above the existing raw headline feed. Reuses 100% of the existing headline-fetching (extracted the Google News RSS logic out of `/api/news/route.ts` into a shared `src/lib/scrapers/google-news.ts` so both consumers stay in sync) — no new scraping. Summarized via the same CLI-first `callClaudeJson` pattern already proven in `daily_market_summary`/`next_day_preview`, respecting the admin's subscription/api_key provider setting; skips generation entirely (rather than storing a fabricated fallback) if Claude is unavailable. New `news_briefs` table (additive) — one row per generation, not one per day, since it runs 3x daily (8:30 AM, 1 PM, 6 PM IST) to stay current through market hours.

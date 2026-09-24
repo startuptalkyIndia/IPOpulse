@@ -117,9 +117,10 @@ async function fetchAllIssues(): Promise<NseIssue[]> {
   return [...byName.values()];
 }
 
-async function ingestIssues(): Promise<{ rowsIn: number; note: string }> {
+async function ingestIssues(): Promise<{ rowsIn: number; note: string; typeCorrections: number }> {
   const issues = await fetchAllIssues();
   let rowsIn = 0;
+  let typeCorrections = 0;
 
   for (const issue of issues) {
     if (!issue.companyName) continue;
@@ -129,34 +130,44 @@ async function ingestIssues(): Promise<{ rowsIn: number; note: string }> {
     const status = mapStatus(issue.status);
     const type = deriveType(issue.series);
     const slug = slugifyIpoName(issue.companyName, { suffix: type === "sme" ? "sme" : undefined });
+    const fields = {
+      ...(open && { openDate: open }),
+      ...(close && { closeDate: close }),
+      ...(band.low != null && { priceBandLow: band.low }),
+      ...(band.high != null && { priceBandHigh: band.high }),
+      ...(issue.symbol && { nseSymbol: issue.symbol }),
+      status,
+    };
 
-    await prisma.ipo.upsert({
-      where: { slug },
-      update: {
-        ...(open && { openDate: open }),
-        ...(close && { closeDate: close }),
-        ...(band.low != null && { priceBandLow: band.low }),
-        ...(band.high != null && { priceBandHigh: band.high }),
-        ...(issue.symbol && { nseSymbol: issue.symbol }),
-        status,
-        type, // self-heal a previously-wrong type on the next run
-      },
-      create: {
-        name: issue.companyName,
-        slug,
-        type,
-        openDate: open,
-        closeDate: close,
-        priceBandLow: band.low,
-        priceBandHigh: band.high,
-        nseSymbol: issue.symbol ?? null,
-        status,
-      },
+    // A type correction changes the slug too (slugifyIpoName appends "-sme"),
+    // so upserting by the NEW slug would miss the existing row entirely and
+    // create a duplicate (verified this actually happened in prod once,
+    // 2026-09-24, for exactly this reason — see header comment). Look up by
+    // NAME first: if a row already exists under a different slug, correct
+    // that row in place instead of leaving it orphaned.
+    const existing = await prisma.ipo.findFirst({
+      where: { name: issue.companyName },
+      select: { id: true, slug: true, type: true },
     });
+
+    if (existing && existing.slug !== slug) {
+      await prisma.ipo.update({ where: { id: existing.id }, data: { ...fields, type, slug } });
+      typeCorrections++;
+    } else {
+      await prisma.ipo.upsert({
+        where: { slug },
+        update: { ...fields, type }, // self-heals when the slug is already correct
+        create: { name: issue.companyName, slug, type, ...fields },
+      });
+    }
     rowsIn++;
   }
 
-  return { rowsIn, note: `${issues.length} fetched, ${rowsIn} upserted` };
+  return {
+    rowsIn,
+    note: `${issues.length} fetched, ${rowsIn} upserted${typeCorrections ? `, ${typeCorrections} type corrections (in place, no duplicate)` : ""}`,
+    typeCorrections,
+  };
 }
 
 /**
