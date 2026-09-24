@@ -7,13 +7,14 @@
 > 3. When done → **move it to Done and STRIKE IT THROUGH**: `- [x] ~~the task~~ — ✅ YYYY-MM-DD (commit/proof)`.
 > 4. Keep it current: this file + `COMMS.md` are what the other account reads to know project state.
 >
-> _Last updated: 2026-09-23_
+> _Last updated: 2026-09-24_
 
 ---
 
 ## 🔲 To Do  (priority order — top = next)
 
-- [ ] Deploy + verify the 2026-09-23 fixes (AMFI parser + insider-trading rebuild) in production, including creating the new `processed_insider_filings` table (same `prisma db push` collateral-refusal issue from the `rbi_repo_rates` table applies — the pre-existing unrelated `_bak_ipo_listing_date_20260819` backup table blocks the auto-push; create the new table manually via SQL matching the schema, same as done for `rbi_repo_rates`).
+- [ ] Trigger `compute_signals` manually after deploying the 2026-09-24 bhavcopy-date fix, so RSI/returns/moat-flags refresh immediately from the now-clean data instead of waiting for tonight's scheduled run.
+- [ ] Audit `bse_bhavcopy` and `nse_indices` scrapers for the same class of bug (trusting a requested date instead of validating the source's own embedded date) — not checked in the 2026-09-24 pass; BSE's source was confirmed unaffected by *this specific* duplication pattern but that doesn't rule out a different bug in its own scraper.
 - [ ] Monitor the insider-trading backlog catch-up (`~2,700 filings`, 50/run cap) over the next several days — `crawler_health` and `ingestion_runs.notes` report remaining backlog count each run.
 - [ ] Known limitation: a revised NSE filing (`prevAppId`) is treated as independent, not a correction to the original — could produce duplicate/stale rows in rare cases. Not fixed this pass.
 - [ ] Build an admin UI to add future RBI repo rate rows (currently: re-run `scripts/seed-rbi-repo-rate.ts` with new rows appended after each MPC meeting, ~6x/year — acceptable stopgap given the low frequency).
@@ -31,6 +32,7 @@
 
 ## ✅ Done  (strike through, newest at top)
 
+- [x] ~~NSE bhavcopy scraper duplicated prices under the wrong date on every weekend + market holiday~~ — ✅ 2026-09-24 (found by checking a user-reported "data looks wrong" complaint against Reliance's raw DB rows, not the rendered page — NSE's archive serves stale Friday content under a Sunday's URL instead of 404ing; `fetchNseBhavcopy` now validates the CSV's own DATE1 column instead of trusting the requested date. 109,312 corrupted rows found back to 2024-03-08, backed up, and deleted. `compute_signals` still needs a manual trigger to refresh derived stats from the clean data — tracked above.)
 - [x] ~~`amfi_navs` silently returning 0 rows for 15+ days~~ — ✅ 2026-09-23 (AMFI added new Plan/Option columns, breaking the fixed 6-column parser; fixed by parsing by column count; verified against the real live file, 14,393 funds now parse vs 0 before)
 - [x] ~~`nse_insider` silently returning 0 rows, NSE endpoint fully replaced~~ — ✅ 2026-09-23 full rebuild kept on NSE (founder call, not switching to a 3rd-party source): new `src/lib/scrapers/nse-insider-filing.ts` parses each filing's HTML by flattening its rowspan/colspan header (robust to column reordering), new `processed_insider_filings` table tracks incremental catch-up through the ~2,700-filing backlog (50/run cap). Verified against 5 real live filings end-to-end before deploying. Not yet deployed to prod (tracked above).
 - [x] ~~Stock peer comparison page~~ — ✅ 2026-09-22 `/ticker/compare`, up to 3 stocks, no new data (reused existing Company fundamentals + canonical price helper)

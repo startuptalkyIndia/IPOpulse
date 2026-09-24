@@ -1,5 +1,26 @@
 # Changelog — IPOpulse
 
+## 2026-09-24 · fix(critical): NSE bhavcopy scraper silently duplicated prices under the wrong date on every weekend + market holiday since at least March 2024 — 109,312 corrupted rows cleaned up
+
+**Ask:** "data I see is mostly wrong — check Reliance price." Checked Reliance directly against the raw DB rather than the rendered page.
+
+**Found:** `bhavcopy_daily` had a row dated **Sunday 2026-09-20** for Reliance (and every other NSE-tracked company) that was byte-for-byte identical to the real Friday 2026-09-18 row. Confirmed by hand: `curl`-ing NSE's own archive URL for the (non-existent) Sunday file, `sec_bhavdata_full_20092026.csv`, returns **HTTP 200** with a body whose own `DATE1` column says `18-Sep-2026` — NSE's archive host silently serves the preceding Friday's file under a weekend's URL instead of 404ing. `src/lib/scrapers/nse-bhavcopy.ts`'s walk-back loop trusted the *requested* candidate date as the row's date and never checked the CSV's own date column, so it accepted this stale content and wrote it under the wrong (weekend) date.
+
+**Scope, once quantified — much bigger than one Sunday:**
+- **45,118 rows** dated on a Sunday (day-of-week check — Saturdays were unaffected; NSE's host 404s cleanly for that specific filename, only the Sunday one misbehaves).
+- **64,194 more rows** on ~29 confirmed market holidays back to **2024-03-08** (Holi through Diwali-adjacent dates, Independence Day, Christmas, etc. each year) — found via a same-source (`nse` only — BSE and Yahoo have separate, unaffected scrapers), same-value, consecutive-calendar-day duplicate check, filtered to dates where the duplicate count exceeded 500 (to exclude the small, legitimate day-to-day coincidences of a handful of thin-trading stocks closing flat, which is normal and NOT this bug).
+- **109,312 total corrupted rows**, ~7% of the entire `bhavcopy_daily` table (1.5M rows), spanning 2.5 years.
+
+**Impact:** every affected date showed a fabricated "as of" date one day newer than the real last trading day, and doubled up rows in any date-ordered query — feeding into 1-day/1-year returns, 52-week ranges, "latest price," market breadth, and anything else built on `bhavcopy_daily`.
+
+**Fix:** `fetchNseBhavcopy` now parses each response's own `DATE1` column and requires it to match the calendar day being requested; a mismatch is treated exactly like a 404 (falls through to the next day in the walk-back) instead of being accepted. Verified against the real live Sunday URL: now correctly resolves to Friday's date instead of mislabeling it. Since this is the *shared* scraper (both the daily `nse_bhavcopy` job and the `nse_bhavcopy_historical` backfill import it), the fix protects both call sites — and any future NSE holiday, not just the ones already found.
+
+**Cleanup:** backed up all 109,312 affected rows to `_bak_bhavcopy_sunday_rows_20260924` and `_bak_bhavcopy_holiday_dup_20260924` (full row snapshots, not just IDs — restorable) before deleting them from `bhavcopy_daily`. Verified Reliance's history is clean post-cleanup (17th/18th/21st Sept only, no phantom 20th).
+
+**Not yet done (queued):** trigger `compute_signals` to refresh RSI/returns/moat-flags now that the raw rows they're computed from are clean, rather than waiting for tonight's scheduled run. Also worth a similar audit pass on `bse_bhavcopy` and `nse_indices`, which weren't checked this pass (BSE's source was confirmed *not* affected by this specific bug via the per-source duplicate check, but that doesn't rule out a different bug in BSE's own scraper).
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121. Fix verified against the real live problematic NSE URL before deploying, not guessed at. Cleanup verified against the real production data (row counts before/after, spot-checked Reliance).
+
 ## 2026-09-23 · fix: AMFI NAVs silently broken for weeks (parser bug) + full rebuild of NSE insider-trading ingestion
 
 **Ask:** "do we need to improve any data?" Ran a data-health check (crawler_health heartbeat flagged 3 issues) rather than assume everything was fine.
