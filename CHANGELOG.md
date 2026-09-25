@@ -10,6 +10,8 @@
 
 **Verified live:** confirmed Claude CLI was back (`/api/health` → `anthropic: ok`, direct `claude -p 'say ok'` → `ok`) before re-triggering `daily_market_summary` (now `claude-cli`, not templated) and `market_news_brief` (generated fresh) manually to backfill today's content immediately rather than waiting for the next scheduled run.
 
+**Scope correction, found after deploying the fix:** cleaning up the stuck placeholder to force a fresh regeneration turned up **78 rows** with `generated_by='templated'` in `next_day_previews`, not just the one from yesterday's outage — this bug has apparently been silently sticking low-quality fallback content in place every time the CLI had a brief hiccup, for a long time before this pass, not just once. Deleted all 78 and confirmed the next scheduled run regenerates a real one (`claude-cli`, verified live).
+
 **Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121.
 
 ## 2026-09-24 (fleet check) · fix: unknown or unsafe /r/ links sent visitors to a dead page (https://0.0.0.0:3065/)
