@@ -56,9 +56,14 @@ function tomorrow(): Date {
 export async function generateNextDayPreview(): Promise<IngestionResult> {
   const forDate = tomorrow();
 
-  // Check if already generated for tomorrow
+  // Check if already generated for tomorrow — but only skip if it's a REAL
+  // AI-generated preview. Found live 2026-09-25: a transient Claude CLI
+  // outage caused this to fall back to a "templated" placeholder, and this
+  // check then treated that placeholder as permanently good enough,
+  // skipping every retry for the rest of the day. Re-run instead when the
+  // existing row has no generatedBy (i.e. it's the templated fallback).
   const existing = await prisma.nextDayPreview.findUnique({ where: { forDate } });
-  if (existing) return { rowsIn: 0, notes: "Preview already exists for tomorrow" };
+  if (existing?.generatedBy) return { rowsIn: 0, notes: "Preview already exists for tomorrow" };
 
   // === Gather today's data ===
 

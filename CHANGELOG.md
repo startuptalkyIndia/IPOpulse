@@ -1,5 +1,17 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 · fix: `next_day_preview` got permanently stuck on templated fallback text after a transient AI outage
+
+**Ask:** "what to improve" — checked for anything that changed since the last pass rather than re-reading the standing backlog.
+
+**Found:** a genuine (now-resolved) Claude CLI outage occurred yesterday, roughly 07:30–15:00 UTC — `claude -p` was returning exit 1 ("subscription access is down"). During that window, `market_news_brief` correctly skipped generation (it never writes a fallback row — by design, no fabricated content), but `daily_market_summary` and `next_day_preview` both fell back to generic templated text, which is also correct *in the moment*. The bug: `next_day_preview` checks `if (existing) return { notes: "already exists" }` before generating — it never re-checks whether that existing row is real AI content or the templated fallback. Once the outage produced one templated row for tomorrow's date, the job would skip regenerating it for the rest of the day, and that placeholder ("Paints in focus; FII sellers" — clearly generic, not the real per-day narrative) would have shipped to the live page as tomorrow's actual preview.
+
+**Fix:** the skip condition now checks `existing?.generatedBy` (only real AI-generated rows set this field) instead of just row existence — a templated placeholder gets retried on the next scheduled run instead of sticking permanently. `daily_market_summary` has no equivalent guard (always regenerates via upsert) and wasn't affected. `market_news_brief` never persists a fallback row on failure, so it wasn't affected either.
+
+**Verified live:** confirmed Claude CLI was back (`/api/health` → `anthropic: ok`, direct `claude -p 'say ok'` → `ok`) before re-triggering `daily_market_summary` (now `claude-cli`, not templated) and `market_news_brief` (generated fresh) manually to backfill today's content immediately rather than waiting for the next scheduled run.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121.
+
 ## 2026-09-24 (fleet check) · fix: unknown or unsafe /r/ links sent visitors to a dead page (https://0.0.0.0:3065/)
 
 **Cause:** the click redirector `/r/[slug]` sent visitors home with `new URL("/", url.origin)` whenever the slug was unknown or its partner URL was not https. Behind nginx, the request URL in a route handler holds the container's own address — Next builds it from the server's bind host and port (`0.0.0.0:3065`), not from the visitor's Host header — so those visitors landed on `https://0.0.0.0:3065/`. Confirmed live before the fix: `curl -sI https://ipopulse.talkytools.com/r/zz-not-a-real-slug` → `location: https://0.0.0.0:3065/`. Real partner links (e.g. `/r/zerodha`) were never affected: they redirect to the partner's own https URL. The `/sup-min` and `/signin` redirects in `src/proxy.ts` were also fine: Next rewrites its own address out of proxy/middleware redirects.

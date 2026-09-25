@@ -7,12 +7,13 @@
 > 3. When done → **move it to Done and STRIKE IT THROUGH**: `- [x] ~~the task~~ — ✅ YYYY-MM-DD (commit/proof)`.
 > 4. Keep it current: this file + `COMMS.md` are what the other account reads to know project state.
 >
-> _Last updated: 2026-09-24_
+> _Last updated: 2026-09-26_
 
 ---
 
 ## 🔲 To Do  (priority order — top = next)
 
+- [ ] National Stock Exchange of India Limited (ticker NSE) still shows `status=closed`, no company record — verified directly against NSE's own EOD bhavcopy file as of 2026-09-24 that it genuinely hadn't started trading yet (not a bug on our side, a real-world delay). Re-check whether it's actually listed now and re-trigger `nse_company_master` + `bse_listing_sync` if so — don't wait for the next scheduled run on a listing this high-profile.
 - [ ] Audit `bse_bhavcopy` and `nse_indices` scrapers for the same class of bug (trusting a requested date instead of validating the source's own embedded date) — not checked in the 2026-09-24 pass; BSE's source was confirmed unaffected by *this specific* duplication pattern but that doesn't rule out a different bug in its own scraper.
 - [ ] Broader historical audit for other pre-existing SME→mainboard IPO misclassifications beyond the 3 caught by the 2026-09-24 live complaint (Green Asia Impex, Pooja Logistics, Coreintegra Consulting Services) — those were fixed because a user happened to check the SME tab for them specifically; there could be older, currently-invisible cases.
 - [ ] Monitor the insider-trading backlog catch-up (`~2,700 filings`, 50/run cap) over the next several days — `crawler_health` and `ingestion_runs.notes` report remaining backlog count each run.
@@ -32,6 +33,7 @@
 
 ## ✅ Done  (strike through, newest at top)
 
+- [x] ~~`next_day_preview` permanently stuck on templated fallback after a transient AI outage~~ — ✅ 2026-09-26 (a real Claude CLI outage 2026-09-25 ~07:30–15:00 UTC caused a templated placeholder to be saved for tomorrow's preview; the job's `if (existing) skip` check never re-verified quality, so it would have shipped generic text as the real preview all day. Now skips only when `existing.generatedBy` is set. Backfilled today's `daily_market_summary` + `market_news_brief` manually once AI was confirmed back.)
 - [x] ~~AI market news brief~~ — ✅ 2026-09-24 `/news` "Market Brief" card, ~60-word AI summary generated 3x/day from the same headlines `/api/news` already fetches, new `news_briefs` table, CLI-first via `callClaudeJson` matching `daily_market_summary`'s pattern
 - [x] ~~SME IPOs (Green Asia Impex, Pooja Logistics, Coreintegra Consulting) permanently misfiled as mainboard~~ — ✅ 2026-09-24 (`/api/all-upcoming-issues?category=sme` was silently dead — returns `{}`; `category=ipo` leaks SME rows through and the old code trusted the category param over each row's own `series` field to set `type`, and `update` never corrected it once wrong. Switched to `/api/ipo-current-issue` + fixed type-derivation to use `series`; `update` now self-heals. 3 known-wrong production rows manually corrected.)
 - [x] ~~NSE bhavcopy scraper duplicated prices under the wrong date on every weekend + market holiday~~ — ✅ 2026-09-24 (found by checking a user-reported "data looks wrong" complaint against Reliance's raw DB rows, not the rendered page — NSE's archive serves stale Friday content under a Sunday's URL instead of 404ing; `fetchNseBhavcopy` now validates the CSV's own DATE1 column instead of trusting the requested date. 109,312 corrupted rows found back to 2024-03-08, backed up, and deleted. `compute_signals` triggered manually same day to refresh derived stats from the clean data.)
