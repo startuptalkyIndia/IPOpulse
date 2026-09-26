@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Filter, X, Sliders } from "lucide-react";
+import { Filter, X, Sliders, Download, Bookmark, Star } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 
 export interface ScreenerCompany {
@@ -52,6 +52,27 @@ const TYPE_OPTIONS = [
 
 type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol" | "near52wLow" | "near52wHigh";
 
+const SAVED_SCREENS_KEY = "ipopulse.screener.savedScreens.v1";
+
+interface SavedScreen {
+  name: string;
+  filters: {
+    search: string;
+    sector: string;
+    mcapBand: string;
+    type: string;
+    peMax: string;
+    roeMin: string;
+    debtMax: string;
+    divMin: string;
+    requireFundamentals: boolean;
+    moatOnly: boolean;
+    uptrendOnly: boolean;
+    compounderOnly: boolean;
+    sortBy: SortKey;
+  };
+}
+
 export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sectors: string[] }) {
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState<string>("any");
@@ -73,7 +94,60 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
 
   const [sortBy, setSortBy] = useState<SortKey>("marketCap");
 
-  const filtered = useMemo(() => {
+  // Saved screens — per-browser convenience (localStorage), not account state:
+  // a filter combo someone wants to revisit, same idea as Screener.in's saved
+  // screens. Never blocks rendering if storage is unavailable (private window,
+  // blocked site data) — falls back to an empty list.
+  const [savedScreens, setSavedScreens] = useState<SavedScreen[]>([]);
+  const [screenName, setScreenName] = useState("");
+  const [showSaveInput, setShowSaveInput] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SAVED_SCREENS_KEY);
+      if (raw) setSavedScreens(JSON.parse(raw));
+    } catch {
+      // ignore — private window / blocked storage
+    }
+  }, []);
+
+  function persistSavedScreens(next: SavedScreen[]) {
+    setSavedScreens(next);
+    try {
+      localStorage.setItem(SAVED_SCREENS_KEY, JSON.stringify(next));
+    } catch {
+      // ignore — private window / blocked storage; the in-memory state above still updates
+    }
+  }
+
+  function currentFilters(): SavedScreen["filters"] {
+    return { search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy };
+  }
+
+  function saveCurrentScreen() {
+    const name = screenName.trim();
+    if (!name) return;
+    const next = [...savedScreens.filter((s) => s.name !== name), { name, filters: currentFilters() }];
+    persistSavedScreens(next);
+    setScreenName("");
+    setShowSaveInput(false);
+  }
+
+  function loadScreen(s: SavedScreen) {
+    const f = s.filters;
+    setSearch(f.search); setSector(f.sector); setMcapBand(f.mcapBand); setType(f.type);
+    setPeMax(f.peMax); setRoeMin(f.roeMin); setDebtMax(f.debtMax); setDivMin(f.divMin);
+    setRequireFundamentals(f.requireFundamentals);
+    setMoatOnly(f.moatOnly); setUptrendOnly(f.uptrendOnly); setCompounderOnly(f.compounderOnly);
+    setSortBy(f.sortBy);
+    setShowFundamentals(true);
+  }
+
+  function deleteScreen(name: string) {
+    persistSavedScreens(savedScreens.filter((s) => s.name !== name));
+  }
+
+  const filteredAll = useMemo(() => {
     const band = MCAP_BANDS.find((b) => b.key === mcapBand) ?? MCAP_BANDS[0];
     const q = search.trim().toLowerCase();
     const peMaxN = peMax === "" ? null : Number(peMax);
@@ -138,8 +212,52 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
       const bv = get(b);
       return (sortBy === "pe" || sortBy === "chg1d_asc" || sortBy === "near52wLow") ? av - bv : bv - av;
     };
-    return result.sort(compare).slice(0, 200);
+    return result.sort(compare);
   }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy]);
+
+  // Table renders at most 200 rows for performance; CSV export uses the full
+  // filtered set (filteredAll) below it, since a serious screener user filtering
+  // down to, say, 350 mid-caps expects the export to have all 350, not just the
+  // first 200 shown on screen.
+  const filtered = useMemo(() => filteredAll.slice(0, 200), [filteredAll]);
+
+  const CSV_COLUMNS: Array<{ label: string; get: (c: ScreenerCompany) => string | number }> = [
+    { label: "Company", get: (c) => c.name },
+    { label: "Symbol", get: (c) => c.symbol ?? "" },
+    { label: "Sector", get: (c) => c.sector ?? "" },
+    { label: "Market Cap (Cr)", get: (c) => c.marketCapCr ?? "" },
+    { label: "LTP", get: (c) => c.ltp ?? "" },
+    { label: "1D %", get: (c) => c.chg1d ?? "" },
+    { label: "52W Low", get: (c) => c.low52w ?? "" },
+    { label: "52W High", get: (c) => c.high52w ?? "" },
+    { label: "P/E", get: (c) => c.peRatio ?? "" },
+    { label: "P/B", get: (c) => c.pbRatio ?? "" },
+    { label: "ROE %", get: (c) => c.roePercent ?? "" },
+    { label: "Debt/Equity", get: (c) => c.debtToEquity ?? "" },
+    { label: "Dividend Yield %", get: (c) => c.dividendYield ?? "" },
+    { label: "EPS", get: (c) => c.eps ?? "" },
+    { label: "Volume", get: (c) => c.volume ?? "" },
+  ];
+
+  function csvEscape(v: string | number): string {
+    const s = String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function exportCsv() {
+    const header = CSV_COLUMNS.map((c) => c.label).join(",");
+    const rows = filteredAll.map((c) => CSV_COLUMNS.map((col) => csvEscape(col.get(c))).join(","));
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ipopulse-screener-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   function reset() {
     setSearch("");
@@ -239,7 +357,44 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
           <button onClick={reset} className="text-xs text-gray-500 hover:text-indigo-600 inline-flex items-center gap-1">
             <X className="w-3 h-3" /> Reset
           </button>
+          <button
+            onClick={() => setShowSaveInput((s) => !s)}
+            className="text-xs text-gray-500 hover:text-indigo-600 inline-flex items-center gap-1"
+          >
+            <Bookmark className="w-3 h-3" /> Save this screen
+          </button>
         </div>
+
+        {showSaveInput ? (
+          <div className="flex items-center gap-2 mb-3 -mt-1">
+            <input
+              type="text"
+              className="input flex-1 text-sm"
+              placeholder="Name this screen, e.g. 'Low P/E large caps'"
+              value={screenName}
+              onChange={(e) => setScreenName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") saveCurrentScreen(); }}
+              autoFocus
+            />
+            <button onClick={saveCurrentScreen} className="text-xs font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700">
+              Save
+            </button>
+          </div>
+        ) : null}
+
+        {savedScreens.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs text-gray-500 inline-flex items-center gap-1"><Star className="w-3 h-3" /> Saved:</span>
+            {savedScreens.map((s) => (
+              <span key={s.name} className="inline-flex items-center gap-1 text-[11px] bg-gray-100 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 rounded-full pl-2.5 pr-1 py-1">
+                <button onClick={() => loadScreen(s)} className="font-medium">{s.name}</button>
+                <button onClick={() => deleteScreen(s.name)} className="text-gray-400 hover:text-red-600 px-1" aria-label={`Delete ${s.name}`}>
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>
@@ -322,11 +477,24 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
 
       <div className="flex items-baseline justify-between flex-wrap gap-2">
         <div className="text-sm text-gray-600">
-          Showing <span className="font-semibold text-gray-900">{filtered.length}</span> of {seed.length} companies
+          {filteredAll.length > filtered.length ? (
+            <>Showing top <span className="font-semibold text-gray-900">{filtered.length}</span> of <span className="font-semibold text-gray-900">{filteredAll.length}</span> matches ({seed.length} total)</>
+          ) : (
+            <>Showing <span className="font-semibold text-gray-900">{filtered.length}</span> of {seed.length} companies</>
+          )}
         </div>
-        <div className="text-xs text-gray-500 inline-flex items-center gap-2">
-          Sort by:
-          <select className="input text-xs py-1" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={exportCsv}
+            disabled={filteredAll.length === 0}
+            className="text-xs font-medium text-gray-600 hover:text-indigo-700 inline-flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            title={`Export all ${filteredAll.length} matching rows as CSV`}
+          >
+            <Download className="w-3.5 h-3.5" /> Export CSV{filteredAll.length > 0 ? ` (${filteredAll.length})` : ""}
+          </button>
+          <div className="text-xs text-gray-500 inline-flex items-center gap-2">
+            Sort by:
+            <select className="input text-xs py-1" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
             <option value="marketCap">Market cap ↓</option>
             <option value="near52wLow">Near 52W Low ↑</option>
             <option value="near52wHigh">Near 52W High ↓</option>
@@ -336,7 +504,8 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             <option value="roe">ROE % ↓</option>
             <option value="divYield">Dividend yield ↓</option>
             <option value="vol">Volume ↓</option>
-          </select>
+            </select>
+          </div>
         </div>
       </div>
 

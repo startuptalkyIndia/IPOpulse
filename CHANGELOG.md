@@ -1,5 +1,17 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (one more) · feat: screener CSV export + saved screens (2 of the 10 competitor gaps found earlier today)
+
+**Ask:** "keep building" — after the competitor gap analysis, picked the two items the research explicitly called "low effort": CSV/column export and saved screens, both missing vs. Screener.in/Finology.
+
+**CSV export:** the display table already capped at 200 rows for render performance — export now uses the FULL filtered set (`filteredAll`, pre-slice) rather than just the visible 200, since a user filtering down to say 350 mid-caps expects all 350 in their export, not the first 200 shown on screen. 15 columns (company, symbol, sector, market cap, LTP, 1D%, 52W range, P/E, P/B, ROE, D/E, div yield, EPS, volume), proper CSV-escaping for names with commas, pure client-side (`Blob` + anchor download, zero server round-trip). Button shows the live match count and disables when there's nothing to export. The "Showing X of Y" line was also corrected to distinguish "Y filtered matches" from "Z total companies" now that a truncation can happen independently of the total universe size.
+
+**Saved screens:** localStorage-based (not a DB table) — this is a personal convenience like a bookmark, not shared or critical state, so it doesn't need an account or schema change. Captures the full filter/sort combination (search, sector, market-cap band, listing type, all 4 fundamental thresholds, the 3 signal toggles, sort order) under a name the user picks; click to reload, × to delete. Wrapped every `localStorage` read/write in `try/catch` per the platform's storage-reliability guidance — a private window or blocked site data degrades to "saves don't persist" rather than a crash.
+
+**Verified locally** (not just tsc/vitest): started `docker-compose.dev.yml` + seeded 30 companies, ran the actual save → filter-applies → reset → reload-restores-filter → delete → gone flow through the live dev server, confirmed the CSV export button doesn't touch the network (a stray "can't reach database" console message during testing was confirmed stale from an earlier page load before the dev DB started, not caused by the export click — the export function makes zero server calls). `npx tsc --noEmit` — 0 errors. `npx vitest run` — 125/125.
+
+**Not done in this pass, per the original gap-analysis prioritization:** the bigger competitor gaps (custom-formula query builder, DCF calculator, composite quality score, live GMP refresh, momentum scans, MF-holding-trend view, portfolio P&L) — each needs its own scoping pass given schema/UI size, unchanged from the earlier assessment.
+
 ## 2026-09-26 (the one after that) · sweep through the standing backlog: sector-map filenames, SME misclassification audit, date-validation audit, dead code, competitor gap analysis
 
 **Ask:** "build/fix all" — worked through TASKS.md's remaining backlog items systematically.
