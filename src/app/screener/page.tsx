@@ -24,7 +24,12 @@ export default async function ScreenerPage() {
       roeConsistentYrs: true, isMoat: true, moatNote: true, cyclicalPeak: true,
     },
     orderBy: { marketCap: "desc" },
-    take: 2000,
+    // Was 2000 — silently excluded ~600 of the 2,602 active companies (the smallest
+    // by market cap) from the screener entirely, regardless of any filter, even
+    // though the page's own metadata claims "2,500+ stocks". Raised with headroom
+    // above the current count (2026-09-26) rather than matching it exactly, so this
+    // doesn't silently start truncating again the moment a few more companies list.
+    take: 3000,
   });
   const screenIds = companies.map((c) => c.id);
 
