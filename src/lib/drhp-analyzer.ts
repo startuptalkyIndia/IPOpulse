@@ -228,8 +228,6 @@ export async function analyzeDrhpViaClaudeCli(opts: {
     );
   }
 
-  const { spawn } = await import("node:child_process");
-
   const userPrompt = `Fetch the PDF at this URL and analyze it as an Indian IPO prospectus.
 
 URL: ${opts.pdfUrl}
@@ -240,38 +238,19 @@ Return STRICT JSON only — no markdown, no commentary. Schema:
 
 ${DRHP_SYSTEM_PROMPT.split("Output STRICT JSON")[1] ?? ""}`;
 
-  return new Promise((resolve, reject) => {
-    const child = spawn("claude", ["-p", "--output-format", "text"], {
-      stdio: ["pipe", "pipe", "pipe"],
-      env: process.env,
-    });
-
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (d) => { stdout += d.toString(); });
-    child.stderr.on("data", (d) => { stderr += d.toString(); });
-
-    child.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`claude CLI exited ${code}: ${stderr.slice(0, 400)}`));
-        return;
-      }
-      const m = stdout.match(/\{[\s\S]*\}/);
-      if (!m) {
-        reject(new Error("claude CLI output had no JSON: " + stdout.slice(0, 400)));
-        return;
-      }
-      try {
-        const parsed = JSON.parse(m[0]) as DrhpAnalysis;
-        resolve({ analysis: parsed, modelUsed: "claude-cli" });
-      } catch (err) {
-        reject(new Error(`JSON parse failed: ${err instanceof Error ? err.message : String(err)}`));
-      }
-    });
-
-    child.on("error", (err) => reject(err));
-
-    child.stdin.write(userPrompt);
-    child.stdin.end();
-  });
+  // Reuses claude-runner.ts's CLI spawn (was a second, hand-rolled copy of the
+  // same spawn/stdio/JSON-parse plumbing — found in a 2026-09-22 AI-insight
+  // audit, deduped 2026-09-26). The mode check above stays here rather than
+  // moving into callClaude(): only DRHP analysis needs the CLI's live
+  // PDF-fetching tool use, so only this call site needs to refuse api_key
+  // mode outright instead of silently getting a text-only response that
+  // can't actually fetch the PDF.
+  const { callClaude } = await import("./claude-runner");
+  const stdout = await callClaude({ system: "", user: userPrompt });
+  const m = stdout.match(/\{[\s\S]*\}/);
+  if (!m) {
+    throw new Error("claude CLI output had no JSON: " + stdout.slice(0, 400));
+  }
+  const parsed = JSON.parse(m[0]) as DrhpAnalysis;
+  return { analysis: parsed, modelUsed: "claude-cli" };
 }
