@@ -1,5 +1,16 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (yet later) · fix: search never checked ticker symbol for IPOs — "NSE" found nothing relevant
+
+**Ask:** "I tried search for nse in search and no relevant search result came." Reproduced live: `/api/search?q=nse` returned 9 hits, none of them the actual National Stock Exchange of India Limited IPO — its ticker is literally `NSE`, an exact match, yet it never appeared.
+
+**Root cause:** `/api/search`'s IPO query only matched against `name` (`{ name: { contains: q, mode: "insensitive" } }`) — never `nseSymbol` or `bseCode`, even though the Company query right next to it already checked all three. "National Stock Exchange of India Limited" doesn't contain the substring "nse" anywhere in its name (verified character-by-character — "stock" and "exchange" don't join into it), so a name-only search could never find it by name, and nothing else was checked. The 9 hits that did appear were unrelated companies whose ticker or name happened to contain "nse" as a substring (`DCMFINSERV`, `Insecticides (India)`, etc.) — noise, not a fix, and not ranked by relevance either.
+
+**Fix:** added `nseSymbol`/`bseCode` matching to the IPO query (parity with the Company query). Also added exact-match prioritization — a result whose ticker or name is an exact match for the query now sorts first, so a real ticker search doesn't get buried under unrelated substring hits.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121.
+
+
 ## 2026-09-26 (later still) · feat: `super_investor` rebuilt on NSE's shareholding-pattern XBRL — restores a feature dead for ~65 days
 
 **Ask:** scope, then build, a replacement for `super_investor`'s BSE data source, permanently blocked from this server's IP.

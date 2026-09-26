@@ -67,19 +67,29 @@ export async function GET(request: Request) {
     }
   }
 
-  // DB: IPOs and companies
+  // DB: IPOs and companies. Matches by name OR ticker symbol — a query like
+  // "NSE" is a valid exact ticker for a company/IPO whose NAME doesn't
+  // contain those 3 letters as a substring (e.g. "National Stock Exchange
+  // of India Limited" has no "nse" substring at all), so symbol-only misses
+  // are a real, previously-unfixed gap, not an edge case.
   try {
     const [ipos, companies] = await Promise.all([
       prisma.ipo.findMany({
-        where: { name: { contains: q, mode: "insensitive" } },
-        select: { name: true, slug: true, type: true, status: true },
+        where: {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { nseSymbol: { contains: q, mode: "insensitive" } },
+            { bseCode: { equals: q } },
+          ],
+        },
+        select: { name: true, slug: true, type: true, status: true, nseSymbol: true },
         take: 8,
       }),
       prisma.company.findMany({
         where: {
           OR: [
             { name: { contains: q, mode: "insensitive" } },
-            { nseSymbol: { contains: q.toUpperCase() } },
+            { nseSymbol: { contains: q, mode: "insensitive" } },
             { bseCode: { equals: q } },
           ],
           active: true,
@@ -90,10 +100,11 @@ export async function GET(request: Request) {
     ]);
 
     for (const i of ipos) {
+      const kind = i.type === "sme" ? "SME" : "Mainboard";
       hits.push({
         type: "ipo",
         title: i.name,
-        subtitle: `${i.type === "sme" ? "SME" : "Mainboard"} · ${i.status}`,
+        subtitle: i.nseSymbol ? `${i.nseSymbol} · ${kind} · ${i.status}` : `${kind} · ${i.status}`,
         href: `/ipo/${i.slug}`,
       });
     }
@@ -108,6 +119,17 @@ export async function GET(request: Request) {
   } catch {
     // DB unreachable at build — fine
   }
+
+  // An exact symbol/name match (e.g. searching "NSE" and finding a company
+  // whose ticker literally IS "NSE") is always the most relevant result —
+  // surface it first rather than leaving it wherever the DB happened to
+  // return it, possibly buried behind unrelated substring noise.
+  const qUpper = q.toUpperCase();
+  hits.sort((a, b) => {
+    const aExact = a.title.toUpperCase() === qUpper || a.subtitle?.toUpperCase().startsWith(qUpper + " ") ? 1 : 0;
+    const bExact = b.title.toUpperCase() === qUpper || b.subtitle?.toUpperCase().startsWith(qUpper + " ") ? 1 : 0;
+    return bExact - aExact;
+  });
 
   const res = NextResponse.json({ hits: hits.slice(0, 24) });
   // Search results are stable for a session; allow private caching for 60s
