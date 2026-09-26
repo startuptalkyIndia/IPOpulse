@@ -1,5 +1,22 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (later still) · feat: `super_investor` rebuilt on NSE's shareholding-pattern XBRL — restores a feature dead for ~65 days
+
+**Ask:** scope, then build, a replacement for `super_investor`'s BSE data source, permanently blocked from this server's IP.
+
+**Scoped first (no guessing):** checked both candidates named in the original ticket against live data before writing any code.
+- **Screener.in** — free, but only exposes aggregate Promoter/FII/DII/Public percentages. No named individual shareholders anywhere. Confirmed live on Titan. Not usable.
+- **MoneyControl** — has a genuinely good free investor *directory* (55+ named investors, more than our tracked 15) and free per-investor overview pages, but the actual per-stock holdings table is paywalled behind Moneycontrol Pro — every row locked. Not usable without a paid subscription.
+- **NSE's own shareholding-pattern filing** (same regulatory disclosure BSE was blocked for, but NSE isn't blocked from this server) — the one that actually works. Filing index at `/api/corporate-share-holdings-master?index=equities&symbol=X`, each filing linking to a real XBRL document. Confirmed live against Titan's real 2026-06-30 filing: genuine per-holder facts (`NameOfTheShareholder`, `NumberOfShares`, `ShareholdingAsAPercentageOfTotalNumberOfShares`) — not aggregate categories.
+
+**Harder than the insider-trading rebuild:** these are genuine dimensional XBRL documents (contexts + typed members + separate fact elements linked only by a shared `contextRef`), not a readable HTML table — no single "row" element exists; a shareholder's name, share count, and percentage live in three separate places in the file and have to be reassembled. Built `src/lib/scrapers/nse-shareholding-xbrl.ts` to do that via context-keyed maps (regex-based, matching this codebase's existing scraper style rather than a namespace-aware XML DOM).
+
+**Verified against real live data before deploying:** parsed Titan's actual filing end-to-end — 398 shareholder facts, all complete (0 missing values). "Rekha Jhunjhunwala" appeared as **two separate entries** (different demat folios) summing to ~5.31%, matching the ~5.35% figure already on record elsewhere — the parser, the percent-is-a-fraction scaling (filing stores 0.0424, not 4.24), and the multi-folio-summing logic are all confirmed correct against a real, known-answer case, not assumed.
+
+**Cost control:** at 500 companies × ~1-2 MB XBRL per company, re-fetching everyone every run would be wasteful for data that only changes quarterly. New `CompanyShareholdingSync` table tracks the last filing date already parsed per company — the cheap filing-index check runs for every company every time, but the expensive XBRL fetch+parse only happens when a genuinely new quarterly filing exists. A per-run cap (`SUPER_INVESTOR_MAX_NEW_PER_RUN`, default 100) bounds any single run; the first-time backfill across all 500 companies needs several manual triggers (same pattern already used for the insider-trading backlog), not one shot.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121. Not yet deployed/backfilled in production (queued next).
+
 ## 2026-09-26 (later) · fix: apply the 3 Yahoo symbol remaps waiting for approval since May — via a new `yahooSymbol` override, not by touching `nseSymbol`
 
 **Ask:** founder approved the 3 remaps flagged since 2026-05-09 (`ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`, `VISASTEEL`→inactive) — "go."

@@ -820,6 +820,19 @@ model ProcessedInsiderFiling {
   @@map("processed_insider_filings")
 }
 
+// Tracks the most recent NSE shareholding-pattern filing date already
+// parsed per company, so super_investor only re-fetches a company's (large,
+// ~1-2MB) XBRL document when a genuinely NEW quarterly filing exists —
+// checking the small filing-index JSON every run is cheap, but re-parsing
+// unchanged multi-MB XBRL for 500 companies every run would not be.
+model CompanyShareholdingSync {
+  companyId      Int      @id @map("company_id")
+  lastFilingDate DateTime @map("last_filing_date")
+  syncedAt       DateTime @default(now()) @updatedAt @map("synced_at")
+
+  @@map("company_shareholding_sync")
+}
+
 model UsIpo {
   id              Int      @id @default(autoincrement())
   symbol          String?  @unique
