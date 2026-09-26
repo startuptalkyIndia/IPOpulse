@@ -8,7 +8,17 @@
  * market-cap (audit CRIT-2). Every price read MUST go through these helpers so a
  * company has exactly ONE price per day, chosen by a fixed source precedence:
  *
- *   nse (official EOD) > bse > kite > fyers > yahoo > seed
+ *   nse (official EOD) > bse > kite > fyers > yahoo
+ *
+ * `seed` rows are excluded from every query in this file, not merely
+ * ranked last: they're one-time dev-bootstrap placeholder prices
+ * (scripts/seed-bhavcopy.ts), not real EOD data. Ranking them last still let a
+ * date with ONLY a seed row (no real source ingested for it) win via
+ * DISTINCT ON, which silently fed fake highs into the 52-week range — found
+ * 2026-09-26 via HDFC Bank showing a ₹1,838 "52-week high" (real: ~₹1,020)
+ * traced to two 2026-04-24/25 seed rows. Confirmed no company relies solely
+ * on seed rows for its price (every seeded company also has real data), so
+ * excluding seed entirely is safe.
  *
  * Implemented with Postgres DISTINCT ON, which uses the existing
  * (company_id, date, source) unique index. The rank expression is a fixed
@@ -133,7 +143,7 @@ async function queryRowsForDate(dateISO: string, idsCsv: string): Promise<FlatRo
   const rows = await prisma.$queryRaw<RawRow[]>(Prisma.sql`
     SELECT DISTINCT ON (company_id) company_id, close, open, high, low, volume, delivery_pct
     FROM bhavcopy_daily
-    WHERE date = ${date} ${idFilter}
+    WHERE date = ${date} AND source != 'seed' ${idFilter}
     ORDER BY company_id, ${SRC_RANK}
   `);
   return rows.map((r) => ({
@@ -192,7 +202,7 @@ export async function canonicalSeries(companyIds: number[], fromDate: Date): Pro
   const rows = await prisma.$queryRaw<RawRow[]>(Prisma.sql`
     SELECT DISTINCT ON (company_id, date) company_id, date, close, open, high, low, volume, delivery_pct
     FROM bhavcopy_daily
-    WHERE company_id IN (${Prisma.join(companyIds)}) AND date >= ${fromDate}
+    WHERE company_id IN (${Prisma.join(companyIds)}) AND date >= ${fromDate} AND source != 'seed'
     ORDER BY company_id, date, ${SRC_RANK}
   `);
   for (const raw of rows) {
@@ -217,7 +227,7 @@ export async function canonicalRange(
       FROM (
         SELECT DISTINCT ON (company_id, date) company_id, date, low, high
         FROM bhavcopy_daily
-        WHERE company_id IN (${Prisma.join(companyIds)}) AND date >= ${fromDate}
+        WHERE company_id IN (${Prisma.join(companyIds)}) AND date >= ${fromDate} AND source != 'seed'
         ORDER BY company_id, date, ${SRC_RANK}
       ) canon
       GROUP BY company_id
@@ -236,7 +246,7 @@ export async function canonicalCloseOnOrAfter(companyId: number, target: Date): 
   const rows = await prisma.$queryRaw<Array<{ close: unknown }>>(Prisma.sql`
     SELECT DISTINCT ON (company_id) close
     FROM bhavcopy_daily
-    WHERE company_id = ${companyId} AND date >= ${target}
+    WHERE company_id = ${companyId} AND date >= ${target} AND source != 'seed'
     ORDER BY company_id, date ASC, ${SRC_RANK}
   `);
   return rows.length ? toNum(rows[0].close) : null;
@@ -246,7 +256,7 @@ export async function latestCanonicalRow(companyId: number): Promise<CanonRow | 
   const rows = await prisma.$queryRaw<RawRow[]>(Prisma.sql`
     SELECT DISTINCT ON (company_id) company_id, date, close, open, high, low, volume, delivery_pct
     FROM bhavcopy_daily
-    WHERE company_id = ${companyId}
+    WHERE company_id = ${companyId} AND source != 'seed'
     ORDER BY company_id, date DESC, ${SRC_RANK}
   `);
   return rows.length ? mapRow(rows[0]) : null;

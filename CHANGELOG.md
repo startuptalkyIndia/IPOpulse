@@ -1,5 +1,20 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (latest) · fix: 52-week high wrong for any stock with a leftover "seed" placeholder row — HDFC Bank showed ₹1,838 (real: ~₹1,020)
+
+**Ask:** "there is pricing difference also" → "hdfc bank". Reproduced live: `/ticker/hdfc-bank` showed 52W Range ₹1,838 / ₹682. Yahoo Finance's real 52-week range for HDFCBANK.NS: ₹1,020.50 / ₹681.90 — the low matched almost exactly, only the high was wrong. Current price, % change, market cap and P/E all matched Yahoo exactly, ruling out a broader data problem.
+
+**Root cause:** `bhavcopy_daily` still had 160 leftover rows (80 companies) with `source='seed'`, all dated 2026-04-24/25 — one-time placeholder prices from `scripts/seed-bhavcopy.ts`, written before real ingestion existed, never real market data. `src/lib/price.ts`'s canonical-price layer (`canonicalRange`, `canonicalSeries`, etc.) picks ONE row per (company, date) via `DISTINCT ON ... ORDER BY` source precedence (nse > bse > kite > fyers > yahoo > seed) — but that precedence only works to pick the BEST of several sources on a date. For 2026-04-24/25, `seed` wasn't the real ingestion job's only-ever-run day for real data — the daily bhavcopy job only clears seed rows for the exact date it just ingested (`nse-bhavcopy.ts` line 63), so seed rows sitting on OTHER, unvisited past dates are never cleaned up. For those two dates, `seed` was the ONLY row per company, so `DISTINCT ON` picked it anyway (nothing to out-rank), and its fake ₹1,820/₹1,830 "close" fed straight into `MAX(high)` for the 52-week window.
+
+**Fix:**
+1. `src/lib/price.ts` — every canonical read (`queryRowsForDate`, `canonicalSeries`, `canonicalRange`, `canonicalCloseOnOrAfter`, `latestCanonicalRow`) now excludes `source='seed'` outright, not just ranks it last. Confirmed first that no company relies solely on seed rows for its price (`SELECT company_id ... HAVING COUNT(*) FILTER (WHERE source != 'seed') = 0` → 0 rows), so excluding it entirely can't blank out any company that currently has a working price.
+2. `src/crons/jobs/bse-listing-sync.ts` — same anti-pattern for the listing-day price pick (feeds the public GMP-accuracy/listing-gain scorecard); added `source: { not: "seed" }` to the query.
+3. Backed up the 160 rows to `_bak_bhavcopy_seed_placeholder_20260926` on the server, then deleted them from `bhavcopy_daily` (same pattern as the earlier 109,312-row bhavcopy cleanup) — belt-and-suspenders with fix #1, since the reader-side fix alone would leave the fake rows sitting in the table for anyone querying it directly.
+
+**Lesson for next time:** a source-precedence "pick the best available" pattern silently breaks when the *only* available source for a given key is itself invalid data (a placeholder/seed/test row) — precedence order only protects against a worse source out-ranking a better one on the SAME row-set; it does nothing when the bad source is the sole entry. Any such precedence list should say explicitly which sources are real market data and which are non-market placeholders that must be excluded outright, not merely ranked last.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. Confirmed 0 companies had `seed` as their only data source before deleting. Not yet re-checked live post-deploy — do that next (curl `/ticker/hdfc-bank` and confirm 52W high now shows ~₹1,020, and spot-check a couple of the other 79 affected companies for a sane 52-week high).
+
 ## 2026-09-26 (yet later) · fix: search never checked ticker symbol for IPOs — "NSE" found nothing relevant
 
 **Ask:** "I tried search for nse in search and no relevant search result came." Reproduced live: `/api/search?q=nse` returned 9 hits, none of them the actual National Stock Exchange of India Limited IPO — its ticker is literally `NSE`, an exact match, yet it never appeared.

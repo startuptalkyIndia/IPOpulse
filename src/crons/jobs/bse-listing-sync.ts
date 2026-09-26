@@ -70,7 +70,7 @@ export async function syncIpoListings(): Promise<IngestionResult> {
     let bhavRow: { open: unknown; high: unknown; low: unknown; close: unknown; volume: bigint } | null = null;
     if (companyId) {
       const rows = await prisma.bhavcopyDaily.findMany({
-        where: { companyId, date: { gte: listingDay, lt: nextDay } },
+        where: { companyId, date: { gte: listingDay, lt: nextDay }, source: { not: "seed" } },
         select: { open: true, high: true, low: true, close: true, volume: true, source: true },
       });
       bhavRow = rows.sort((a, b) => sourceRank(a.source) - sourceRank(b.source))[0] ?? null;
