@@ -31,16 +31,22 @@ const INDEX_FILES: Array<{ file: string; sector: string }> = [
   { file: "ind_niftybanklist.csv",          sector: "Banking" },
   { file: "ind_niftyitlist.csv",            sector: "IT" },
   { file: "ind_niftypharmalist.csv",        sector: "Pharma" },
-  { file: "ind_niftyautomobilelist.csv",    sector: "Auto" },
   { file: "ind_niftyfmcglist.csv",          sector: "FMCG" },
-  { file: "ind_niftymetal.csv",             sector: "Metal" },
-  { file: "ind_niftyenergy.csv",            sector: "Energy" },
-  { file: "ind_niftyinfrastructure.csv",    sector: "Infrastructure" },
+  // These 5 filenames were wrong (404) and silently swallowed by the bare `catch {}`
+  // below since 2026-05-09 or earlier — confirmed live 2026-09-26 by checking NSE's
+  // own /api/allIndices (the indices themselves are active) and brute-forcing the
+  // archive filename pattern. Auto/Metal/Energy/Media use "...list.csv" like every
+  // other working entry here (the old names were missing "list" or used "automobile"/
+  // "mediaindex" instead); Infrastructure uses the "infra" abbreviation, not the full word.
+  { file: "ind_niftyautolist.csv",          sector: "Auto" },
+  { file: "ind_niftymetallist.csv",         sector: "Metal" },
+  { file: "ind_niftyenergylist.csv",        sector: "Energy" },
+  { file: "ind_niftyinfralist.csv",         sector: "Infrastructure" },
+  { file: "ind_niftymedialist.csv",         sector: "Media" },
   { file: "ind_niftymidcap150list.csv",     sector: "" },
   { file: "ind_niftysmallcap250list.csv",   sector: "" },
   { file: "ind_niftyfinancelist.csv",       sector: "Financial Services" },
   { file: "ind_niftyrealtylist.csv",        sector: "Realty" },
-  { file: "ind_niftymediaindex.csv",        sector: "Media" },
 ];
 
 interface CsvRow {
@@ -63,6 +69,12 @@ function parseCsv(text: string): CsvRow[] {
 export async function ingestNseSectorMap(): Promise<IngestionResult> {
   // symbol → { sector, industry }
   const sectorMap = new Map<string, { sector: string; industry: string }>();
+  // Files that failed to fetch — surfaced in `notes` below instead of swallowed
+  // silently. 5 of these 14 filenames went stale (NSE renamed them) and sat
+  // silently broken for months since this `catch` never reported anything —
+  // found 2026-09-26. A wrong filename now shows up in ingestion_runs instead
+  // of just quietly contributing zero rows forever.
+  const failedFiles: string[] = [];
 
   for (const { file, sector } of INDEX_FILES) {
     try {
@@ -82,7 +94,7 @@ export async function ingestNseSectorMap(): Promise<IngestionResult> {
         }
       }
     } catch {
-      // skip unavailable index files silently
+      failedFiles.push(file);
     }
   }
 
@@ -100,7 +112,13 @@ export async function ingestNseSectorMap(): Promise<IngestionResult> {
     rowsIn += updated.count;
   }
 
-  return { rowsIn, notes: `Mapped ${sectorMap.size} symbols, updated ${rowsIn} companies` };
+  return {
+    rowsIn,
+    rowsError: failedFiles.length,
+    notes:
+      `Mapped ${sectorMap.size} symbols, updated ${rowsIn} companies` +
+      (failedFiles.length ? ` — ${failedFiles.length} index file(s) failed to fetch: ${failedFiles.join(", ")}` : ""),
+  };
 }
 
 function mapIndustryToSector(industry: string): string {
