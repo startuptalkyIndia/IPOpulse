@@ -1,5 +1,20 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (final) · feat: IPO static details (lot size, issue size, face value, registrar, lead managers) — scoped and built, closes the 152-184/190 gap found in today's bug sweep
+
+**Ask:** "go" — scoping the IPO static-details gap flagged in TASKS.md from today's bug sweep, same treatment as the `super_investor` BSE-block rebuild.
+
+**Investigation:** `nse-ipos.ts`'s two source APIs (`ipo-current-issue`, `all-upcoming-issues`) genuinely never carry lot size/issue size/face value/registrar/lead managers — confirmed by fetching each live and inspecting the full JSON, not a parsing gap. Found the real source: NSE's own **`/api/ipo-detail?symbol=X`** endpoint (already known to this codebase for subscription bid-category data) has an `issueInfo.dataList` array — the same "Issue Details" table NSE's IPO page renders — carrying exactly these fields as human-readable `{title, value}` pairs (e.g. `"Bid Lot": "441 Equity Shares and in multiples thereof"`, `"Name of the Registrar": "MUFG Intime India Private Limited"`). Verified live against an active issue (Moneyview), and two already-LISTED ones (Shiprocket, Milky Mist) — the data persists after listing, so this also backfills historical IPOs, not just current ones. BSE code is NOT in this data source and remains a separate, smaller open gap.
+
+**Built:**
+- `src/lib/scrapers/nse-ipo-detail.ts` — `parseIpoIssueDetails()`, extracting lot size, face value, issue size (₹cr), registrar, and lead managers from the `dataList`.
+- `src/crons/jobs/nse-ipo-static-details.ts` — `ingestIpoStaticDetails()`, backfills IPOs with a known `nseSymbol` but no `lotSize` yet (108 candidates found), 40/run cap, triggerable from `/sup-min/ingestion` to work through the backlog faster than the daily schedule alone.
+- Scheduled daily 3:30 AM IST in `scheduler.ts`.
+
+**A parsing bug caught before shipping, not after:** my first pass at the "Issue Size" parser summed every `"Rs. X million"` figure in the string — but Shiprocket's text reads *"...Fresh Issue aggregating upto Rs. 8,855 million and Offer for Sale aggregating upto Rs.7,319.85 million (**including** Employee Reservation Portion aggregating up to Rs. 10 million & Anchor Investor portion of ... Equity Shares)"* — the parenthetical Employee Reservation figure is a **subset** already counted inside the Fresh Issue/OFS totals, not additional value, so summing it too would overcount by ₹10m. Fixed by matching only the "Fresh Issue aggregating..." and "Offer for Sale aggregating..." figures specifically. Separately discovered Moneyview's own text omits the "Rs." prefix entirely for its single-figure phrasing ("...aggregating up to 7500 million...", no "Rs.") — the fallback path (used when an issue has no separate Fresh Issue/OFS breakdown) doesn't require "Rs." for exactly this reason. Both cases covered by `tests/unit/nse-ipo-detail.spec.ts`, using the real live text captured from each symbol.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 125/125 (4 new). Not yet deployed/backfilled as of writing this entry — see the end-of-session status table.
+
 ## 2026-09-26 (yet even later) · fix: screener 4.8s load (real cause: Prisma `distinct` scanning 1.5M rows) + best-stocks 14-vs-15 duplicate card
 
 **Ask:** "check all internal links and feature" + "check whole ui and ux of the platform" — ran a bug-sweep audit (talkytools-bug-sweep) and a perf investigation (talkytools-perf) in parallel.

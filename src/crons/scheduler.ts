@@ -18,6 +18,7 @@ import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
 import { ingestInsiderTrades } from "./jobs/nse-insider";
 import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
 import { ingestNseCompanyMaster } from "./jobs/nse-company-master";
+import { ingestIpoStaticDetails } from "./jobs/nse-ipo-static-details";
 import { ingestNseSectorMap } from "./jobs/nse-sector-map";
 import { generateNextDayPreview } from "./jobs/next-day-preview";
 import { ingestNseIndices } from "./jobs/nse-indices";
@@ -109,6 +110,16 @@ export function startScheduler() {
   cron.schedule("0 */2 * * *", async () => {
     const result = await runIngestion("nse_ipos", ingestNseIpos);
     console.log(`[cron nse_ipos] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
+  // IPO static details (lot size, issue size, face value, registrar, lead managers) —
+  // daily 3:30 AM IST. Separate from nse_ipos above: that job's source APIs don't carry
+  // these fields at all (verified live 2026-09-26); this reads /api/ipo-detail per symbol,
+  // capped at 40/run — trigger manually from /sup-min/ingestion to work through the
+  // ~108-IPO initial backlog faster than the daily schedule alone would.
+  cron.schedule("30 3 * * *", async () => {
+    const result = await runIngestion("nse_ipo_static_details", ingestIpoStaticDetails);
+    console.log(`[cron nse_ipo_static_details] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
   // AMFI Mutual Fund NAVs — daily at 11:00 PM IST (after AMFI publishes ~10 PM)
@@ -307,13 +318,14 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_ipo_static_details(daily 3:30AM), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
   nse_fii_dii: ingestNseFiiDii,
   bse_ipos: ingestBseIposFromHtml,
   nse_ipos: ingestNseIpos,
+  nse_ipo_static_details: ingestIpoStaticDetails,
   amfi_navs: ingestAmfiNavs,
   nse_bhavcopy: ingestNseBhavcopy,
   bse_bhavcopy: ingestBseBhavcopy,
