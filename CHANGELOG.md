@@ -1,5 +1,17 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (truly final) · fix: screener silently capped at 2000 companies, excluding ~600 real ones
+
+**Ask:** founder tried searching "nse" in the screener's own filter box (not the site-wide search fixed earlier) and got no result, plus noticed the page header said "1,994 companies" against a "2,500+ stocks" marketing claim.
+
+**Two separate findings, only one was a bug:**
+1. **"nse" genuinely has no result — not a bug.** National Stock Exchange of India Limited has no `Company` row yet (only an `Ipo` row, `status='closed'`) — confirmed live by grepping NSE's own official `EQUITY_L.csv` equity-listing file for the `NSE` symbol: zero matches. The exchange's own IPO hasn't completed trading yet as of today. The screener's filter logic itself was already correct (checks name/symbol/sector substrings) — there was simply nothing to find.
+2. **The 1,994/2,000 count was a real bug.** `screener/page.tsx` had `take: 2000` on its company query, but the DB has 2,602 active companies — meaning ~600 of the smallest-by-market-cap companies were silently excluded from the screener entirely, regardless of any filter, contradicting the page's own "2,500+ stocks" metadata. First fix raised it to `take: 3000` (headroom over today's count); then removed the `take` limit entirely, since any hard number is just a future version of the exact same bug once the company count grows past it — which is precisely how 2000 went stale unnoticed in the first place.
+
+**Tradeoff, made explicit:** `ScreenerClient.tsx` filters/sorts entirely client-side, so an uncapped query means every active company's row ships to the browser (~2,600 rows today) — the actual cost of that architecture, documented in the query's own comment. This is the same payload the perf investigation earlier today flagged as the residual ~3.5s CPU-bound cost on `/screener` after the DB-side fixes. If the company count grows enough to make this slow again, the correct fix is moving filtering to the server (pagination), not another silent row cap — noted inline for whoever picks that up.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 125/125.
+
 ## 2026-09-26 (final) · feat: IPO static details (lot size, issue size, face value, registrar, lead managers) — scoped and built, closes the 152-184/190 gap found in today's bug sweep
 
 **Ask:** "go" — scoping the IPO static-details gap flagged in TASKS.md from today's bug sweep, same treatment as the `super_investor` BSE-block rebuild.
