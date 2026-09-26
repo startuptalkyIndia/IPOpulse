@@ -63,7 +63,7 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
       isSme: false,
       OR: [{ fundamentalsAt: null }, { fundamentalsAt: { lt: staleThreshold } }],
     },
-    select: { id: true, nseSymbol: true },
+    select: { id: true, nseSymbol: true, yahooSymbol: true },
     orderBy: { id: "asc" },
   });
 
@@ -81,7 +81,7 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
 
   for (let i = 0; i < companies.length; i++) {
     const co = companies[i];
-    const sym = `${co.nseSymbol}.NS`;
+    const sym = `${co.yahooSymbol ?? co.nseSymbol}.NS`;
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

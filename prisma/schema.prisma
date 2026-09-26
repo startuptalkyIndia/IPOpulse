@@ -196,6 +196,13 @@ model Company {
   id          Int      @id @default(autoincrement())
   bseCode     String?  @unique @map("bse_code")
   nseSymbol   String?  @unique @map("nse_symbol")
+  // Override for Yahoo Finance's ticker when it differs from nseSymbol —
+  // e.g. after a rename/demerger where NSE keeps the original trading symbol
+  // but Yahoo's data provider has already moved to a new one (2026-09-26:
+  // ZOMATO -> ETERNAL, TATAMOTORS -> TMPV). NEVER change nseSymbol itself for
+  // this — nse_bhavcopy matches by nseSymbol, and NSE's own CSV still uses
+  // the old symbol; changing it would break daily price ingestion.
+  yahooSymbol String?  @map("yahoo_symbol")
   isin        String?  @unique
   name        String
   slug        String   @unique

@@ -1,5 +1,17 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (later) · fix: apply the 3 Yahoo symbol remaps waiting for approval since May — via a new `yahooSymbol` override, not by touching `nseSymbol`
+
+**Ask:** founder approved the 3 remaps flagged since 2026-05-09 (`ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`, `VISASTEEL`→inactive) — "go."
+
+**Before applying, checked something the original diagnosis didn't:** does NSE's own bhavcopy still use the OLD symbols, or has NSE itself also renamed them? Checked live: `TATAMOTORS` and `ZOMATO` both had bhavcopy price rows **as of yesterday** — NSE's own EOD file still lists them under the original symbols; only Yahoo's data provider has moved on. Naively overwriting `nseSymbol` (as the original note implied) would have **broken daily price ingestion** for two actively-trading companies — `nse_bhavcopy` matches rows by `nseSymbol`, and NSE's CSV would no longer contain a row under the new name. `VISASTEEL`, by contrast, has had genuinely stale bhavcopy since 2026-05-19 (4+ months) — consistent with delisted/suspended.
+
+**Also resolved a real ambiguity for TATAMOTORS→TMPV:** Tata Motors' 2025 demerger produced conflicting reporting across sources about which entity (passenger vehicles vs. commercial vehicles) kept the "Tata Motors" name and which ticker is which (`TMPV` vs `TMCV` vs `TMCVL` all appear across different secondary sources). Resolved via Yahoo's own `TMPV.NS` profile (MD/CEO is Shailesh Chandra, the real passenger-vehicles-business CEO) cross-referenced with Screener.in's explicit statement that the entity keeping the original listing was renamed "Tata Motors Ltd" after commercial vehicles was spun out — confirms `TMPV` is the same entity our `TATAMOTORS`-symbol record already tracks, not a different one.
+
+**Fix:** added `Company.yahooSymbol` (nullable, additive) — when set, `yahoo-fundamentals.ts` builds the Yahoo ticker from it instead of `nseSymbol`; `nseSymbol` itself is never touched, so bhavcopy matching is unaffected. Set `yahooSymbol='ETERNAL'` for Zomato, `yahooSymbol='TMPV'` for Tata Motors, and `active=false` for Visa Steel (removing it from every ingestion job's query, not just Yahoo's).
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 121/121. Both target Yahoo tickers confirmed live and current (real profile pages, real recent prices) before applying, not assumed from months-old notes.
+
 ## 2026-09-26 · fix: `next_day_preview` got permanently stuck on templated fallback text after a transient AI outage
 
 **Ask:** "what to improve" — checked for anything that changed since the last pass rather than re-reading the standing backlog.
