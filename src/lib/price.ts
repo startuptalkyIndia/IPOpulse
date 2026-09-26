@@ -221,6 +221,22 @@ export async function canonicalRange(
 ): Promise<Map<number, { min: number; max: number }>> {
   const out = new Map<number, { min: number; max: number }>();
   if (!companyIds.length) return out;
+  const fromISO = fromDate.toISOString().slice(0, 10);
+  const idsCsv = [...companyIds].sort((a, b) => a - b).join(",");
+  const rows = await cachedRange(fromISO, idsCsv);
+  for (const r of rows) out.set(r.companyId, { min: r.min, max: r.max });
+  return out;
+}
+
+interface RangeRow {
+  companyId: number;
+  min: number;
+  max: number;
+}
+
+async function queryRange(fromDateISO: string, idsCsv: string): Promise<RangeRow[]> {
+  const fromDate = new Date(fromDateISO);
+  const companyIds = idsCsv.split(",").map(Number);
   const rows = await prisma.$queryRaw<Array<{ company_id: number | bigint; min_low: unknown; max_high: unknown }>>(
     Prisma.sql`
       SELECT company_id, MIN(low) AS min_low, MAX(high) AS max_high
@@ -233,9 +249,19 @@ export async function canonicalRange(
       GROUP BY company_id
     `,
   );
-  for (const r of rows) out.set(Number(r.company_id), { min: toNum(r.min_low), max: toNum(r.max_high) });
-  return out;
+  return rows.map((r) => ({ companyId: Number(r.company_id), min: toNum(r.min_low), max: toNum(r.max_high) }));
 }
+
+// Cache the expensive 52-week-range disk-sort query. Screener/best-stocks always call this
+// with the FULL active-company id list and a daily-granularity cutoff, so the (fromISO, idsCsv)
+// key is stable across requests within PRICE_TTL — confirmed via EXPLAIN ANALYZE 2026-09-26:
+// this query alone took 1.26s uncached (external merge disk sort over ~560K rows) and ran on
+// EVERY screener page load since it had no cache, unlike its sibling canonicalRowsForDate.
+const cachedRange = unstable_cache(
+  (fromDateISO: string, idsCsv: string) => queryRange(fromDateISO, idsCsv),
+  ["canon-range"],
+  { revalidate: PRICE_TTL },
+);
 
 /** The single canonical row for one company on ITS OWN latest available day. */
 /**
