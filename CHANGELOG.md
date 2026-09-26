@@ -1,5 +1,17 @@
 # Changelog — IPOpulse
 
+## 2026-09-26 (actually truly final) · fix: `super_investor` was completely broken since its own rebuild — missing table, not missing deployment
+
+**Ask:** "what else" (standing TASKS.md backlog check) — TASKS.md said "deploy the rebuilt `super_investor` job and trigger it a few times," phrased as if the code just hadn't been run yet. Checked `ingestion_runs` for `super_investor` and only found OLD pre-rebuild failures (BSE-block errors from Aug/Sep), no post-rebuild run at all — worth checking why before assuming it just needed triggering.
+
+**Root cause:** the `CompanyShareholdingSync` model was added to `prisma/schema.prisma` as part of the 2026-09-26 rebuild, but the table was never actually created in production. `prisma db push` (dry run) confirmed only the 4 known `_bak_*` backup tables were flagged as pending changes — `company_shareholding_sync` wasn't even in that list, meaning it had silently never been pushed at all (this project uses `db push`, not `prisma migrate`, and the standing `_bak_*` blocker means every schema change needs this same manual-DDL workaround). Every `super_investor` run since the rebuild would have failed at the very first `prisma.companyShareholdingSync.findUnique(...)` call for every single company — but that's inside a per-company `try/catch { errors++ }`, so it silently looked like "0 rowsIn, N errors" in the logs rather than crashing loudly. Nobody had actually looked at a post-rebuild run until now, because there wasn't one.
+
+**Fix:** generated the exact `CREATE TABLE` DDL Prisma would emit (`npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script`, filtered to this table) and applied it directly to production. Re-ran `prisma db push` afterward to confirm it now agrees the schema matches (only the expected `_bak_*` tables flagged, same as before this change — the safety guard is working as intended, not blocking anything new). First real run: **100 companies processed, 7 holdings upserted, 0 errors** — the feature is genuinely live for the first time since its rebuild.
+
+**Lesson for next time:** a per-item `try/catch` that increments an error counter is good for not letting one bad row kill a whole batch run — but it also means a systemic bug (a missing table, a wrong credential, a dead endpoint) that fails on 100% of items looks IDENTICAL in the logs to "100% of items individually had bad data." `crawler_health`/`ingestion_runs.notes` should probably flag "0 rowsIn AND rowsError == candidate count" as a distinct, louder signal from "some rows failed" — filed as a follow-up, not fixed this pass.
+
+**Still to do:** trigger `super_investor` several more times to work through the ~2,600-company backfill (100/run cap).
+
 ## 2026-09-26 (truly final) · fix: screener silently capped at 2000 companies, excluding ~600 real ones
 
 **Ask:** founder tried searching "nse" in the screener's own filter box (not the site-wide search fixed earlier) and got no result, plus noticed the page header said "1,994 companies" against a "2,500+ stocks" marketing claim.
