@@ -31,12 +31,14 @@ export default async function ScreenerPage() {
   // Latest two DISTINCT trading days for 1D change + 52W data.
   // NOTE: bhavcopy has ~2,300 rows per date, so `skip: 1` would skip one row
   // within the same day — we need distinct dates to get the real previous close.
-  const recentDates = await prisma.bhavcopyDaily.findMany({
-    orderBy: { date: "desc" },
-    distinct: ["date"],
-    select: { date: true },
-    take: 2,
-  });
+  // Raw SQL, not Prisma's `distinct`: Prisma's client-side distinct doesn't push
+  // DISTINCT+LIMIT down to Postgres — it pulls back every (id, date) row in the
+  // whole table (~1.5M rows) ordered by date, then dedupes in Node. Measured live
+  // 2026-09-26: 4+ seconds. The equivalent `SELECT DISTINCT date ... LIMIT 2` lets
+  // Postgres short-circuit the backward index scan after finding 2 dates: 3.5ms.
+  const recentDates = await prisma.$queryRaw<{ date: Date }[]>`
+    SELECT DISTINCT date FROM bhavcopy_daily ORDER BY date DESC LIMIT 2
+  `;
   const latestBhav = recentDates[0] ?? null;
   const prevBhav = recentDates[1] ?? null;
 

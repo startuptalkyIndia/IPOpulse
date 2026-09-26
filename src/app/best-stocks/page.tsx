@@ -101,14 +101,6 @@ export default function BestStocksHubPage() {
               </Link>
             );
           })}
-          <Link href="/dividend-yield" className="card hover:border-indigo-300 hover:shadow-sm transition group">
-            <div className="w-10 h-10 rounded-lg text-emerald-600 bg-emerald-50 flex items-center justify-center mb-3">
-              <Coins className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-indigo-700 transition">High Dividend</h3>
-            <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">Top dividend-yielding stocks — PSUs, MNCs, blue chips with consistent payouts.</p>
-            <div className="mt-3 text-xs font-medium text-indigo-600">View list →</div>
-          </Link>
         </div>
       </section>
 
