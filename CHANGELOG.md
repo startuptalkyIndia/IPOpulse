@@ -1,5 +1,23 @@
 # Changelog — IPOpulse
 
+## 2026-10-03 · fix: Claude CLI outage was silently degrading AI content for 4+ days, reported as "success" — plus the actual outage, which needs a founder login
+
+**Ask:** "all good?" — routine check-in, a week after the last session. Decided to actually verify rather than re-state the stale confirmation from last time.
+
+**What I found:** the server's Claude CLI subscription login is broken (`claude -p` → "Not logged in · Please run /login"). `.credentials.json` was last touched 2026-09-26 23:51 IST — right around one of that session's several redeploys that evening, which strongly suggests a `docker compose up -d --build --force-recreate` interrupted an in-flight token refresh (a leftover `.credentials.json.tmp.*` file sitting next to it supports this — an atomic rename that never completed).
+
+**Impact, and why this took real digging to find:**
+- `market_news_brief` fails loudly (correctly marked "failed" in `ingestion_runs`) — 10+ consecutive failures since 2026-09-30. This one was never hidden.
+- `next_day_preview` and `daily_market_summary` are the actually dangerous ones: both fall back to generic templated text ("AI narrative not yet generated...") on AI failure, but **both reported plain "success"** regardless of whether the content was real AI output or the fallback placeholder. Checked their `ingestion_runs.notes` directly: every single run since 2026-09-29/30 — 4+ days, 3x/day cadence for one of them — has been serving templated fallback content to users, completely invisible to any dashboard or digest that only checks job `status`.
+
+**Fixed (code, doesn't require the CLI to be re-authenticated):** both jobs now capture the actual caught AI error and, when they fall back to templated content, return `rowsError: 1` (previously always 0) with the real error message in `notes` — `rowsIn` stays 1 since content IS stored, this isn't a hard failure, but it's no longer indistinguishable from a genuine AI-generated success. `daily-market-summary.ts`'s return type was narrowed to a local `{rowsIn, notes}` literal that didn't even have room for `rowsError` — widened to the shared `IngestionResult` type used by every other job, matching convention.
+
+**NOT fixed, and can't be from here:** the actual CLI re-authentication. `claude /login` is an interactive OAuth flow — I cannot complete it from an SSH session. **Founder action needed:** SSH into the server (`ssh -i ~/.ssh/linkbuilder-deploy.pem ubuntu@13.202.189.233`), `docker exec -it ipopulse-ipopulse-1 claude /login`, complete the browser auth. Worth checking whether this credential state is shared across other TalkyTools project containers on the same box (same founder subscription) — if so, this may not be IPOpulse-isolated.
+
+**Lesson for next time:** a fallback-to-templated-content path is a reasonable design (degraded output beats no output), but it must never report through the SAME success signal as the real thing — this is the third time this exact "falsely successful" pattern has been found and fixed in this project this year (the first two: `super_investor`'s missing-table failures hidden inside a per-row catch, and this file's own earlier stale-skip-check bug from 2026-09-25 that predates today's finding). Any job with a fallback path should get an explicit, loud signal (here: `rowsError`) distinguishing "worked" from "degraded but didn't crash," checked as a matter of routine — not discovered a week later by someone reading `notes` by hand.
+
+**Verified:** `npx tsc --noEmit` — 0 errors. `npx vitest run` — 125/125. Not yet re-tested against a real AI call (can't, until the CLI is re-authenticated) — the fix is structurally correct but its actual trigger path (the `catch` block) won't be exercised live until either the outage resolves (then it never fires) or recurs (then it correctly fires and is now visible).
+
 ## 2026-09-26 (one more) · feat: screener CSV export + saved screens (2 of the 10 competitor gaps found earlier today)
 
 **Ask:** "keep building" — after the competitor gap analysis, picked the two items the research explicitly called "low effort": CSV/column export and saved screens, both missing vs. Screener.in/Finology.

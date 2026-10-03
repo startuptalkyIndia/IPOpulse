@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { canonicalCloseMap } from "@/lib/price";
+import type { IngestionResult } from "../runIngestion";
 
 /**
  * Daily AI-generated market summary. Runs at 16:30 IST after market close.
@@ -16,7 +17,7 @@ import { canonicalCloseMap } from "@/lib/price";
  * (see src/lib/ai-provider-setting.ts) — writes a templated summary using just
  * the structured data, no narrative. Does not fall through to any other provider.
  */
-export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; notes?: string }> {
+export async function generateDailyMarketSummary(): Promise<IngestionResult> {
   // Latest trading day's bhavcopy snapshot
   const latestDate = await prisma.bhavcopyDaily.findFirst({
     orderBy: { date: "desc" },
@@ -66,6 +67,7 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
   let body = "AI narrative not yet generated. Summary updates once Claude is configured.";
   let sentiment: string | null = null;
   let generatedBy: string | null = null;
+  let aiError: string | undefined;
 
   // Uses whichever provider is set in AI Provider Settings — CLI (subscription) or SDK (api_key)
   const { callClaudeJson, claudeAvailable } = await import("@/lib/claude-runner");
@@ -91,6 +93,7 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
       generatedBy = via === "cli" ? "claude-cli" : "claude-api";
     } catch (err) {
       console.error("[daily-summary] AI call failed:", err);
+      aiError = err instanceof Error ? err.message : String(err);
     }
   }
 
@@ -120,5 +123,18 @@ export async function generateDailyMarketSummary(): Promise<{ rowsIn: number; no
     },
   });
 
-  return { rowsIn: 1, notes: `Daily summary for ${latestDate.date.toISOString().slice(0, 10)} (${generatedBy ?? "templated"})` };
+  // Degraded (templated fallback, generatedBy null) must not look identical to
+  // a real success — found 2026-10-03 this had silently served templated
+  // content every run for 4+ days (broken Claude CLI subscription login)
+  // while reporting plain "success". rowsIn stays 1 (content IS stored), but
+  // rowsError flags the degradation and notes carries the actual error.
+  if (!generatedBy) {
+    return {
+      rowsIn: 1,
+      rowsError: 1,
+      notes: `Daily summary for ${latestDate.date.toISOString().slice(0, 10)} fell back to TEMPLATED content — AI call failed: ${aiError?.slice(0, 200) ?? "unknown error"}`,
+    };
+  }
+
+  return { rowsIn: 1, notes: `Daily summary for ${latestDate.date.toISOString().slice(0, 10)} (${generatedBy})` };
 }

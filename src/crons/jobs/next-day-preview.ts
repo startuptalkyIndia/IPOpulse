@@ -172,6 +172,7 @@ export async function generateNextDayPreview(): Promise<IngestionResult> {
     symbol: g.symbol, name: g.name, reason: `Up ${g.pct.toFixed(1)}% today`, todayPct: g.pct,
   }));
   let generatedBy: string | null = null;
+  let aiError: string | undefined;
 
   const { available, via } = await claudeAvailable();
   if (available) {
@@ -226,6 +227,7 @@ Rules:
       body = `Today's top gainer was ${gainers[0]?.name ?? "—"} (+${gainers[0]?.pct.toFixed(1) ?? 0}%). FII net: ₹${fiiNet?.toFixed(0) ?? "—"} Cr. ${topSector} sector led the rally. Watch these names tomorrow.`;
       sentiment = fiiNet != null ? (fiiNet > 0 ? "positive" : fiiNet < -2000 ? "cautious" : "neutral") : "neutral";
       generatedBy = "templated";
+      aiError = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -234,6 +236,22 @@ Rules:
     create: { forDate, headline, body, sentiment, sectorFocus, fiiSignal, stocksToWatch: stocksToWatch as object[], keyEvents: keyEvents as object[], fiiNet, diiNet, generatedBy },
     update: { headline, body, sentiment, sectorFocus, fiiSignal, stocksToWatch: stocksToWatch as object[], keyEvents: keyEvents as object[], fiiNet, diiNet, generatedBy },
   });
+
+  // Degraded (templated fallback) is still stored and still useful to show,
+  // but must NOT look identical to a real success in ingestion_runs — found
+  // 2026-10-03 that this and daily-market-summary.ts had silently served
+  // templated content every single run for 4+ days (a broken Claude CLI
+  // subscription login) while reporting plain "success", with nothing in
+  // rowsError to flag it. rowsIn stays 1 (content IS stored, not a failure),
+  // but rowsError surfaces the degradation to any dashboard/digest that
+  // checks for it, and notes carries the actual caught error.
+  if (generatedBy === "templated") {
+    return {
+      rowsIn: 1,
+      rowsError: 1,
+      notes: `Preview for ${forDate.toISOString().slice(0, 10)} fell back to TEMPLATED content — AI call failed: ${aiError?.slice(0, 200) ?? "unknown error"}`,
+    };
+  }
 
   return { rowsIn: 1, notes: `Preview for ${forDate.toISOString().slice(0, 10)} (${generatedBy})` };
 }
