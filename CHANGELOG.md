@@ -1,5 +1,19 @@
 # Changelog — IPOpulse
 
+## 2026-10-03 (later) · feat: composite Quality Score (Durability/Valuation/Momentum) on ticker + screener
+
+**Ask:** "what to fix/improve/add?" → "build" — went with the top recommendation from the 2026-09-26 competitor gap analysis: a composite quality score (Trendlyne DVM-style), since it's pure computation over data already in the DB (no new source, no ethical/scraping concerns), unlike the GMP-refresh-cadence gap which would need a legitimate automated grey-market-premium data source that doesn't exist as a clean API — flagged that one for a founder conversation instead of building something questionable.
+
+**Built:** `src/lib/quality-score.ts` — `computeQualityScore()`, 3 dimensions (Quality/Durability, Valuation, Momentum, 0-100 each) from ROE/ROCE/debt-to-equity/operating margin/moat/cyclical-peak flags (quality), P/E/P/B/dividend yield (valuation), and RSI/Weinstein stage/1Y return (momentum) — weighted into an overall score + A+ through F letter grade, plus a green/red flag checklist (Trendlyne "Checklist"-style, e.g. "High ROE (22.0%)", "In confirmed downtrend (Stage 4)"). Returns `null` when fewer than 2 of {ROE, P/E, RSI} are present, matching `computeTechnicals`' existing "don't fake a score" convention. `QualityScoreCard.tsx` displays it on the ticker page, styled to match `StockTechnicals`. On the screener, computed server-side — only the final grade+number ship to the client, not 3 more raw fields, since the screener's payload size was exactly what the 2026-09-26 perf work flagged as this page's residual cost; added as a new column, a sort option, and a CSV export column.
+
+**Also closed from the same audit pass (quick fixes, not builds):**
+- **Hyundai Motor India duplicate row** (flagged 2026-09-26, investigated today): confirmed two rows for the same company — one with fabricated Mar-2026 dates, one with the correct real Oct-2024 dates but missing BSE code/lead managers/registrar. Checked `ipo_gmp`/`ipo_subscription`/`alerts` first (zero references to either), then merged in a transaction: corrected dates on the more-complete row, deleted the duplicate. Verified: exactly 1 row now, page still loads.
+- **Steamhouse India SME-vs-mainboard ambiguity** (flagged 2026-09-26 as "needs a human call"): resolved authoritatively by fetching NSE's own official `EQUITY_L.csv` directly — series is `EQ`, confirming our existing `mainboard` classification was correct all along. The earlier flag was a false alarm from a misleading secondary source.
+
+**Verified:** 6 new unit tests (strong/weak/cyclical-peak/missing-data/clamping cases) + visual verification via a seeded local dev DB (both a strong A+/92 profile and a weak F/13 profile with 5 correct red flags) + live production verification on real companies (HDFC Bank: B/58, correctly reflecting its real -24% 1Y return and Stage 4 downtrend; screener sort-by-quality correctly surfaces cheap+high-ROE+uptrending stocks like Bank of Maharashtra at the top). `npx tsc --noEmit` — 0 errors. `npx vitest run` — 131/131.
+
+**Not done — still open from the competitor gap list:** screener custom-formula query builder (biggest remaining gap), DCF/intrinsic-value calculator, momentum/technical scan presets, aggregate MF-holding-trend view, portfolio P&L tracking, GMP refresh cadence (needs a data-sourcing decision first).
+
 ## 2026-10-03 · fix: Claude CLI outage was silently degrading AI content for 4+ days, reported as "success" — plus the actual outage, which needs a founder login
 
 **Ask:** "all good?" — routine check-in, a week after the last session. Decided to actually verify rather than re-state the stale confirmation from last time.
