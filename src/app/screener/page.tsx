@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { canonicalRowsForDate, canonicalCloseMap, canonicalRange, type CanonRow } from "@/lib/price";
 import { ScreenerClient, type ScreenerCompany } from "./ScreenerClient";
+import { computeQualityScore } from "@/lib/quality-score";
 
 export const metadata: Metadata = {
   title: "Stock Screener India — filter 2,500+ stocks by sector, market cap, momentum",
@@ -22,6 +23,7 @@ export default async function ScreenerPage() {
       dividendYield: true, eps: true,
       rsi: true, weinsteinStage: true, ret1m: true, ret1y: true,
       roeConsistentYrs: true, isMoat: true, moatNote: true, cyclicalPeak: true,
+      rocePercent: true, operatingMargin: true, isCyclical: true,
     },
     orderBy: { marketCap: "desc" },
     // No `take` limit — deliberately uncapped. A hard number here (previously 2000,
@@ -94,6 +96,26 @@ export default async function ScreenerPage() {
     const close = today ? Number(today.close) : null;
     const chg1d = close && prevClose ? ((close - prevClose) / prevClose) * 100 : null;
     const year = yearMap.get(c.id);
+    // Computed here, server-side, so only the final grade+number ship to the
+    // client — not the 3 extra raw fields (roce, operating margin, cyclical)
+    // it needs, given the screener's payload size is already the thing the
+    // 2026-09-26 perf work flagged as the residual cost of this page.
+    const quality = computeQualityScore({
+      roePercent: c.roePercent != null ? Number(c.roePercent) : null,
+      rocePercent: c.rocePercent != null ? Number(c.rocePercent) : null,
+      debtToEquity: c.debtToEquity != null ? Number(c.debtToEquity) : null,
+      operatingMargin: c.operatingMargin != null ? Number(c.operatingMargin) : null,
+      roeConsistentYrs: c.roeConsistentYrs,
+      isMoat: c.isMoat,
+      isCyclical: c.isCyclical,
+      cyclicalPeak: c.cyclicalPeak,
+      peRatio: c.peRatio != null ? Number(c.peRatio) : null,
+      pbRatio: c.pbRatio != null ? Number(c.pbRatio) : null,
+      dividendYield: c.dividendYield != null ? Number(c.dividendYield) : null,
+      rsi: c.rsi != null ? Number(c.rsi) : null,
+      weinsteinStage: c.weinsteinStage,
+      ret1y: c.ret1y != null ? Number(c.ret1y) : null,
+    });
     return {
       slug: c.slug, name: c.name,
       symbol: c.nseSymbol ?? c.bseCode ?? null,
@@ -121,6 +143,8 @@ export default async function ScreenerPage() {
       isMoat: c.isMoat ?? false,
       moatNote: c.moatNote ?? null,
       cyclicalPeak: c.cyclicalPeak ?? false,
+      qualityGrade: quality?.grade ?? null,
+      qualityOverall: quality?.overall ?? null,
     };
   });
 

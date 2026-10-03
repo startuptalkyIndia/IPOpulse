@@ -34,6 +34,8 @@ export interface ScreenerCompany {
   isMoat?: boolean;
   moatNote?: string | null;
   cyclicalPeak?: boolean;
+  qualityGrade?: string | null;
+  qualityOverall?: number | null;
 }
 
 const MCAP_BANDS: Array<{ key: string; label: string; min: number | null; max: number | null }> = [
@@ -50,7 +52,16 @@ const TYPE_OPTIONS = [
   { key: "sme", label: "SME only" },
 ];
 
-type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol" | "near52wLow" | "near52wHigh";
+const GRADE_BADGE_COLORS: Record<string, string> = {
+  "A+": "bg-emerald-100 text-emerald-700 border-emerald-300",
+  "A": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "B": "bg-blue-50 text-blue-700 border-blue-200",
+  "C": "bg-amber-50 text-amber-700 border-amber-200",
+  "D": "bg-orange-50 text-orange-700 border-orange-200",
+  "F": "bg-red-50 text-red-700 border-red-200",
+};
+
+type SortKey = "marketCap" | "pe" | "roe" | "divYield" | "chg1d" | "chg1d_asc" | "vol" | "near52wLow" | "near52wHigh" | "quality";
 
 const SAVED_SCREENS_KEY = "ipopulse.screener.savedScreens.v1";
 
@@ -201,6 +212,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         if (sortBy === "chg1d") return c.chg1d ?? -999;
         if (sortBy === "chg1d_asc") return c.chg1d ?? 999;
         if (sortBy === "vol") return c.volume ?? -1;
+        if (sortBy === "quality") return c.qualityOverall ?? -1;
         // 52W proximity: (ltp - low52w) / (high52w - low52w), 0=at low, 1=at high
         if (sortBy === "near52wLow" || sortBy === "near52wHigh") {
           if (!c.ltp || !c.high52w || !c.low52w || c.high52w === c.low52w) return 0.5;
@@ -224,6 +236,8 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   const CSV_COLUMNS: Array<{ label: string; get: (c: ScreenerCompany) => string | number }> = [
     { label: "Company", get: (c) => c.name },
     { label: "Symbol", get: (c) => c.symbol ?? "" },
+    { label: "Quality Grade", get: (c) => c.qualityGrade ?? "" },
+    { label: "Quality Score", get: (c) => c.qualityOverall ?? "" },
     { label: "Sector", get: (c) => c.sector ?? "" },
     { label: "Market Cap (Cr)", get: (c) => c.marketCapCr ?? "" },
     { label: "LTP", get: (c) => c.ltp ?? "" },
@@ -504,6 +518,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             <option value="roe">ROE % ↓</option>
             <option value="divYield">Dividend yield ↓</option>
             <option value="vol">Volume ↓</option>
+            <option value="quality">Quality Score ↓</option>
             </select>
           </div>
         </div>
@@ -515,6 +530,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">
                 <th className="px-3 py-3">Company</th>
+                <th className="px-3 py-3 text-center" title="Composite Durability/Valuation/Momentum score — objective math, not advice">Quality</th>
                 <th className="px-3 py-3">Sector</th>
                 <th className="px-3 py-3 text-right">Market cap</th>
                 <th className="px-3 py-3 text-right">LTP</th>
@@ -541,6 +557,16 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
                       {(c.roeConsistentYrs ?? 0) >= 4 && <span title={`ROE ≥15% for ${c.roeConsistentYrs} years — consistent compounder`} className="text-emerald-600 text-xs">✓</span>}
                     </div>
                     <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{c.symbol ?? "—"}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-center">
+                    {c.qualityGrade ? (
+                      <span
+                        title={`Quality Score: ${c.qualityOverall}/100`}
+                        className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded border ${GRADE_BADGE_COLORS[c.qualityGrade] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
+                      >
+                        {c.qualityGrade}
+                      </span>
+                    ) : <span className="text-gray-300 text-xs">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-gray-600">{c.sector ?? "—"}</td>
                   <td className="px-3 py-2.5 text-sm text-right tabular-nums text-gray-900">

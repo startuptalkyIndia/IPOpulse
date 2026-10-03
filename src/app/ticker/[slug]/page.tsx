@@ -16,6 +16,7 @@ import { PriceChart } from "@/components/PriceChartLoader";
 import { CompanyFinancials } from "@/components/CompanyFinancialsLoader";
 import { StockTechnicals } from "@/components/StockTechnicals";
 import { QualitySignals } from "@/components/QualitySignals";
+import { QualityScoreCard } from "@/components/QualityScoreCard";
 import { Sparkline } from "@/components/Sparkline";
 import { StatTile } from "@/components/ui/StatTile";
 import { PriceChange } from "@/components/ui/PriceChange";
@@ -23,6 +24,7 @@ import { getCompanyDescription } from "@/lib/company-descriptions";
 import { getMoat } from "@/lib/moats";
 import { computeTechnicals } from "@/lib/technicals";
 import { computeQualitySignals, readCyclical } from "@/lib/quality-signals";
+import { computeQualityScore } from "@/lib/quality-score";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -103,6 +105,25 @@ export default async function CompanyPage({ params }: Props) {
     : null;
 
   const moat = getMoat(company.nseSymbol);
+
+  // ─── Composite Quality Score (Durability/Valuation/Momentum) — pure math from
+  // fields already on `company` (unselected findUnique already has everything).
+  const qualityScore = computeQualityScore({
+    roePercent: company.roePercent != null ? Number(company.roePercent) : null,
+    rocePercent: company.rocePercent != null ? Number(company.rocePercent) : null,
+    debtToEquity: company.debtToEquity != null ? Number(company.debtToEquity) : null,
+    operatingMargin: company.operatingMargin != null ? Number(company.operatingMargin) : null,
+    roeConsistentYrs: company.roeConsistentYrs,
+    isMoat: company.isMoat,
+    isCyclical: company.isCyclical,
+    cyclicalPeak: company.cyclicalPeak,
+    peRatio: company.peRatio != null ? Number(company.peRatio) : null,
+    pbRatio: company.pbRatio != null ? Number(company.pbRatio) : null,
+    dividendYield: company.dividendYield != null ? Number(company.dividendYield) : null,
+    rsi: company.rsi != null ? Number(company.rsi) : null,
+    weinsteinStage: company.weinsteinStage,
+    ret1y: company.ret1y != null ? Number(company.ret1y) : null,
+  });
 
   // ─── Quality signals (multi-year) — annualFinancials is ascending, reverse for newest-first ──
   const annualNewestFirst = [...annualFinancials].reverse();
@@ -378,6 +399,9 @@ export default async function CompanyPage({ params }: Props) {
       ) : company.bseCode ? (
         <PriceChart symbol={`${company.bseCode}.BO`} name={company.name} />
       ) : null}
+
+      {/* Composite Quality Score — Durability/Valuation/Momentum, Trendlyne DVM-style */}
+      {qualityScore && <QualityScoreCard q={qualityScore} />}
 
       {/* Technical Indicators — objective math from price history */}
       {technicals && <StockTechnicals t={technicals} />}
