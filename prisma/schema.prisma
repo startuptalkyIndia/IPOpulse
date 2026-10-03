@@ -509,6 +509,16 @@ model CorporateAction {
   purpose     String?   @db.Text
   source      String    @default("bse") // bse | nse
   sourceId    String?   @map("source_id") // exchange's own ID for dedupe
+  // Multiply a pre-exDate raw price by this to get its today-comparable
+  // equivalent (e.g. a 1:1 bonus doubles share count, so factor=0.5). Only
+  // set for actionType in {bonus, split} -- the only events with a clean,
+  // mechanical price-adjustment ratio. Added 2026-10-03: found live that
+  // bhavcopy_daily stores raw UNADJUSTED prices, so any 52-week-range/
+  // return/technicals calculation spanning one of these events was
+  // silently corrupted (e.g. IRB Infrastructure showing "1Y Return -59.9%"
+  // on the stat tile vs. the Yahoo-sourced chart's correct -19.16% on the
+  // same page, because of its untracked 30-Mar-2026 1:1 bonus).
+  adjustmentFactor Decimal? @map("adjustment_factor") @db.Decimal(10, 6)
   createdAt   DateTime  @default(now())
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

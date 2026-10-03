@@ -15,6 +15,7 @@ import { ingestUsIpos } from "./jobs/us-ipos";
 import { updateUsAdrs } from "./jobs/us-adrs";
 import { ingestYahooPrices } from "./jobs/yahoo-prices";
 import { ingestBulkBlockDeals } from "./jobs/nse-bulk-block";
+import { ingestNseCorporateActions } from "./jobs/nse-corporate-actions";
 import { ingestInsiderTrades } from "./jobs/nse-insider";
 import { ingestSuperInvestorHoldings } from "./jobs/super-investor";
 import { ingestNseCompanyMaster } from "./jobs/nse-company-master";
@@ -245,6 +246,17 @@ export function startScheduler() {
     console.log(`[cron nse_bulk_block] ${result.ok ? "ok" : "failed"} rows=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
   }, { timezone: "Asia/Kolkata" });
 
+  // NSE corporate actions (bonus/split only) — daily 4:00 AM IST. Backfills
+  // the gap found 2026-10-03: our BSE-sourced corporate_actions table missed
+  // real bonus/split events entirely, silently corrupting every return/
+  // 52-week-range/technicals calculation that spans one (see price.ts's
+  // adjustment logic). 150/run cap — trigger manually from /sup-min/ingestion
+  // to work through the ~2,600-company backlog faster than daily alone would.
+  cron.schedule("0 4 * * *", async () => {
+    const result = await runIngestion("nse_corporate_actions", ingestNseCorporateActions);
+    console.log(`[cron nse_corporate_actions] ${result.ok ? "ok" : "failed"} rowsIn=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+  }, { timezone: "Asia/Kolkata" });
+
   // Insider trades — daily at 6pm IST (after bulk/block deals)
   cron.schedule("0 18 * * 1-5", async () => {
     const result = await runIngestion("nse_insider", ingestInsiderTrades);
@@ -318,7 +330,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_ipo_static_details(daily 3:30AM), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_ipo_static_details(daily 3:30AM), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_corporate_actions(daily 4AM), nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
@@ -340,6 +352,7 @@ export const availableJobs: Record<string, () => Promise<import("./runIngestion"
   kite_live: ingestKiteLivePrices,
   fyers_live: ingestFyersLivePrices,
   nse_bulk_block: ingestBulkBlockDeals,
+  nse_corporate_actions: ingestNseCorporateActions,
   nse_insider: ingestInsiderTrades,
   super_investor: ingestSuperInvestorHoldings,
   screener_fundamentals: ingestScreenerFundamentals,

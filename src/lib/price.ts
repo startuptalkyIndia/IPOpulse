@@ -192,9 +192,66 @@ export async function canonicalCloseMap(date: Date, companyIds?: number[]): Prom
   return new Map(rows.map((r) => [r.companyId, r.close]));
 }
 
+// ─── Corporate-action price adjustment ──────────────────────────────────────
+// Found live 2026-10-03: bhavcopy_daily stores raw UNADJUSTED prices, so any
+// calculation comparing prices ACROSS dates (returns, technicals, 52-week
+// range) silently corrupts for a company with a bonus/split inside the
+// window — e.g. IRB Infrastructure's "1Y Return" stat tile showed -59.9%
+// against the Yahoo-sourced chart's correct -19.16% on the same page,
+// because of an untracked 30-Mar-2026 1:1 bonus. A single-date read (today's
+// LTP, yesterday's close for a 1D% calc) is NOT adjusted here — that's a
+// real point-in-time price, and a naive "-50% today" on the literal ex-date
+// is standard behavior even on Yahoo/Google Finance, not a bug.
+//
+// adjustmentFactor on a corporate_actions row (bonus/split only — see
+// nse-corporate-actions.ts) means: multiply a price from BEFORE that exDate
+// by this factor to make it comparable to a price from ON/AFTER that exDate.
+// So a row dated `d` needs multiplying by the PRODUCT of every factor whose
+// exDate is strictly after `d` (each such event sits between `d` and today).
+
+export interface BonusSplitAction {
+  exDate: Date;
+  factor: number;
+}
+
+async function getBonusSplitActions(companyIds: number[]): Promise<Map<number, BonusSplitAction[]>> {
+  const out = new Map<number, BonusSplitAction[]>();
+  if (!companyIds.length) return out;
+  const rows = await prisma.corporateAction.findMany({
+    where: { companyId: { in: companyIds }, actionType: { in: ["bonus", "split"] }, adjustmentFactor: { not: null } },
+    select: { companyId: true, exDate: true, adjustmentFactor: true },
+    orderBy: { exDate: "asc" },
+  });
+  for (const r of rows) {
+    if (!r.exDate || r.adjustmentFactor == null) continue;
+    const arr = out.get(r.companyId) ?? [];
+    arr.push({ exDate: r.exDate, factor: toNum(r.adjustmentFactor) });
+    out.set(r.companyId, arr);
+  }
+  return out;
+}
+
+/** Product of every action's factor whose exDate is strictly after `asOf`. */
+export function cumulativeFactorAfter(actions: BonusSplitAction[], asOf: Date): number {
+  let factor = 1;
+  for (const a of actions) {
+    if (a.exDate.getTime() > asOf.getTime()) factor *= a.factor;
+  }
+  return factor;
+}
+
+function adjustRow(row: CanonRow, actions: BonusSplitAction[] | undefined): CanonRow {
+  if (!actions || actions.length === 0) return row;
+  const factor = cumulativeFactorAfter(actions, row.date);
+  if (factor === 1) return row;
+  return { ...row, close: row.close * factor, open: row.open * factor, high: row.high * factor, low: row.low * factor };
+}
+
 /**
  * Canonical time series per company from `fromDate` onward — ONE row per (company, date),
  * ascending by date. Use for technicals, sparklines, and 52-week ranges.
+ * Adjusted for any bonus/split inside the range so cross-date comparisons
+ * (returns, moving averages, RSI) aren't corrupted by a raw share-count jump.
  */
 export async function canonicalSeries(companyIds: number[], fromDate: Date): Promise<Map<number, CanonRow[]>> {
   const out = new Map<number, CanonRow[]>();
@@ -205,8 +262,10 @@ export async function canonicalSeries(companyIds: number[], fromDate: Date): Pro
     WHERE company_id IN (${Prisma.join(companyIds)}) AND date >= ${fromDate} AND source != 'seed'
     ORDER BY company_id, date, ${SRC_RANK}
   `);
+  const actionsByCompany = await getBonusSplitActions(companyIds);
   for (const raw of rows) {
-    const row = mapRow(raw);
+    const mapped = mapRow(raw);
+    const row = adjustRow(mapped, actionsByCompany.get(mapped.companyId));
     const arr = out.get(row.companyId) ?? [];
     arr.push(row);
     out.set(row.companyId, arr);
@@ -214,7 +273,13 @@ export async function canonicalSeries(companyIds: number[], fromDate: Date): Pro
   return out;
 }
 
-/** Canonical 52-week (or arbitrary window) high/low per company. */
+/**
+ * Canonical 52-week (or arbitrary window) high/low per company.
+ * The cached bulk query below reads RAW prices (fast, but wrong for a company
+ * with a bonus/split inside the window) — corrected afterward ONLY for
+ * companies that actually have one in range, so the hot path for the other
+ * ~2,600 companies stays exactly as fast as before this fix.
+ */
 export async function canonicalRange(
   companyIds: number[],
   fromDate: Date,
@@ -225,6 +290,26 @@ export async function canonicalRange(
   const idsCsv = [...companyIds].sort((a, b) => a - b).join(",");
   const rows = await cachedRange(fromISO, idsCsv);
   for (const r of rows) out.set(r.companyId, { min: r.min, max: r.max });
+
+  const affected = await prisma.corporateAction.findMany({
+    where: {
+      companyId: { in: companyIds },
+      actionType: { in: ["bonus", "split"] },
+      adjustmentFactor: { not: null },
+      exDate: { gte: fromDate },
+    },
+    select: { companyId: true },
+    distinct: ["companyId"],
+  });
+  if (affected.length > 0) {
+    const adjustedSeries = await canonicalSeries(affected.map((a) => a.companyId), fromDate);
+    for (const [companyId, series] of adjustedSeries) {
+      if (series.length === 0) continue;
+      const min = Math.min(...series.map((r) => r.low));
+      const max = Math.max(...series.map((r) => r.high));
+      out.set(companyId, { min, max });
+    }
+  }
   return out;
 }
 
@@ -266,16 +351,20 @@ const cachedRange = unstable_cache(
 /** The single canonical row for one company on ITS OWN latest available day. */
 /**
  * Canonical close for a company on the FIRST trading day on/after `target`
- * (best source wins). Used for post-listing interval returns (1M/3M/6M/1Y).
+ * (best source wins). Used for post-listing interval returns (1M/3M/6M/1Y) —
+ * a cross-time comparison, so adjusted for any bonus/split since that date.
  */
 export async function canonicalCloseOnOrAfter(companyId: number, target: Date): Promise<number | null> {
-  const rows = await prisma.$queryRaw<Array<{ close: unknown }>>(Prisma.sql`
-    SELECT DISTINCT ON (company_id) close
+  const rows = await prisma.$queryRaw<Array<{ date: Date; close: unknown }>>(Prisma.sql`
+    SELECT DISTINCT ON (company_id) date, close
     FROM bhavcopy_daily
     WHERE company_id = ${companyId} AND date >= ${target} AND source != 'seed'
     ORDER BY company_id, date ASC, ${SRC_RANK}
   `);
-  return rows.length ? toNum(rows[0].close) : null;
+  if (!rows.length) return null;
+  const actions = (await getBonusSplitActions([companyId])).get(companyId);
+  const factor = actions ? cumulativeFactorAfter(actions, rows[0].date) : 1;
+  return toNum(rows[0].close) * factor;
 }
 
 export async function latestCanonicalRow(companyId: number): Promise<CanonRow | null> {
