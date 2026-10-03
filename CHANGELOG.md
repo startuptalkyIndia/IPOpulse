@@ -1,5 +1,24 @@
 # Changelog — IPOpulse
 
+## 2026-10-03 (latest) · fix verified live: corporate-action price adjustment + screener custom filter builder (backfilled, docs backfilled)
+
+**Context:** the previous two entries below (`2091eb9` price-adjustment fix, `a77cbde` screener custom filter builder) were committed and pushed earlier but never got a CHANGELOG/COMMS entry or live verification — this session closed that gap.
+
+**Live verification of the price-adjustment fix, all 3 originally-flagged cases:**
+| Company | Confirmed event (NSE connector) | 52W Range | 1Y Return (stat tile = technicals card) |
+|---|---|---|---|
+| Kotak Mahindra Bank | 5:1 split, 2026-01-14 | ₹453 / ₹346 | +5.0% = +5.0% |
+| IRB Infrastructure | 10→1 split (2023) + 1:1 bonus (2026-03-30) | ₹24 / ₹17 | -19.8% = -19.8% (matches Yahoo's -19.16%, the original bug's own reference point) |
+| LIC | 1:1 bonus, 2026-05-29 | ₹468 / ₹361 | -12.4% = -12.4% |
+
+All three previously showed internally-contradictory numbers (e.g. IRB's own stat tile vs its own chart disagreeing by 40+ points) or raw unadjusted prices leaking into the 52-week range. Now self-consistent and externally plausible on every case checked.
+
+**Backfill progress:** `nse_corporate_actions` cron (150 companies/run, by market-cap desc then least-recently-checked) run manually for several rounds this session — Kotak Mahindra Bank's split was caught automatically in round 1 (150 companies), IRB and LIC were inserted directly from NSE-connector-confirmed data since neither had been reached yet by market-cap ordering (both verified byte-for-byte against the connector's `get_corporate_actions` output before insertion, matching the exact parser logic already covered by `tests/unit/nse-corporate-actions.spec.ts`). Remaining ~2,400 companies continue via the existing daily 4 AM schedule — this is a live, ongoing backfill, not a one-time migration, so later sessions will keep finding (and auto-fixing) more cases as the cron reaches them.
+
+**Also ran `compute_signals` manually** (2,602/2,602 companies, 0 errors) to refresh every company's *stored* `ret1y`/`ret1m`/`ret6m` fields — the Quality Score's Momentum dimension reads these stored fields rather than computing live, so without this step a company could show a correct live 1Y-return stat tile but a stale, pre-fix Momentum score until the next nightly 11:30 PM run.
+
+**Not yet investigated:** PolicyBazaar's separate ~-36% single-day drop (confirmed via the NSE connector to NOT be a corporate action — a different, unrelated bug).
+
 ## 2026-10-03 (later) · feat: composite Quality Score (Durability/Valuation/Momentum) on ticker + screener
 
 **Ask:** "what to fix/improve/add?" → "build" — went with the top recommendation from the 2026-09-26 competitor gap analysis: a composite quality score (Trendlyne DVM-style), since it's pure computation over data already in the DB (no new source, no ethical/scraping concerns), unlike the GMP-refresh-cadence gap which would need a legitimate automated grey-market-premium data source that doesn't exist as a clean API — flagged that one for a founder conversation instead of building something questionable.

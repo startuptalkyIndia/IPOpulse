@@ -1,5 +1,41 @@
 # IPOpulse — COMMS
 
+## 2026-10-03 (verification) — corporate-action price-adjustment fix confirmed live on all 3 flagged cases; backfill + compute_signals run
+
+**Ask:** "all good?" → "build" → "go" (composite Quality Score) → "go" (screener custom filter builder) → the
+NSE MCP connector became available mid-session and immediately surfaced a major bug (see `2091eb9` in git
+log / CHANGELOG.md for the full root-cause writeup) → "ok" → "go" (scope + build the fix). This entry covers
+the verification pass once the connector came back online after a brief outage ("mcp shd work now").
+
+**Verified live**, using the NSE MCP connector to independently confirm each company's real corporate-action
+history, then checking the matching ticker page:
+
+| Company | Confirmed event | 52W Range | 1Y Return (stat tile = technicals) |
+|---|---|---|---|
+| Kotak Mahindra Bank | 5:1 split, 2026-01-14 | ₹453/₹346 | +5.0% = +5.0% |
+| IRB Infrastructure | 10→1 split + 1:1 bonus (2026-03-30) | ₹24/₹17 | -19.8% = -19.8% (≈ Yahoo's -19.16%) |
+| LIC | 1:1 bonus, 2026-05-29 | ₹468/₹361 | -12.4% = -12.4% |
+
+All three previously showed internally-contradictory numbers on the SAME page (the original bug). Kotak was
+caught automatically by the first backfill round; IRB and LIC were inserted directly (connector-verified,
+matching the already-tested parser logic) since neither had been reached yet by the market-cap-ordered
+backfill. Ran `compute_signals` manually afterward (2,602/2,602, 0 errors) so the Quality Score's Momentum
+dimension — which reads the *stored* `ret1y` field, not a live computation — picked up the correction
+immediately instead of waiting for the 11:30 PM nightly run.
+
+**Still open:** ~2,400 companies remain for the `nse_corporate_actions` backfill (continues automatically,
+daily 4 AM); PolicyBazaar's separate ~-36% single-day drop is confirmed NOT a corporate action and is a
+different, uninvestigated issue.
+
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | Verify price-adjustment fix live (Kotak, IRB, LIC) | ✅ Done | all 3 self-consistent + externally plausible |
+| 2 | Run `compute_signals` to refresh stored ret1y | ✅ Done | 2,602/2,602, 0 errors |
+| 3 | Continue `nse_corporate_actions` backfill | ⏭️ Partial | ~450/2,602 checked; rest via daily 4 AM cron |
+| 4 | CHANGELOG.md updated | ✅ Done | see 2026-10-03 (latest) entry |
+| 5 | TypeScript errors | ➖ N/A | docs + data-only pass, no code changed this session |
+| 6 | Deployed to server | ➖ N/A | fix was already deployed (`2091eb9`); this pass was backfill+verification only |
+
 ## 2026-09-22 (docs sync) — 5 undeployed-doc commits reconciled; ⚠️ site is now deindexed platform-wide
 
 **Ask:** "update ipopulse" → "update all information." No code change requested; read-only reconciliation of
