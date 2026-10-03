@@ -52,6 +52,48 @@ const TYPE_OPTIONS = [
   { key: "sme", label: "SME only" },
 ];
 
+// Custom filter builder — closes the "only 7 fixed filter fields" competitor
+// gap (vs. Screener.in's full custom-formula query language) WITHOUT the
+// injection/sandboxing risk of evaluating user-written formulas: no eval(),
+// no arbitrary expression language — just pick a metric, an operator, a
+// value, and stack as many as you want, ANDed together. Covers every numeric
+// field already on ScreenerCompany, including fields the 4 fixed Fundamental
+// inputs never exposed (EPS, RSI, 1M/1Y return, Quality Score, volume, etc.)
+const METRICS: Array<{ key: string; label: string; get: (c: ScreenerCompany) => number | null }> = [
+  { key: "marketCapCr", label: "Market Cap (₹Cr)", get: (c) => c.marketCapCr ?? null },
+  { key: "peRatio", label: "P/E Ratio", get: (c) => c.peRatio ?? null },
+  { key: "pbRatio", label: "P/B Ratio", get: (c) => c.pbRatio ?? null },
+  { key: "roePercent", label: "ROE %", get: (c) => c.roePercent ?? null },
+  { key: "debtToEquity", label: "Debt/Equity", get: (c) => c.debtToEquity ?? null },
+  { key: "dividendYield", label: "Dividend Yield %", get: (c) => c.dividendYield ?? null },
+  { key: "eps", label: "EPS", get: (c) => c.eps ?? null },
+  { key: "revYoy", label: "Revenue YoY %", get: (c) => c.revYoy ?? null },
+  { key: "profitYoy", label: "Profit YoY %", get: (c) => c.profitYoy ?? null },
+  { key: "rsi", label: "RSI (14)", get: (c) => c.rsi ?? null },
+  { key: "chg1d", label: "1D Change %", get: (c) => c.chg1d ?? null },
+  { key: "ret1m", label: "1M Return %", get: (c) => c.ret1m ?? null },
+  { key: "ret1y", label: "1Y Return %", get: (c) => c.ret1y ?? null },
+  { key: "roeConsistentYrs", label: "ROE Consistent Years", get: (c) => c.roeConsistentYrs ?? null },
+  { key: "qualityOverall", label: "Quality Score", get: (c) => c.qualityOverall ?? null },
+  { key: "volume", label: "Volume", get: (c) => c.volume ?? null },
+];
+
+const OPERATORS: Array<{ key: string; label: string; test: (a: number, b: number) => boolean }> = [
+  { key: "gt", label: ">", test: (a, b) => a > b },
+  { key: "gte", label: "≥", test: (a, b) => a >= b },
+  { key: "lt", label: "<", test: (a, b) => a < b },
+  { key: "lte", label: "≤", test: (a, b) => a <= b },
+  { key: "eq", label: "=", test: (a, b) => a === b },
+  { key: "neq", label: "≠", test: (a, b) => a !== b },
+];
+
+interface CustomFilter {
+  id: string;
+  metric: string;
+  op: string;
+  value: string;
+}
+
 const GRADE_BADGE_COLORS: Record<string, string> = {
   "A+": "bg-emerald-100 text-emerald-700 border-emerald-300",
   "A": "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -81,6 +123,7 @@ interface SavedScreen {
     uptrendOnly: boolean;
     compounderOnly: boolean;
     sortBy: SortKey;
+    customFilters: CustomFilter[];
   };
 }
 
@@ -104,6 +147,21 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   const [compounderOnly, setCompounderOnly] = useState(false); // ROE >=15% for 4+ yrs
 
   const [sortBy, setSortBy] = useState<SortKey>("marketCap");
+
+  // Custom filter builder — see METRICS/OPERATORS above
+  const [customFilters, setCustomFilters] = useState<CustomFilter[]>([]);
+  const [showCustomFilters, setShowCustomFilters] = useState(false);
+
+  function addCustomFilter() {
+    setCustomFilters((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, metric: METRICS[0].key, op: "gt", value: "" }]);
+    setShowCustomFilters(true);
+  }
+  function updateCustomFilter(id: string, patch: Partial<CustomFilter>) {
+    setCustomFilters((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  }
+  function removeCustomFilter(id: string) {
+    setCustomFilters((prev) => prev.filter((f) => f.id !== id));
+  }
 
   // Saved screens — per-browser convenience (localStorage), not account state:
   // a filter combo someone wants to revisit, same idea as Screener.in's saved
@@ -132,7 +190,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   }
 
   function currentFilters(): SavedScreen["filters"] {
-    return { search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy };
+    return { search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy, customFilters };
   }
 
   function saveCurrentScreen() {
@@ -151,7 +209,9 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     setRequireFundamentals(f.requireFundamentals);
     setMoatOnly(f.moatOnly); setUptrendOnly(f.uptrendOnly); setCompounderOnly(f.compounderOnly);
     setSortBy(f.sortBy);
+    setCustomFilters(f.customFilters ?? []); // ?? [] guards screens saved before this field existed
     setShowFundamentals(true);
+    if ((f.customFilters ?? []).length > 0) setShowCustomFilters(true);
   }
 
   function deleteScreen(name: string) {
@@ -199,6 +259,18 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         if (moatOnly && !c.isMoat) return false;
         if (uptrendOnly && c.weinsteinStage !== 2) return false;
         if (compounderOnly && (c.roeConsistentYrs ?? 0) < 4) return false;
+        // Custom filters — AND'd together; an incomplete row (no value entered
+        // yet) is ignored rather than excluding every company.
+        for (const cf of customFilters) {
+          if (cf.value.trim() === "") continue;
+          const metric = METRICS.find((m) => m.key === cf.metric);
+          const operator = OPERATORS.find((o) => o.key === cf.op);
+          if (!metric || !operator) continue;
+          const actual = metric.get(c);
+          const target = Number(cf.value);
+          if (actual == null || Number.isNaN(target)) return false;
+          if (!operator.test(actual, target)) return false;
+        }
         return true;
       });
 
@@ -225,7 +297,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
       return (sortBy === "pe" || sortBy === "chg1d_asc" || sortBy === "near52wLow") ? av - bv : bv - av;
     };
     return result.sort(compare);
-  }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy]);
+  }, [seed, search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy, customFilters]);
 
   // Table renders at most 200 rows for performance; CSV export uses the full
   // filtered set (filteredAll) below it, since a serious screener user filtering
@@ -284,6 +356,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     setDivMin("");
     setRequireFundamentals(false);
     setSortBy("marketCap");
+    setCustomFilters([]);
   }
 
   function applyPreset(name: string) {
@@ -487,6 +560,61 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
             </label>
           </div>
         ) : null}
+
+        {/* Custom filter builder — pick any metric + operator + value, stack as
+            many as needed. Not a formula language (no eval, no cross-metric
+            math) — deliberately scoped to avoid evaluating arbitrary
+            user-written expressions, while still covering every numeric field
+            the 4 fixed Fundamental inputs above don't (EPS, RSI, returns,
+            Quality Score, volume, ...). */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <button
+              onClick={() => setShowCustomFilters((s) => !s)}
+              className={`text-xs px-2 py-1 rounded-md inline-flex items-center gap-1 ${showCustomFilters ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700"}`}
+            >
+              <Sliders className="w-3 h-3" /> Custom Filters{customFilters.length > 0 ? ` (${customFilters.length})` : ""}
+            </button>
+            <span className="text-[11px] text-gray-500">— build your own: any metric, any condition, as many as you want</span>
+          </div>
+
+          {showCustomFilters ? (
+            <div className="space-y-2">
+              {customFilters.map((cf) => (
+                <div key={cf.id} className="flex items-center gap-2">
+                  <select
+                    className="input text-xs py-1.5 flex-1"
+                    value={cf.metric}
+                    onChange={(e) => updateCustomFilter(cf.id, { metric: e.target.value })}
+                  >
+                    {METRICS.map((m) => <option key={m.key} value={m.key}>{m.label}</option>)}
+                  </select>
+                  <select
+                    className="input text-xs py-1.5 w-16"
+                    value={cf.op}
+                    onChange={(e) => updateCustomFilter(cf.id, { op: e.target.value })}
+                  >
+                    {OPERATORS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+                  </select>
+                  <input
+                    type="number"
+                    className="input text-xs py-1.5 w-28"
+                    placeholder="Value"
+                    value={cf.value}
+                    onChange={(e) => updateCustomFilter(cf.id, { value: e.target.value })}
+                    step="any"
+                  />
+                  <button onClick={() => removeCustomFilter(cf.id)} className="text-gray-400 hover:text-red-600 flex-shrink-0" aria-label="Remove filter">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button onClick={addCustomFilter} className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                + Add filter
+              </button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex items-baseline justify-between flex-wrap gap-2">
