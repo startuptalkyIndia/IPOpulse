@@ -44,56 +44,13 @@ Mark completed tasks. Note what you built. Log any new issues found.
 
 ---
 
-## ✅ MANDATORY — End Every Session With a Status Table
-
-Every agent MUST end their session with this table in COMMS.md and final message:
-
-```
-| # | Task | Status | Notes |
-|---|------|--------|-------|
-| 1 | What you built/fixed | ✅ Done / ❌ Broken / ⏭️ Skipped | detail |
-| 2 | TypeScript errors | ✅ 0 errors | or 🔴 N errors |
-| 3 | Deployed to server | ✅ HTTP 200 | or ❌ not deployed |
-```
-Never write "done" without the table. Every attempted task = one row.
-
-
-# PRODUCTION SYNC PROTOCOL
-> Every agent working on this project MUST follow this checklist before considering any task done.
-## ⚠️ DEPLOY RULE — READ BEFORE EVERY DEPLOY
-**Only use `--build` if you changed code.**
-
-| Situation | Command |
-|---|---|
-| Code changed (new feature, bug fix) | `docker compose up -d --build` |
-| Config change only (.env, docker-compose.yml) | `docker compose up -d` |
-| Git pull only (catching up, no local changes) | `docker compose up -d` |
-| Container crashed, restart it | `docker compose up -d` |
-
-**Never run `--build` just because you pulled new commits from git.**
-Check: `git diff HEAD~1 --name-only` — if only non-code files changed, skip `--build`.
-Unnecessary builds waste 5-10 min CPU + can crash the server if multiple run simultaneously.
-
-
-
-## After Every Code Change
-- [ ] Run `git add` + `git commit` + `git push origin main`
-- [ ] No hardcoded passwords, secrets, or API keys in source code
-- [ ] No sensitive data in console.log statements
-
-## Before Every Deploy
-- [ ] `git pull origin main` on server
-- [ ] `docker compose up -d --build --force-recreate`
-- [ ] Verify HTTP 200: `curl -s -o /dev/null -w '%{http_code}' http://localhost:3065/`
-- [ ] Check logs: `docker compose logs app --tail 20`
-
-## Security Checklist (check on every PR)
-- [ ] Security headers in next.config.ts (CSP, HSTS, X-Frame-Options)
-- [ ] All API routes have auth guards
-- [ ] No hardcoded secrets in source code
-- [ ] Rate limiting on auth endpoints
-- [ ] Input validation with Zod on all user-facing endpoints
-- [ ] /sup-min and /admin routes protected at middleware level
+## Standing rules (digest — full text in `_shared/PROJECT_STANDARDS.md`; READ IT before any deploy, schema change, security review, or when closing a task)
+- **Never deploy without an explicit "go".** Deploys are sequential, via `bash /home/ubuntu/scripts/safe-deploy.sh FOLDER PORT`; use `--build` only when code changed.
+- **Session start:** read COMMS.md, then TASKS.md; fix anything broken before new features. Health-check the port in the Identity block.
+- **Before saying "done":** `npx tsc --noEmit` = 0 errors, tested end to end, no `console.log` with user data, CHANGELOG.md + COMMS.md updated.
+- **End every session** with the status table (Task | Status | Notes) in COMMS.md and in the final message.
+- **Security:** auth check on every `/api` route, rate-limit auth endpoints, Zod on user input, no hardcoded secrets, `/sup-min` guarded in middleware.
+- **Database:** additive changes only, back up first, soft delete (`deletedAt`), never reset prod.
 
 ## Staying In Sync — Full 12-Point Checklist
 1. Code: local changes committed and pushed to GitHub main
@@ -108,15 +65,6 @@ Unnecessary builds waste 5-10 min CPU + can crash the server if multiple run sim
 10. Domain/SSL: subdomain resolves, SSL cert valid
 11. Monitoring: daily automated check running, errors logged
 12. Legal: Privacy Policy, Terms of Service pages exist
-
-## Daily Automated Check
-Runs at 9:17 AM IST — checks containers, RAM, HTTP status, logs, git sync.
-Reports via push notification.
-
-## Deep Check (Every 4 Days)
-Runs at 10:23 AM IST — full audit including login test, SSL expiry, log analysis, security regression check.
-
----
 
 # ⚠️ WORKSPACE BOUNDARY — READ THIS FIRST
 
@@ -179,94 +127,6 @@ India's comprehensive IPO + stock + market data website — structured data only
 
 ---
 
-## 🔄 AUTOSAVE — MANDATORY IMPLEMENTATION
-
-Every multi-field form in this project MUST have autosave. Read the full spec:
-`/Users/shubhamkumar/Developer/Claude Code/_shared/AUTOSAVE_SPEC.md`
-
-**Quick summary:**
-1. Create `src/hooks/useAutosave.ts` — debounced autosave hook (delay: 1500ms)
-2. Create `src/components/AutosaveIndicator.tsx` — shows Saving.../Saved ✓/error
-3. Add to ALL multi-field edit forms, article writers, template editors, notes fields
-4. Show AutosaveIndicator near form title
-5. Use localKey for draft recovery on page refresh
-
-This is a platform-wide standard. Do not skip it.
-
-
-
----
-
-## 🕷️ APIFY — Use for Web Scraping
-
-When you need to scrape data (LinkedIn, Google, Instagram, G2, contacts, news), use Apify instead of building custom scrapers. Read the full spec:
-`/Users/shubhamkumar/Developer/Claude Code/_shared/APIFY_SPEC.md`
-
-**Quick summary:**
-- Store token in `.env` as `APIFY_API_TOKEN`
-- Key actors: google-search-scraper, linkedin-companies-scraper, contact-info-scraper, web-scraper
-- Always cache results in DB — do not re-scrape same URL within 24h
-- Max 3 concurrent actors
-- Free $5/month credits — use sparingly
-
-
-
----
-
-## 🔬 RESEARCH TASK — Do This Before Proposing New Features
-
-Before building anything new, research what real users say online about this product category.
-Read the full research spec: `/Users/shubhamkumar/Developer/Claude Code/_shared/RESEARCH_TASK.md`
-
-**Search terms specific to this product:**
-
-
-Save findings to COMMS.md under "## Research Findings — [DATE IST]"
-
-
----
-
-## 🔒 SECURITY — Non-Negotiable Rules
-
-Read the full security standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/SECURITY_STANDARD.md`
-
-**Must check before every deploy:**
-1. Every `/api/*` route has auth check (session/token validation)
-2. `/api/auth/*` has rate limiting
-3. All user inputs validated with Zod
-4. No secrets/API keys hardcoded in source (use process.env)
-5. Security headers in next.config.ts (X-Frame-Options, X-Content-Type-Options etc)
-6. `npm audit --audit-level=high` = 0 high/critical vulns
-7. No `console.log` with user data in production code
-8. `.env` is in `.gitignore` and NOT tracked by git
-
-**Weekly automated check:** Runs every Sunday 01:00 IST. Results in `/home/ubuntu/logs/security-DATE.txt`
-
----
-
-## ✅ QUALITY STANDARD — Definition of Done
-
-Read the full standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/QUALITY_STANDARD.md`
-
-**Before marking ANY task done:**
-- [ ] Tested locally end-to-end
-- [ ] `npx tsc --noEmit` — zero errors
-- [ ] No `console.log` with user data
-- [ ] Smoke test passes: `bash /home/ubuntu/scripts/enhanced-smoke-test.sh FOLDER PORT`
-- [ ] CHANGELOG.md updated
-- [ ] COMMS.md updated — task marked done
-
-**Never deploy if:**
-- `npm audit --audit-level=high` shows vulnerabilities
-- TypeScript errors exist
-- Previous smoke test failed
-
-**Automated checks running:**
-- Every 5 min: downtime monitor (ntfy.sh alerts)
-- Daily 08:00 IST: SSL expiry + response times + error digest
-- Every 6h: smoke tests
-- Saturday 11 AM IST: full compliance + security + npm audit scan
-
 ## 🗄️ DATABASE STANDARD — Follow Before Any Schema Change
 
 Read the full standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/DB_STANDARD.md`
@@ -286,19 +146,6 @@ Read the full standard: `/Users/shubhamkumar/Developer/Claude Code/_shared/DB_ST
 4. Never `prisma migrate reset` on production
 
 **Raw SQL:** Only use `$queryRaw` with `Prisma.sql` template tags — never string concatenation.
-
----
-
-## CHANGELOG — Read Before Starting
-
-Before ANY work, read CHANGELOG.md (in this project root).
-- Know what was previously broken and why
-- Know what patterns to avoid
-- Add your own entry before committing
-
-Rule: If you fix a bug, document the root cause so the next agent doesn't repeat it.
-
-Deploy rule: Use `bash /home/ubuntu/scripts/safe-deploy.sh FOLDER PORT` — includes smoke tests + auto-rollback.
 
 ---
 
