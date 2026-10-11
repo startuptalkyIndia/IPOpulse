@@ -1,5 +1,45 @@
 # IPOpulse — COMMS
 
+## 2026-10-12 IST — Archived from CLAUDE.md: dated state block(s) (verbatim, may be stale)
+
+> Moved here unchanged from CLAUDE.md so nothing is lost. Treat every claim below as dated; re-verify before relying on it.
+
+### State as of 2026-09-22
+
+**Live:** Yes — https://ipopulse.talkytools.com confirmed HTTP 200 (home + `/api/health`), server `git rev-parse HEAD` matches local `main`/`origin/main` tip `a519379` (checked directly 2026-09-22 via the deploy agent — server was already current, nothing rebuilt this pass).
+**⚠️ Deindexed from search since 2026-09-05:** `robots.txt` is a blanket `Disallow: /` and every page carries `noindex,nofollow,nocache` — a deliberate founder policy call (2026-08-30) that ALL `*.talkytools.com` subdomains are deindexed regardless of live/paying status, not a bug. **This invalidates the SEO-led growth strategy in the "Goal" section below and the 12/24/36-month traffic projections in the cross-session memory file** (`~/.claude/projects/.../memory/project_ipopulse.md`) — both assume organic search as the primary channel. Don't propose SEO-driven growth work here without first checking whether this policy still stands.
+**Compliance score:** still stale — last numeric score was 88/100 on 2026-06-06 (pre-launch snapshot), qualitatively re-graded "C-→B-" on 2026-07-14. No numeric re-score since. Not re-scored this pass either (docs-only sync, not a full audit).
+**Last commit:** `a519379` 2026-09-05 16:15 IST — fix: removed a leftover static `public/robots.txt` that had been silently shadowing the deindex fix above for 6 days.
+**Tests:** unit + API integration suite last counted at 121/121 (2026-08-19, `npx vitest run`). Not re-run this pass — run `npm test` to confirm current count.
+**TS errors:** 0 (`npx tsc --noEmit`, verified 2026-09-22).
+
+**Recent work (verified against CHANGELOG.md + git + live server, this pass — 2026-09-22 docs-only sync, no code changed):**
+Five commits between 2026-08-20 and 2026-09-05 had landed with no COMMS/CHANGELOG entries; backfilled into CHANGELOG.md this pass. Highlights: the deindex policy (`4cc67ae`, actually live only from `a519379`), required `DATABASE_URL` connection-pool params documented but **not yet applied to the real server `.env`** (`e8fc259`), and a stale-Server-Action-ID reload fix (`75f6117`). Full detail + verification evidence in COMMS.md's 2026-09-22 entry.
+
+**Known gaps — as of 2026-08-14, not re-verified this pass:**
+- Zerodha Kite Connect: live prices shipped, Fyers v3 backup added; `/api/health` shows `kite: ok` (env-configured only — doesn't confirm the live token is still valid).
+- WhatsApp Channel CTA banner: built (`src/components/WhatsAppBanner.tsx`).
+- Free vs Premium tier: `PremiumGate.tsx` + `/pricing` exist, but **no payment processor wired** (no `razorpay` in `package.json`) — a user still cannot actually purchase Premium; only an admin can flip the plan field manually.
+- Three Yahoo symbol remaps (`ZOMATO`→`ETERNAL`, `TATAMOTORS`→`TMPV`, `VISASTEEL`→inactive) still awaiting founder approval (data change) — see TASKS.md.
+- `super_investor` cron still blocked — BSE blocks this server's IP; needs a new data source, not a retry.
+- 111 lint findings from the revived lint gate (74 errors, 37 warnings) still unaddressed — see TASKS.md.
+- `connection_limit=5&pool_timeout=10` documented in `.env.example` (2026-08-28) but not yet applied to the live server's `DATABASE_URL`.
+
+**Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
+
+**Deploy (only on explicit "go"):** `/home/ubuntu/IPOpulse` — `bash /home/ubuntu/scripts/safe-deploy.sh IPOpulse 3065`
+**SSH key:** `~/.ssh/linkbuilder-deploy.pem`
+
+**Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
+
+**Known doc drift not fixed here (outside this file's/project's boundary):** `_shared/FLEET_INVENTORY.md` lists IPOpulse's protected route as `/advisor/dashboard`. That route is real but 404s by design (feature-flagged off, unrelated advisor/referral feature) — the actual universal post-login route is `/my/watchlist`. Already flagged in CHANGELOG.md's 2026-08-14 entry for whoever maintains that shared file; not edited here since it's outside `IPOpulse/`.
+
+
+---
+
+---
+
+
 ## 2026-10-03 (verification) — corporate-action price-adjustment fix confirmed live on all 3 flagged cases; backfill + compute_signals run
 
 **Ask:** "all good?" → "build" → "go" (composite Quality Score) → "go" (screener custom filter builder) → the
