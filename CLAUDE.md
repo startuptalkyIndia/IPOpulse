@@ -172,7 +172,7 @@ Five commits between 2026-08-20 and 2026-09-05 had landed with no COMMS/CHANGELO
 
 **Data source caution:** NSE APIs are Akamai-protected — use cookie-session approach, not raw fetch. BSE JSON APIs are open. See `project_ipopulse.md` memory.
 
-**Deploy:** `/home/ubuntu/IPOpulse` — `docker compose up -d --build`
+**Deploy (only on explicit "go"):** `/home/ubuntu/IPOpulse` — `bash /home/ubuntu/scripts/safe-deploy.sh IPOpulse 3065`
 **SSH key:** `~/.ssh/linkbuilder-deploy.pem`
 
 **Relevant lessons:** LESSON-006 (lazy-init secrets), LESSON-070 (DPDP), LESSON-038 (rate-limit external APIs)
