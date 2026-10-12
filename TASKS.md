@@ -62,3 +62,10 @@
 - [x] ~~Fix 3 red cron jobs (yahoo_fundamentals, super_investor) + dead lint gate + permanently-degraded health check~~ — ✅ 2026-08-19 (commit `c1a5d66`, **DEPLOYED + verified live**. `super_investor` stays blocked by design — BSE blocks this server's IP, needs a new data source, not a retry — tracked as a separate open item below.)
 - [x] ~~Fix Postgres numeric overflow on `opm` (operating profit margin) ingest~~ — ✅ 2026-08-19 (widened `Decimal(6,2)`→`Decimal(10,2)` on AnnualFinancial + QuarterlyFinancial, matching roe/roce. Commit `4acae8c`, additive schema change, **DEPLOYED**.)
 - [x] ~~Project scaffolded with TASKS.md~~ — ✅ 2026-06-22
+
+## 💡 Ideas & research (future builds)
+
+> Future ideas, product research and competitor findings for this project live here. Promote an idea into **To Do** only when the founder says go.
+> Competitor sites the founder sends: read the whole site, log it in `_shared/COMPETITOR_LINKS.md`, then list their features here (have / lack / build first).
+
+- _(no ideas logged yet)_
