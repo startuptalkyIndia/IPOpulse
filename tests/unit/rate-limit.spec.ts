@@ -63,11 +63,30 @@ describe("rateLimit", () => {
 });
 
 describe("clientIp", () => {
-  it("extracts first IP from x-forwarded-for", () => {
+  it("uses x-forwarded-for first hop only when x-real-ip is absent (dev fallback)", () => {
     const req = new Request("http://localhost/", {
       headers: { "x-forwarded-for": "1.2.3.4, 5.6.7.8" },
     });
     expect(clientIp(req)).toBe("1.2.3.4");
+  });
+
+  it("prefers x-real-ip over a client-forged x-forwarded-for", () => {
+    const req = new Request("http://localhost/", {
+      headers: { "x-forwarded-for": "6.6.6.6, 203.0.113.9", "x-real-ip": "203.0.113.9" },
+    });
+    expect(clientIp(req)).toBe("203.0.113.9");
+  });
+
+  it("rotating forged XFF cannot dodge the limit when x-real-ip is fixed", () => {
+    const key = `xff-${Date.now()}`;
+    let blocked = 0;
+    for (let i = 0; i < 20; i++) {
+      const req = new Request("http://localhost/", {
+        headers: { "x-forwarded-for": `10.0.0.${i}`, "x-real-ip": "198.51.100.7" },
+      });
+      if (!rateLimit("xff", `${key}:${clientIp(req)}`, 5, 60000).ok) blocked++;
+    }
+    expect(blocked).toBe(15);
   });
 
   it("falls back to x-real-ip", () => {

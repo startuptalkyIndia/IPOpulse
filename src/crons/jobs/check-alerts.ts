@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
+import type { IngestionResult } from "../runIngestion";
+import { EMAIL_NOT_CONFIGURED_NOTE } from "./daily-digest";
 
 const FROM_ADDR = "IPOpulse Alerts <alerts@ipopulse.talkytools.com>";
 
@@ -107,13 +109,22 @@ function describeCondition(alertType: string, threshold: number | null | undefin
  *
  * Returns: { rowsIn: fired count, rowsError: failed count, notes }
  */
-export async function checkIpoAlerts(): Promise<{
-  rowsIn: number;
-  rowsError?: number;
-  notes?: string;
-}> {
+export async function checkIpoAlerts(): Promise<IngestionResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const resend = apiKey ? new Resend(apiKey) : null;
+
+  // IP-02: with no email key nothing can be delivered. Record "skipped" (never
+  // "success") so the ingestion ledger and health page tell the truth. Active
+  // alerts are left untouched (still active, no attempt counted) and fire once
+  // a key is added.
+  if (!resend) {
+    const held = await prisma.alert.count({ where: { isActive: true, firedAt: null } });
+    return {
+      rowsIn: 0,
+      status: "skipped",
+      notes: `${EMAIL_NOT_CONFIGURED_NOTE}; ${held} active alert(s) held until a key is set`,
+    };
+  }
 
   // If no RESEND_API_KEY, the check still runs but alerts whose condition is met
   // are HELD (left active, not counted as failed attempts) so they fire once a key

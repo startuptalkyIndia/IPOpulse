@@ -5,6 +5,28 @@ export interface IngestionResult {
   rowsIn: number;
   rowsError?: number;
   notes?: string;
+  /**
+   * Explicit outcome. Omit for the default (success, or failed when every row
+   * errored, or partial when some rows errored).
+   *  - "skipped": the job could not do its work for a known, configured-off
+   *    reason (e.g. email not configured). NEVER recorded as success.
+   *  - "partial": some rows failed, some worked.
+   *  - "failed": the job failed; `notes` is stored as the error message.
+   */
+  status?: "success" | "partial" | "skipped" | "failed";
+}
+
+export type RunStatus = "success" | "partial" | "skipped" | "failed";
+
+/** Pure status resolution so it can be unit-tested without a DB. */
+export function resolveRunStatus(result: IngestionResult): RunStatus {
+  const rowsError = result.rowsError ?? 0;
+  if (result.status === "skipped" || result.status === "failed") return result.status;
+  // M38: all rows errored = failure, even if the job did not say so.
+  if (result.rowsIn === 0 && rowsError > 0) return "failed";
+  if (result.status === "partial") return "partial";
+  if (rowsError > 0) return "partial";
+  return "success";
 }
 
 // In-process single-flight guard (audit MEDIUM M43): several jobs share a
@@ -35,21 +57,26 @@ export async function runIngestion(
     // per-row errors and return rowsIn:0 with rowsError>0 used to report "success",
     // hiding the breakage from the heartbeat's job-liveness check.
     const rowsError = result.rowsError ?? 0;
-    const allErrored = result.rowsIn === 0 && rowsError > 0;
+    const status = resolveRunStatus(result);
+    const allErrored = status === "failed";
     await prisma.ingestionRun.update({
       where: { id: run.id },
       data: {
         finishedAt: new Date(),
-        status: allErrored ? "failed" : "success",
+        status,
         rowsIn: result.rowsIn,
         rowsError,
         notes: result.notes,
-        errorMsg: allErrored ? `all ${rowsError} rows errored` : undefined,
+        errorMsg: allErrored
+          ? result.status === "failed" && result.notes
+            ? result.notes
+            : `all ${rowsError} rows errored`
+          : undefined,
       },
     });
     // Best-effort: ping search engines after a successful content-bearing ingestion.
     // Internal throttle keeps this to at most 1 ping per hour.
-    if (!allErrored && result.rowsIn >= 1) {
+    if (status !== "failed" && status !== "skipped" && result.rowsIn >= 1) {
       maybePingSitemap().catch(() => {});
     }
     return { ok: !allErrored, runId: run.id, ...result };

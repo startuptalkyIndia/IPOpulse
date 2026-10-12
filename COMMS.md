@@ -1,5 +1,25 @@
 # IPOpulse — COMMS
 
+## 2026-10-12 IST — Wave 1 fixes from the 2026-10-12 audit (IP-02, IP-03, IP-04, IP-06, IP-07, IP-09)
+
+**Spec**
+- What: honest job statuses (`skipped`/`partial`/`failed`), idempotent company master, news-brief retry, X-Real-IP-first client IP, Next 16.3.8, timing-safe CRON_SECRET compare.
+- Why: `daily_digest`/`check_alerts` logged `success` with no email key; `nse_company_master` ended `success` with rows_error=10 (renamed tickers collide on unique `isin`); `market_news_brief` failed 5x with no retry; first X-Forwarded-For hop is client-controlled; `next` 16.3.6 flagged high.
+- Done when: statuses below appear in `ingestion_runs`; tsc, 158 tests, `next build` pass; `npm audit --omit=dev` no longer lists `next`.
+- Out of scope: IP-01 (server compose, needs deploy go), IP-08 (nginx), IP-13 (GA4 id, founder), IP-05, IP-10, IP-12, IP-11 (DB drop), product items IP-15..18, no deploy.
+- Verify: `npx tsc --noEmit` clean; `npx vitest run` 158/158 (new: `tests/unit/ingestion-status.spec.ts`, extra `clientIp` cases); `npm run build` OK.
+
+**Changes**
+- `runIngestion.ts`: `IngestionResult.status` (success|partial|skipped|failed) + pure `resolveRunStatus`; rowsError>0 with rows ok = `partial`; skipped/failed are never `success`; failed notes become `error_msg`.
+- IP-02: `daily_digest` and `check_alerts` return `skipped: email not configured` without RESEND_API_KEY (alerts stay active, untouched). `/api/health` resend check now says digest and alerts are skipped. `/sup-min/ingestion` shows skipped/partial in amber. `crawler_health` liveness counts success/partial/skipped as "ran" (skip is shown on health + ingestion page, so no permanent red flag).
+- IP-04: `upsertCompany()` matches by nseSymbol, else by ISIN (updates name/listedOn/faceValue only, never rewrites nseSymbol), else creates (slug-suffix retry on slug clash only). Errors counted honestly, first 3 samples in notes.
+- IP-03: `withOneRetry` (30s backoff, once); second failure returns status `failed` with the error. Claude-unavailable now `skipped`. TASKS.md stale CLI item struck through.
+- IP-06: `clientIp()` reads `x-real-ip` first; signup, newsletter, account delete, `/r/[slug]` now use it (were reading the forged first XFF hop).
+- IP-07: `next` ^16.3.8 via targeted `npm install next@16.3.8`; lockfile resolves 16.3.8. Remaining audit items (postcss, sharp, undici, nanoid, source-map-js) not touched.
+- IP-09: CRON_SECRET compare uses `timingSafeEqual`.
+
+**SQL:** none. `ingestion_runs.status` is a free String column; new values `skipped`/`partial` need no migration.
+
 ## 2026-10-12 IST — Archived from CLAUDE.md: dated state block(s) (verbatim, may be stale)
 
 > Moved here unchanged from CLAUDE.md so nothing is lost. Treat every claim below as dated; re-verify before relying on it.

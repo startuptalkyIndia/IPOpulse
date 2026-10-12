@@ -60,6 +60,13 @@ function envCheck(varNames: string[]): DepCheck {
   return { status: present ? "ok" : "unconfigured" };
 }
 
+function resendCheck(): DepCheck {
+  const c = envCheck(["RESEND_API_KEY"]);
+  return c.status === "ok"
+    ? c
+    : { ...c, error: "email not configured: daily_digest and check_alerts are skipped, nothing is delivered" };
+}
+
 // AI dep check (platform B.20, 2026-08-12): honest per the CURRENT admin-set
 // provider mode, not a bare env-var presence check. "subscription" mode is
 // "ok" only if the Claude CLI binary is actually found; "api_key" mode is
@@ -91,7 +98,8 @@ export async function GET() {
     // Anthropic — DRHP AI analysis, listing predictor features
     anthropic: anthropicResult,
     // Resend — email notifications
-    resend: envCheck(["RESEND_API_KEY"]),
+    // IP-02: say plainly what "unconfigured" means here (digest + alerts are not delivered).
+    resend: resendCheck(),
   };
 
   // Verdict:

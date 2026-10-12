@@ -1,7 +1,14 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { availableJobs } from "@/crons/scheduler";
 import { runIngestion } from "@/crons/runIngestion";
+
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
+}
 
 export async function POST(
   request: Request,
@@ -10,7 +17,7 @@ export async function POST(
   // Allow either admin session OR a shared CRON_SECRET header (for server-side curl triggers)
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  const secretOk = cronSecret && authHeader === `Bearer ${cronSecret}`;
+  const secretOk = !!cronSecret && !!authHeader && safeEqual(authHeader, `Bearer ${cronSecret}`);
 
   if (!secretOk) {
     const session = await auth();

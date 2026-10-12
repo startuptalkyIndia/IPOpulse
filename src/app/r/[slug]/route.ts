@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { affiliates } from "@/lib/affiliates";
 import { financeProducts } from "@/lib/finance-products";
@@ -57,7 +58,7 @@ export async function GET(
             advisorId: advisor.id,
             productSlug: slug,
             productCategory: category,
-            ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0] ?? null,
+            ipAddress: (clientIp(request) === "unknown" ? null : clientIp(request)),
             userAgent: request.headers.get("user-agent") ?? null,
           },
         });

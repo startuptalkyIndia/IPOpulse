@@ -201,6 +201,8 @@ export default async function AdminIngestionPage() {
                       ? "bg-green-100 text-green-800"
                       : r.status === "running"
                       ? "bg-blue-100 text-blue-800"
+                      : r.status === "skipped" || r.status === "partial"
+                      ? "bg-amber-100 text-amber-800"
                       : "bg-red-100 text-red-800";
                   return (
                     <tr key={r.id} className="border-b border-gray-100">

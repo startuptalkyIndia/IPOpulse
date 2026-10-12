@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { clientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -16,10 +17,7 @@ const SIGNUP_RATE_LIMIT_WINDOW_MS = 15 * 60_000;
 
 export async function POST(request: Request) {
   // Rate-limit by IP to prevent account creation spam
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIp(request);
   const now = Date.now();
   const bucket = signupRateLimitMap.get(ip);
   if (bucket && now < bucket.resetAt) {

@@ -20,12 +20,14 @@ setInterval(() => {
 
 /**
  * Extract the real client IP from a Next.js request.
- * Reads X-Forwarded-For (set by nginx/ALB) then X-Real-IP, falls back to "unknown".
+ * X-Real-IP first: our nginx sets it to $remote_addr, so a client cannot forge it.
+ * The first X-Forwarded-For hop is client-controlled (nginx only appends), so it
+ * is used only as a last resort when X-Real-IP is absent (local dev, no proxy).
  */
 export function clientIp(req: NextRequest | Request): string {
   return (
+    req.headers.get("x-real-ip")?.trim() ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
     "unknown"
   );
 }

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { clientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 
 const Body = z.object({ confirmText: z.string() });
@@ -35,8 +36,8 @@ export async function POST(req: Request) {
     .update((user.email ?? "").toLowerCase())
     .digest("hex");
 
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  const requesterIp = forwardedFor ? forwardedFor.split(",")[0].trim() : null;
+  const detectedIp = clientIp(req);
+  const requesterIp = detectedIp === "unknown" ? null : detectedIp;
 
   await prisma.user.update({
     where: { id: userId },

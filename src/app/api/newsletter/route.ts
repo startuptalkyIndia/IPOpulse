@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
@@ -10,10 +11,7 @@ const NL_RATE_LIMIT_MAX = 3;
 const NL_RATE_LIMIT_WINDOW_MS = 10 * 60_000;
 
 export async function POST(request: Request) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIp(request);
   const now = Date.now();
   const bucket = newsletterRateLimitMap.get(ip);
   if (bucket && now < bucket.resetAt) {

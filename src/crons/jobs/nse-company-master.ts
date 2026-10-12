@@ -43,6 +43,73 @@ function parseDate(s: string): Date | undefined {
   return isNaN(d.getTime()) ? undefined : d;
 }
 
+export interface CompanyRow {
+  symbol: string;
+  name: string;
+  slug: string;
+  isin: string | null;
+  listedOn?: Date;
+  faceValue: number | null;
+}
+
+function isUniqueViolation(err: unknown, field: string): boolean {
+  const e = err as { code?: string; meta?: { target?: unknown } } | null;
+  if (!e || e.code !== "P2002") return false;
+  const t = e.meta?.target;
+  return Array.isArray(t) ? t.includes(field) : typeof t === "string" ? t.includes(field) : true;
+}
+
+/**
+ * Idempotent company upsert (IP-04). The old code upserted by nseSymbol only, so a
+ * renamed ticker (same ISIN, new symbol) tried to INSERT a second row with the
+ * same ISIN and died on the unique(isin) index, every run. Now:
+ *  1. match by nseSymbol -> update;
+ *  2. else match by ISIN -> update name/listedOn/faceValue ONLY. nseSymbol is
+ *     never rewritten (bhavcopy matches on it; see Company.yahooSymbol note);
+ *  3. else create, retrying once with a symbol-suffixed slug on a slug clash.
+ * Returns how the row was matched. Throws only for genuine failures.
+ */
+export async function upsertCompany(row: CompanyRow): Promise<"symbol-match" | "isin-match" | "created"> {
+  const { symbol, name, slug, isin, listedOn, faceValue } = row;
+  const data = {
+    name,
+    listedOn: listedOn ?? undefined,
+    faceValue: faceValue ?? undefined,
+  };
+
+  const bySymbol = await prisma.company.findUnique({ where: { nseSymbol: symbol }, select: { id: true, isin: true } });
+  if (bySymbol) {
+    // Only set ISIN when the row has none, or no other row owns it.
+    let isinUpdate: string | undefined;
+    if (isin && bySymbol.isin !== isin) {
+      const owner = await prisma.company.findUnique({ where: { isin }, select: { id: true } });
+      if (!owner || owner.id === bySymbol.id) isinUpdate = isin;
+    }
+    await prisma.company.update({ where: { id: bySymbol.id }, data: { ...data, isin: isinUpdate } });
+    return "symbol-match";
+  }
+
+  if (isin) {
+    const byIsin = await prisma.company.findUnique({ where: { isin }, select: { id: true } });
+    if (byIsin) {
+      await prisma.company.update({ where: { id: byIsin.id }, data });
+      return "isin-match";
+    }
+  }
+
+  try {
+    await prisma.company.create({
+      data: { nseSymbol: symbol, slug, isin: isin || undefined, active: true, ...data },
+    });
+  } catch (err) {
+    if (!isUniqueViolation(err, "slug")) throw err;
+    await prisma.company.create({
+      data: { nseSymbol: symbol, slug: `${slug}-${symbol.toLowerCase()}`, isin: isin || undefined, active: true, ...data },
+    });
+  }
+  return "created";
+}
+
 export async function ingestNseCompanyMaster(): Promise<IngestionResult> {
   const res = await fetch(NSE_CSV_URL, {
     headers: HEADERS,
@@ -65,6 +132,8 @@ export async function ingestNseCompanyMaster(): Promise<IngestionResult> {
 
   let rowsIn = 0;
   let rowsError = 0;
+  let isinMatched = 0;
+  const errorSamples: string[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const parts = lines[i].split(",");
@@ -79,49 +148,21 @@ export async function ingestNseCompanyMaster(): Promise<IngestionResult> {
     const slug = slugify(name, symbol);
 
     try {
-      await prisma.company.upsert({
-        where: { nseSymbol: symbol },
-        create: {
-          nseSymbol: symbol,
-          name,
-          slug,
-          isin: isin || undefined,
-          listedOn,
-          faceValue: faceValue ?? undefined,
-          active: true,
-        },
-        update: {
-          // Only update name/isin/listedOn — don't clobber prices/fundamentals
-          name,
-          isin: isin || undefined,
-          listedOn: listedOn ?? undefined,
-          faceValue: faceValue ?? undefined,
-        },
-      });
+      const outcome = await upsertCompany({ symbol, name, slug, isin, listedOn, faceValue });
+      if (outcome === "isin-match") isinMatched++;
       rowsIn++;
-    } catch {
-      // Slug conflict — try with symbol suffix
-      try {
-        const slugAlt = `${slugify(name, symbol)}-${symbol.toLowerCase()}`;
-        await prisma.company.upsert({
-          where: { nseSymbol: symbol },
-          create: {
-            nseSymbol: symbol,
-            name,
-            slug: slugAlt,
-            isin: isin || undefined,
-            listedOn,
-            faceValue: faceValue ?? undefined,
-            active: true,
-          },
-          update: { name, isin: isin || undefined },
-        });
-        rowsIn++;
-      } catch {
-        rowsError++;
+    } catch (err) {
+      rowsError++;
+      if (errorSamples.length < 3) {
+        errorSamples.push(`${symbol}: ${(err instanceof Error ? err.message : String(err)).split("\n").pop()?.slice(0, 120)}`);
       }
     }
   }
 
-  return { rowsIn, rowsError };
+  const notes =
+    `companies upserted=${rowsIn} errors=${rowsError}` +
+    (isinMatched ? ` matched-by-isin(symbol changed, symbol left untouched)=${isinMatched}` : "") +
+    (errorSamples.length ? ` first errors: ${errorSamples.join(" | ")}` : "");
+  // runIngestion resolves status: rowsError>0 with rowsIn>0 => "partial".
+  return { rowsIn, rowsError, notes };
 }

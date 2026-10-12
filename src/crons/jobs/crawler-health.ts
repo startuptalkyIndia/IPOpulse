@@ -119,7 +119,8 @@ async function pushAlert(title: string, body: string, priority: "high" | "defaul
 // ─── Layer 2: job liveness — did each scheduled cron actually RUN? ──────────
 // Data-freshness checks can't distinguish "endpoint broke" from "cron never
 // fired" (container crash, scheduler bug, stuck run). This checks the
-// ingestion_runs ledger for a successful run within the expected window.
+// ingestion_runs ledger for a run (success/partial/skipped; a skip is visible
+// separately on /api/health and /sup-min/ingestion) within the expected window.
 const JOB_LIVENESS: Array<{ job: string; maxAgeHours: number }> = [
   { job: "nse_bhavcopy", maxAgeHours: 80 },        // 2×/weekday — 80h tolerates weekends
   { job: "nse_ipos", maxAgeHours: 12 },            // every 2h
@@ -147,7 +148,7 @@ async function checkJobLiveness(): Promise<Result[]> {
   for (const j of JOB_LIVENESS) {
     try {
       const rows = await prisma.$queryRawUnsafe<Array<{ latest: Date | null }>>(
-        `SELECT MAX(started_at) AS latest FROM ingestion_runs WHERE job_name = '${j.job}' AND status = 'success'`,
+        `SELECT MAX(started_at) AS latest FROM ingestion_runs WHERE job_name = '${j.job}' AND status IN ('success','partial','skipped')`,
       );
       const latest = rows[0]?.latest ?? null;
       const ageHours = latest ? (Date.now() - new Date(latest).getTime()) / 3600000 : null;

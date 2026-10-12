@@ -1,16 +1,19 @@
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 import { renderDigestHtml } from "@/lib/digest";
+import type { IngestionResult } from "../runIngestion";
+
+export const EMAIL_NOT_CONFIGURED_NOTE = "skipped: email not configured (RESEND_API_KEY missing) - nothing delivered";
 
 /**
  * Daily IPO digest email. Runs every weekday at 07:00 IST.
  * Sends one email per verified subscriber. Best-effort — failures are logged
  * but don't abort the run; Resend handles bounces.
  */
-export async function sendDailyDigest(): Promise<{ rowsIn: number; rowsError?: number; notes?: string }> {
+export async function sendDailyDigest(): Promise<IngestionResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return { rowsIn: 0, notes: "RESEND_API_KEY missing — skipped" };
+    return { rowsIn: 0, status: "skipped", notes: EMAIL_NOT_CONFIGURED_NOTE };
   }
   const fromAddr = process.env.DIGEST_FROM ?? "IPOpulse Daily <hello@ipopulse.talkytools.com>";
 
@@ -76,6 +79,7 @@ export async function sendDailyDigest(): Promise<{ rowsIn: number; rowsError?: n
   return {
     rowsIn: sent,
     rowsError: failed,
+    status: failed > 0 && sent > 0 ? "partial" : undefined,
     notes: `Daily digest: sent=${sent} failed=${failed} liveIpos=${liveIpos.length} upcomingIpos=${upcomingIpos.length}`,
   };
 }
