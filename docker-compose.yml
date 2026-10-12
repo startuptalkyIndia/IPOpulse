@@ -24,7 +24,7 @@ services:
     build: .
     restart: always
     ports:
-      - "3065:3065"
+      - "127.0.0.1:3065:3065"
     env_file: .env
     environment:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
