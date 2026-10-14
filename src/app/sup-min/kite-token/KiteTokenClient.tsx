@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch, errorMessage } from "@/lib/api-fetch";
 import { Zap, CheckCircle2, AlertTriangle, ExternalLink, Clock } from "lucide-react";
 
 export default function KiteTokenClient() {
@@ -9,11 +10,14 @@ export default function KiteTokenClient() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
-    fetch("/api/admin/kite-token")
-      .then((r) => r.json())
+  function loadStatus() {
+    apiFetch<{ active: boolean; updatedAt?: string; token?: string }>("/api/admin/kite-token")
       .then(setStatus)
-      .catch(() => {});
+      .catch((e) => setMessage({ type: "error", text: `Could not load token status: ${errorMessage(e)}` }));
+  }
+
+  useEffect(() => {
+    loadStatus();
   }, []);
 
   async function handleSave() {
@@ -21,20 +25,16 @@ export default function KiteTokenClient() {
     setSaving(true);
     setMessage(null);
     try {
-      const resp = await fetch("/api/admin/kite-token", {
+      const data = await apiFetch<{ message?: string }>("/api/admin/kite-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token.trim() }),
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        setMessage({ type: "success", text: data.message });
-        setToken("");
-        // Refresh status
-        fetch("/api/admin/kite-token").then((r) => r.json()).then(setStatus);
-      } else {
-        setMessage({ type: "error", text: data.error ?? "Failed" });
-      }
+      setMessage({ type: "success", text: data?.message ?? "Token saved." });
+      setToken("");
+      loadStatus();
+    } catch (e) {
+      setMessage({ type: "error", text: errorMessage(e) });
     } finally {
       setSaving(false);
     }

@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { apiSend, errorMessage } from "@/lib/api-fetch";
 import { ThumbsUp, ThumbsDown, Eye } from "lucide-react";
 
 interface Props {
@@ -35,12 +37,19 @@ export function IpoPoll({ ipoId, authed, initialMyVote, initialTally }: Props) {
       if (myVote !== choice) newTally[choice]++;
       setTally(newTally);
       setMyVote(choice);
-      await fetch("/api/poll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ipoId, vote: choice }),
-      });
-      router.refresh();
+      try {
+        await apiSend("/api/poll", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ipoId, vote: choice }),
+        });
+        router.refresh();
+      } catch (e) {
+        // the vote was not saved: undo the optimistic change
+        setTally(tally);
+        setMyVote(myVote);
+        toast.error(errorMessage(e));
+      }
     });
   }
 

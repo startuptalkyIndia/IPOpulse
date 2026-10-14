@@ -6,6 +6,7 @@ import { MarketTicker } from "@/components/MarketTicker";
 import { CookieConsent } from "@/components/CookieConsent";
 import { FeedbackWidget } from "@/components/shared/FeedbackWidget";
 import { Suspense } from "react";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: {
@@ -110,6 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <CookieConsent />
         <FeedbackWidget productName="IPOpulse" />
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

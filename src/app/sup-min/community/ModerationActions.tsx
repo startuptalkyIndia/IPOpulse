@@ -3,6 +3,8 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Ban } from "lucide-react";
+import { toast } from "sonner";
+import { apiSend, errorMessage } from "@/lib/api-fetch";
 
 export function ModerationActions({
   commentId,
@@ -19,20 +21,28 @@ export function ModerationActions({
   async function del() {
     if (!confirm("Delete this comment?")) return;
     start(async () => {
-      await fetch(`/api/comments?id=${commentId}`, { method: "DELETE" });
-      router.refresh();
+      try {
+        await apiSend(`/api/comments?id=${commentId}`, { method: "DELETE" });
+        router.refresh();
+      } catch (e) {
+        toast.error(errorMessage(e));
+      }
     });
   }
 
   async function toggleBan() {
     if (!confirm(userBanned ? "Unban this user?" : "Ban this user from posting?")) return;
     start(async () => {
-      await fetch(`/api/admin/ban`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, banned: !userBanned }),
-      });
-      router.refresh();
+      try {
+        await apiSend(`/api/admin/ban`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, banned: !userBanned }),
+        });
+        router.refresh();
+      } catch (e) {
+        toast.error(errorMessage(e));
+      }
     });
   }
 

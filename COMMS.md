@@ -1,5 +1,20 @@
 # IPOpulse — COMMS
 
+## 2026-10-14 IST — Browser screens now check the server's reply (branch `fetch-checks`, not merged, not deployed)
+
+**Spec**
+- What: every browser `fetch()` that ignored the reply now goes through `src/lib/api-fetch.ts` (copy of `_shared/lib/http/api-fetch.ts` v2) with the error shown to the user (HireTrack pilot pattern, commit 01be8d9).
+- Why: a failed save looked like success (watchlist, poll vote, admin tokens/AI settings, comment delete/ban), and an error body was stored as data (search, AI settings load, token status).
+- Done when: `check-fetch-results.py` = 0 (was 13); tsc 0; vitest all pass incl. new `tests/unit/api-fetch.spec.ts`; `next build` 0.
+- Out of scope: any other behaviour; API routes; no deploy.
+- Verify: finder 0; `npx tsc --noEmit` 0; `npx vitest run` 16 files / 170 tests pass; `next build` exit 0 (dummy DATABASE_URL).
+
+**Changes**
+- New `src/lib/api-fetch.ts` + test. `layout.tsx` now mounts sonner `<Toaster>` (sonner was already a dependency but no toast was mounted anywhere).
+- WatchlistButton, IpoPoll (vote rolled back on failure), ModerationActions (no refresh on failure): error toast. AiSettingsClient, FyersTokenClient, KiteTokenClient, AISettings: existing inline message UI; status load failure is shown, never stored. SearchPalette + CompareStocksClient: a failed search shows no results.
+- `shared/FeedbackWidget.tsx` replaced with the current template (old copy faked "sent" on failure).
+- Behaviour change: none on the success path.
+
 ## 2026-10-12 IST — Wave 1 fixes from the 2026-10-12 audit (IP-02, IP-03, IP-04, IP-06, IP-07, IP-09)
 
 **Spec**

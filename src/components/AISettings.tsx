@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { apiFetch, apiSend, errorMessage } from "@/lib/api-fetch";
 
 const PROVIDERS = [
   { value: "anthropic", label: "Anthropic Claude", placeholder: "sk-ant-api03-...", url: "https://console.anthropic.com/keys" },
@@ -32,20 +33,29 @@ export function AISettings() {
   const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings/ai").then(r => r.json()).then(d => { if (d.aiKeyVerified) setConnected(d); });
+    apiFetch<any>("/api/settings/ai").then(d => { if (d?.aiKeyVerified) setConnected(d); }).catch(e => setError(`Could not load your AI settings: ${errorMessage(e)}`));
   }, []);
 
   const handleProvider = (p: string) => { setProvider(p); setModel(MODELS[p][0].value); };
 
   const save = async () => {
     setStatus("saving"); setError("");
-    const res = await fetch("/api/settings/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider, apiKey, model }) });
-    const data = await res.json();
-    if (!res.ok) { setStatus("error"); setError(data.error); return; }
-    setStatus("saved"); setConnected({ aiProvider: provider, aiModel: data.model, aiKeyVerified: true }); setApiKey("");
+    try {
+      const data = await apiFetch<{ model?: string }>("/api/settings/ai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ provider, apiKey, model }) });
+      setStatus("saved"); setConnected({ aiProvider: provider, aiModel: data?.model, aiKeyVerified: true }); setApiKey("");
+    } catch (e) {
+      setStatus("error"); setError(errorMessage(e));
+    }
   };
 
-  const disconnect = async () => { await fetch("/api/settings/ai", { method: "DELETE" }); setConnected(null); setStatus("idle"); };
+  const disconnect = async () => {
+    try {
+      await apiSend("/api/settings/ai", { method: "DELETE" });
+      setConnected(null); setStatus("idle");
+    } catch (e) {
+      setError(errorMessage(e));
+    }
+  };
   const pInfo = PROVIDERS.find(p => p.value === provider)!;
 
   return (

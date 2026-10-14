@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { apiFetch, errorMessage } from "@/lib/api-fetch";
 import { Zap, CheckCircle2, AlertTriangle, ExternalLink, Clock } from "lucide-react";
 
 interface Status {
@@ -18,7 +19,7 @@ export default function FyersTokenClient() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const refresh = useCallback(() => {
-    fetch("/api/admin/fyers-token").then((r) => r.json()).then(setStatus).catch(() => {});
+    apiFetch<Status>("/api/admin/fyers-token").then(setStatus).catch((e) => setMessage({ type: "error", text: `Could not load token status: ${errorMessage(e)}` }));
   }, []);
 
   useEffect(() => {
@@ -38,19 +39,16 @@ export default function FyersTokenClient() {
     setSaving(true);
     setMessage(null);
     try {
-      const resp = await fetch("/api/admin/fyers-token", {
+      const data = await apiFetch<{ message?: string }>("/api/admin/fyers-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authCode: authCode.trim() }),
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        setMessage({ type: "success", text: data.message });
-        setAuthCode("");
-        refresh();
-      } else {
-        setMessage({ type: "error", text: data.error ?? "Failed" });
-      }
+      setMessage({ type: "success", text: data?.message ?? "Token activated." });
+      setAuthCode("");
+      refresh();
+    } catch (e) {
+      setMessage({ type: "error", text: errorMessage(e) });
     } finally {
       setSaving(false);
     }

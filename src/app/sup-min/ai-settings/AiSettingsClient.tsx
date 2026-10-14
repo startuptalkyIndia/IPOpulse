@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch, apiSend, errorMessage } from "@/lib/api-fetch";
 import { Cpu, CheckCircle2, AlertTriangle, Clock, KeyRound, Sparkles } from "lucide-react";
 
 interface StatusResponse {
@@ -19,13 +20,13 @@ export default function AiSettingsClient() {
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   function loadStatus() {
-    fetch("/api/admin/ai-settings")
-      .then((r) => r.json())
-      .then((data: StatusResponse) => {
+    apiFetch<StatusResponse>("/api/admin/ai-settings")
+      .then((data) => {
+        if (!data || typeof data.mode !== "string") throw new Error("The server sent an unexpected reply.");
         setStatus(data);
         setSelectedMode(data.mode);
       })
-      .catch(() => {});
+      .catch((e) => setMessage({ type: "error", text: `Could not load current status: ${errorMessage(e)}` }));
   }
 
   useEffect(() => {
@@ -36,18 +37,15 @@ export default function AiSettingsClient() {
     setSaving(true);
     setMessage(null);
     try {
-      const resp = await fetch("/api/admin/ai-settings", {
+      await apiSend("/api/admin/ai-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: selectedMode }),
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        setMessage({ type: "success", text: `AI provider set to ${selectedMode === "subscription" ? "Subscription" : "API key"}.` });
-        loadStatus();
-      } else {
-        setMessage({ type: "error", text: data.error ?? "Failed to update provider mode" });
-      }
+      setMessage({ type: "success", text: `AI provider set to ${selectedMode === "subscription" ? "Subscription" : "API key"}.` });
+      loadStatus();
+    } catch (e) {
+      setMessage({ type: "error", text: errorMessage(e) || "Failed to update provider mode" });
     } finally {
       setSaving(false);
     }
@@ -58,19 +56,16 @@ export default function AiSettingsClient() {
     setSaving(true);
     setMessage(null);
     try {
-      const resp = await fetch("/api/admin/ai-settings", {
+      await apiSend("/api/admin/ai-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        setMessage({ type: "success", text: "API key validated with a live test call and saved (encrypted)." });
+      setMessage({ type: "success", text: "API key validated with a live test call and saved (encrypted)." });
         setApiKeyInput("");
-        loadStatus();
-      } else {
-        setMessage({ type: "error", text: data.error ?? "Failed to save API key" });
-      }
+      loadStatus();
+    } catch (e) {
+      setMessage({ type: "error", text: errorMessage(e) || "Failed to save API key" });
     } finally {
       setSaving(false);
     }
@@ -80,18 +75,15 @@ export default function AiSettingsClient() {
     setSaving(true);
     setMessage(null);
     try {
-      const resp = await fetch("/api/admin/ai-settings", {
+      await apiSend("/api/admin/ai-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clearKey: true }),
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        setMessage({ type: "success", text: "Saved API key removed." });
-        loadStatus();
-      } else {
-        setMessage({ type: "error", text: data.error ?? "Failed to clear key" });
-      }
+      setMessage({ type: "success", text: "Saved API key removed." });
+      loadStatus();
+    } catch (e) {
+      setMessage({ type: "error", text: errorMessage(e) || "Failed to clear key" });
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,4 @@
-// Source: _shared/templates/components/FeedbackWidget.tsx — re-propagate to update
+// Source: _shared/templates/components/FeedbackWidget.tsx
 // Do not edit per-project — edit here and re-propagate.
 //
 // Floating feedback widget — appears bottom-right on every page.
@@ -13,6 +13,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquare, X } from "lucide-react";
 
 type Rating = "happy" | "neutral" | "sad";
@@ -35,20 +36,20 @@ export function FeedbackWidget({
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  // Hide on private/auth paths
-  if (typeof window !== "undefined") {
-    const path = window.location.pathname;
-    if (hideOnPaths.some((p) => path === p || path.startsWith(p + "/"))) {
-      return null;
-    }
+  // Hide on private/auth paths (usePathname is SSR-safe: no hydration mismatch)
+  const pathname = usePathname();
+  if (hideOnPaths.some((p) => pathname === p || pathname?.startsWith(p + "/"))) {
+    return null;
   }
 
   const submit = async () => {
     if (!rating) return;
     setSubmitting(true);
+    setFailed(false);
     try {
-      await fetch(endpoint, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -59,6 +60,7 @@ export function FeedbackWidget({
           userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
         }),
       });
+      if (!res.ok) throw new Error(`feedback failed: ${res.status}`);
       setSent(true);
       setTimeout(() => {
         setOpen(false);
@@ -67,9 +69,9 @@ export function FeedbackWidget({
         setMessage("");
       }, 1800);
     } catch {
-      // Silently fail — don't disrupt the user. Feedback is non-critical.
-      setSent(true);
-      setTimeout(() => { setOpen(false); setSent(false); }, 1500);
+      // Failure must be loud: keep the form open with the text so nothing the
+      // user typed is lost, and tell them it did not send (never fake "sent").
+      setFailed(true);
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +98,7 @@ export function FeedbackWidget({
     >
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900">How's {productName}?</h3>
+          <h3 className="text-sm font-semibold text-slate-900">How&apos;s {productName}?</h3>
           <p className="text-xs text-slate-500">Direct line to the team — we read every one.</p>
         </div>
         <button
@@ -155,6 +157,11 @@ export function FeedbackWidget({
               >
                 {submitting ? "Sending..." : "Send"}
               </button>
+              {failed && (
+                <p role="alert" className="mt-2 text-xs text-red-600">
+                  Couldn&apos;t send that. Please try again in a moment.
+                </p>
+              )}
             </>
           )}
         </>

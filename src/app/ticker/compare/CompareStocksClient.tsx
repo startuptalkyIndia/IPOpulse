@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api-fetch";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format";
 
@@ -69,9 +70,8 @@ function StockPicker({
     }
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        setHits((data.hits ?? []).filter((h: SearchHit) => h.type === "stock"));
+        const data = await apiFetch<{ hits?: SearchHit[] }>(`/api/search?q=${encodeURIComponent(query)}`);
+        setHits((Array.isArray(data?.hits) ? data.hits : []).filter((h: SearchHit) => h.type === "stock"));
       } catch {
         setHits([]);
       }

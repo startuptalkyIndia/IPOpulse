@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { apiSend, errorMessage } from "@/lib/api-fetch";
 
 interface Props {
   type: "ipo" | "stock";
@@ -22,16 +24,20 @@ export function WatchlistButton({ type, targetSlug, initial = false, authed = tr
       return;
     }
     start(async () => {
-      if (saved) {
-        await fetch(`/api/watchlist?type=${type}&targetSlug=${encodeURIComponent(targetSlug)}`, { method: "DELETE" });
-        setSaved(false);
-      } else {
-        await fetch(`/api/watchlist`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, targetSlug }),
-        });
-        setSaved(true);
+      try {
+        if (saved) {
+          await apiSend(`/api/watchlist?type=${type}&targetSlug=${encodeURIComponent(targetSlug)}`, { method: "DELETE" });
+          setSaved(false);
+        } else {
+          await apiSend(`/api/watchlist`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, targetSlug }),
+          });
+          setSaved(true);
+        }
+      } catch (e) {
+        toast.error(errorMessage(e));
       }
     });
   }

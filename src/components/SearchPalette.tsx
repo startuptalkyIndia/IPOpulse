@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api-fetch";
 import { Search, X, FileText, TrendingUp, LineChart, Calculator, PieChart, Users, Layers } from "lucide-react";
 
 interface Hit {
@@ -68,9 +69,13 @@ export function SearchPalette() {
     }
     let cancelled = false;
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-      const body = await res.json().catch(() => ({ hits: [] }));
-      if (!cancelled) setHits(body.hits ?? []);
+      try {
+        const body = await apiFetch<{ hits?: Hit[] }>(`/api/search?q=${encodeURIComponent(q)}`);
+        if (!cancelled) setHits(Array.isArray(body?.hits) ? body.hits : []);
+      } catch {
+        // a failed search shows no results (never an error body as data)
+        if (!cancelled) setHits([]);
+      }
     }, 150);
     return () => {
       cancelled = true;
