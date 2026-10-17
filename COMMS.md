@@ -1,6 +1,8 @@
 ## 2026-10-17 IST - icon set from the product's own mark (branch brand-icons-20261017, NOT deployed)
 
-**What:** files only, no code: public/apple-touch-icon.png, icon-192/512, favicon.ico built from public/favicon.svg.  **Why:** `_shared/scripts/brand-check.sh` flagged the default Next favicon and the missing apple-touch icon; founder rule: real brand assets on every launch. **Done when:** `bash _shared/scripts/brand-check.sh <host>` shows no default-next-favicon / no-apple-touch-icon. **Out of scope:** a new logo (the mark is unchanged), the share image. **Verify:** files open (PNG/ICO sizes checked), build unaffected; after the next deploy run brand-check.
+**What:** files only, no code: public/apple-touch-icon.png, icon-192/512, built from public/favicon.svg.  **Why:** `_shared/scripts/brand-check.sh` flagged the default Next favicon and the missing apple-touch icon; founder rule: real brand assets on every launch. **Done when:** `bash _shared/scripts/brand-check.sh <host>` shows no default-next-favicon / no-apple-touch-icon. **Out of scope:** a new logo (the mark is unchanged), the share image. **Verify:** files open (PNG/ICO sizes checked), build unaffected; after the next deploy run brand-check.
+**Note (reviewer 2026-10-17):** this repo had no `favicon.ico` file, so none was written; the favicon comes from the existing `<link rel=icon>` (icon file/metadata). `icon-192/512.png` are extra files not referenced by the layout yet.
+
 
 ## 2026-10-17 IST - contact address is connect@startuptalky.com on public pages (branch contact-email-20261017, NOT deployed)
 
