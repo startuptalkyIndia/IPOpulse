@@ -46,7 +46,7 @@ export default function RefundPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mt-6 mb-2">4. How to request a refund</h2>
-          <p>Email <a className="underline text-indigo-600" href="mailto:hello@ipopulse.talkytools.com">hello@ipopulse.talkytools.com</a> with:</p>
+          <p>Email <a className="underline text-indigo-600" href="mailto:connect@startuptalky.com">connect@startuptalky.com</a> with:</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li>Your account email</li>
             <li>Order / transaction ID</li>
@@ -77,7 +77,7 @@ export default function RefundPage() {
           <h2 className="text-lg font-semibold text-gray-900 mt-6 mb-2">7. Contact</h2>
           <p>
             Questions or refund requests:{" "}
-            <a className="underline text-indigo-600" href="mailto:hello@ipopulse.talkytools.com">hello@ipopulse.talkytools.com</a>
+            <a className="underline text-indigo-600" href="mailto:connect@startuptalky.com">connect@startuptalky.com</a>
           </p>
           <p className="text-xs text-gray-500 mt-2">
             Operated by TalkyTools (IPOpulse) — refunds are issued by the same legal entity that received your payment.

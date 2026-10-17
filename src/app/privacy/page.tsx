@@ -52,7 +52,7 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mt-6 mb-2">Your rights</h2>
-          <p>You can email us at hello@ipopulse.talkytools.com to:</p>
+          <p>You can email us at connect@startuptalky.com to:</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
             <li>Export your data</li>
             <li>Delete your account</li>

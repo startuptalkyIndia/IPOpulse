@@ -92,7 +92,7 @@ export default function EmbedPage() {
       <div className="card bg-indigo-50 border-indigo-100">
         <p className="text-sm text-indigo-900 leading-relaxed">
           <strong>Are you a finfluencer or finance blogger?</strong> Email{" "}
-          <a className="underline" href="mailto:hello@ipopulse.talkytools.com">hello@ipopulse.talkytools.com</a> and
+          <a className="underline" href="mailto:connect@startuptalky.com">connect@startuptalky.com</a> and
           we&apos;ll consider building you a custom-themed widget or featuring you in our content roundup.
         </p>
       </div>
