@@ -1,3 +1,7 @@
+## 2026-10-17 IST - four leftover _bak_ tables moved out of the way, db push unblocked (server data change, no code, no deploy)
+
+**What:** `prisma db push` at every start refused ("drop `_bak_*` table, not empty") because four old backup tables sat in schema `public`. **Done:** pg_dump of the four tables first (`/home/ubuntu/backups/ipopulse/bak-tables-20261017.sql.gz`, 2.8 MB, gzip-tested, 4 CREATE TABLE), then ONE transaction `ALTER TABLE ... SET SCHEMA archive_bak` for each. **Evidence:** row counts identical before and after (64194, 160, 45118, 26); 0 `_bak_` tables left in public; read-only `prisma migrate diff` now shows only a harmless `ALTER COLUMN updated_at DROP DEFAULT` on rbi_repo_rates (db push will apply it at the next start). Nothing deleted; to bring one back: `ALTER TABLE archive_bak.<name> SET SCHEMA public`. No app code reads these tables (grepped src and prisma).
+
 ## 2026-10-17 IST - icon set from the product's own mark (branch brand-icons-20261017, NOT deployed)
 
 **What:** files only, no code: public/apple-touch-icon.png, icon-192/512, built from public/favicon.svg.  **Why:** `_shared/scripts/brand-check.sh` flagged the default Next favicon and the missing apple-touch icon; founder rule: real brand assets on every launch. **Done when:** `bash _shared/scripts/brand-check.sh <host>` shows no default-next-favicon / no-apple-touch-icon. **Out of scope:** a new logo (the mark is unchanged), the share image. **Verify:** files open (PNG/ICO sizes checked), build unaffected; after the next deploy run brand-check.
