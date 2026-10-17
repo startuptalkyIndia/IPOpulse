@@ -29,7 +29,7 @@ export interface PrivacyPageProps {
  * @example
  *   <PrivacyPage
  *     companyName="BillForge"
- *     contactEmail="privacy@talkytools.com"
+ *     contactEmail="connect@startuptalky.com"
  *     domain="billforge.talkytools.com"
  *   />
  */

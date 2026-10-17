@@ -31,7 +31,7 @@ export interface RefundPageProps {
  * @example
  *   <RefundPage
  *     companyName="BillForge"
- *     contactEmail="billing@talkytools.com"
+ *     contactEmail="connect@startuptalky.com"
  *     refundWindowDays={7}
  *   />
  */

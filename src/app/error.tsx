@@ -33,7 +33,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           </Link>
         </div>
         <a
-          href="mailto:support@talkytools.com?subject=IPOpulse%20Error%20Report"
+          href="mailto:connect@startuptalky.com?subject=IPOpulse%20Error%20Report"
           className="mt-4 inline-block text-sm text-slate-500 underline-offset-2 hover:text-indigo-600 hover:underline"
         >
           Report this issue

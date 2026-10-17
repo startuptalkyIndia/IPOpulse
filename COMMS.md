@@ -1,3 +1,7 @@
+## 2026-10-17 IST - contact address is connect@startuptalky.com on public pages (branch contact-email-20261017, NOT deployed)
+
+**What:** 7 line(s) in 6 file(s) (contact/legal/footer/help pages) now show `connect@startuptalky.com`; sending addresses, login identities, mailbox-sync identities and alert recipients untouched (script `_shared/scripts/contact-email-wave.sh` skips them). **Why:** founder rule 2026-10-17: one monitored inbox for every product. **Done when:** no public `mailto:` points elsewhere. **Out of scope:** email From addresses, other products. **Verify:** `tsc --noEmit` 0 (this run); reviewer; after deploy curl the contact/privacy pages for the address.
+
 # IPOpulse — COMMS
 
 ## 2026-10-14 IST — Browser screens now check the server's reply (branch `fetch-checks`, not merged, not deployed)

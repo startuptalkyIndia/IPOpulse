@@ -31,7 +31,7 @@ export interface TermsPageProps {
  * @example
  *   <TermsPage
  *     companyName="BillForge"
- *     contactEmail="legal@talkytools.com"
+ *     contactEmail="connect@startuptalky.com"
  *     domain="billforge.talkytools.com"
  *   />
  */

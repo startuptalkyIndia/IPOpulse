@@ -129,7 +129,7 @@ export default function PrivacyRightsPage() {
         </ul>
         <p className="mt-4 text-sm text-slate-600">
           <strong>Grievance Officer:</strong> Shubham Kumar, TalkyTools —{" "}
-          <a href="mailto:privacy@talkytools.com" className="text-indigo-600 hover:underline">privacy@talkytools.com</a>.
+          <a href="mailto:connect@startuptalky.com" className="text-indigo-600 hover:underline">connect@startuptalky.com</a>.
           We respond within 30 days.
         </p>
         <p className="mt-2 text-sm text-slate-500">
