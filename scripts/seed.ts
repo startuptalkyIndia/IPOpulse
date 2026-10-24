@@ -5,12 +5,15 @@
  *   - admin_users  : superadmin, admin (used by /sup-min)
  *   - users        : public/demo users (used by /signin)
  *
- * Passwords are FIXED at the values below so master dashboard login works
- * across all 49 projects. Override only via env vars in special cases.
+ * Seed passwords come from env so secrets are never committed to git
+ * (_shared/ENGINEERING_CONSTITUTION.md §1.2 Secrets). Set the 4 vars below
+ * in the server .env before seeding — this script refuses to run with a
+ * hardcoded password.
  *
- *   superadmin@ipopulse.com / Shu_bham12!   (table: admin_users, role: superadmin)
- *   admin@ipopulse.com      / Admin@2026!   (table: admin_users, role: admin)
- *   user@ipopulse.com       / User@2026!    (table: users)
+ *   SEED_UNIVERSAL_OWNER_PASSWORD  -> shubham@startuptalky.com (admin_users, role: superadmin)
+ *   SEED_SUPER_ADMIN_PASSWORD      -> superadmin@ipopulse.com  (admin_users, role: superadmin)
+ *   SEED_ADMIN_PASSWORD            -> admin@ipopulse.com       (admin_users, role: admin)
+ *   SEED_DEMO_USER_PASSWORD        -> user@ipopulse.com        (users)
  */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -19,30 +22,43 @@ const prisma = new PrismaClient();
 
 const PROJECT_DOMAIN = "ipopulse.com";
 
+const UNIVERSAL_OWNER_PASSWORD = process.env.SEED_UNIVERSAL_OWNER_PASSWORD;
+const SUPER_ADMIN_PASSWORD = process.env.SEED_SUPER_ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
+const DEMO_USER_PASSWORD = process.env.SEED_DEMO_USER_PASSWORD;
+
+if (!UNIVERSAL_OWNER_PASSWORD || !SUPER_ADMIN_PASSWORD || !ADMIN_PASSWORD || !DEMO_USER_PASSWORD) {
+  throw new Error(
+    "SEED_UNIVERSAL_OWNER_PASSWORD, SEED_SUPER_ADMIN_PASSWORD, SEED_ADMIN_PASSWORD and SEED_DEMO_USER_PASSWORD " +
+      "must all be set in the environment before seeding. Refusing to seed with a hardcoded password " +
+      "(_shared/ENGINEERING_CONSTITUTION.md §1.2 Secrets)."
+  );
+}
+
 const SUPER_ADMIN = {
   email: process.env.SUPERADMIN_EMAIL ?? `superadmin@${PROJECT_DOMAIN}`,
-  password: process.env.SUPERADMIN_PASSWORD ?? "Shu_bham12!",
+  password: SUPER_ADMIN_PASSWORD,
   name: "Super Admin",
   role: "superadmin",
 };
 
 const ADMIN = {
   email: process.env.ADMIN_EMAIL ?? `admin@${PROJECT_DOMAIN}`,
-  password: process.env.ADMIN_PASSWORD ?? "Admin@2026!",
+  password: ADMIN_PASSWORD,
   name: "Admin",
   role: "admin",
 };
 
 const DEMO_USER = {
   email: process.env.DEMO_USER_EMAIL ?? `user@${PROJECT_DOMAIN}`,
-  password: process.env.DEMO_USER_PASSWORD ?? "User@2026!",
+  password: DEMO_USER_PASSWORD,
   name: "Demo User",
 };
 
 // Universal owner login — exists across ALL TalkyTools projects
 const UNIVERSAL_OWNER = {
   email: "shubham@startuptalky.com",
-  password: "Shu_bham12!",
+  password: UNIVERSAL_OWNER_PASSWORD,
   name: "Shubham Kumar",
   role: "superadmin",
 };
