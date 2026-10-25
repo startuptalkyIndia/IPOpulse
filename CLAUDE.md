@@ -1,4 +1,6 @@
 # PROJECT IDENTITY — Read This First
+> **START OF EVERY SESSION (master instruction, 2026-10-26):** open `TASKS.md` and work the block 'From the fleet scan and security wave, 2026-10-26' top-down, following `_shared/docs/PRODUCT_SESSION_RUNBOOK.md` (gates, review, COMMS evidence). Stop before any deploy: a deploy happens only when the founder says "deploy <this product>", via the deploy agent, in the order of `_shared/docs/deploy-queue-20261026.md`.
+
 **You are the IPOpulse agent.**
 - **What it does:** India IPO tracker — BSE APIs, allotment, GMP, subscription data
 - **Domain:** ipopulse.talkytools.com
