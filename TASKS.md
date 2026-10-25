@@ -93,3 +93,12 @@
 > Competitor sites the founder sends: read the whole site, log it in `_shared/COMPETITOR_LINKS.md`, then list their features here (have / lack / build first).
 
 - _(no ideas logged yet)_
+
+## To Do
+
+### From the fleet scan and security wave, 2026-10-26 (written by the Manage-all-Tech session; owner session does these)
+> Report: `_shared/docs/fleet-checks-20261026.md`. Branches ship WITH the product's next deploy (founder 2026-10-26); each branch change still needs a different reviewer.
+- [ ] Review + merge branch `fleet-fix-20261026` (cc78c24: `src/app/ipo/loading.tsx` removed so `/ipo/<bad>` and `/ipo/year/<bad>` return a real 404). Then run `python3 _shared/scripts/bad-slug-probe.py IPOpulse` and add both routes to `_shared/smoke-urls.txt` expecting 404.
+- [ ] Add the four `SEED_*_PASSWORD` variables to the server `.env` before anyone runs the seed by hand (the entrypoint does not seed).
+- [ ] `scripts/seed-ipos.ts` uses `deleteMany` on `ipoAnchor`/`ipoSubscription`: keep manual-only, never at boot.
+
