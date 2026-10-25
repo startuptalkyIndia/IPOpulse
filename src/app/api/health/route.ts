@@ -23,6 +23,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { claudeAvailable } from "@/lib/claude-runner";
+import { getFyersToken, FYERS_APP_ID } from "@/lib/fyers";
+import { isMarketHours } from "@/crons/jobs/fyers-live-prices";
 import { getAiProviderMode } from "@/lib/ai-provider-setting";
 
 export const dynamic = "force-dynamic";
@@ -88,13 +90,30 @@ async function anthropicCheck(): Promise<DepCheck> {
   }
 }
 
+// Fyers live prices: token is daily, so "configured" is not enough. Fail only in
+// market hours with no fresh token (that is when live prices are actually missing).
+async function fyersCheck(): Promise<DepCheck> {
+  if (!FYERS_APP_ID || !process.env.FYERS_SECRET_ID?.trim()) {
+    return { status: "unconfigured", error: "FYERS_APP_ID / FYERS_SECRET_ID missing" };
+  }
+  try {
+    const token = await getFyersToken();
+    if (token) return { status: "ok" };
+    return isMarketHours()
+      ? { status: "fail", error: "no fresh Fyers token today — log in at /sup-min/fyers-token" }
+      : { status: "unconfigured", error: "no Fyers token yet today" };
+  } catch (e: unknown) {
+    return { status: "fail", error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export async function GET() {
-  const [dbResult, anthropicResult] = await Promise.all([pingDb(), anthropicCheck()]);
+  const [dbResult, anthropicResult, fyersResult] = await Promise.all([pingDb(), anthropicCheck(), fyersCheck()]);
 
   const checks: Record<string, DepCheck> = {
     db: dbResult,
-    // Kite Connect — live prices, OHLC historical data (₹500/mo plan)
-    kite: envCheck(["KITE_API_KEY", "KITE_API_SECRET"]),
+    // Fyers — live prices (Kite not used; env presence there said "ok" while quotes were dead)
+    fyers: fyersResult,
     // Anthropic — DRHP AI analysis, listing predictor features
     anthropic: anthropicResult,
     // Resend — email notifications

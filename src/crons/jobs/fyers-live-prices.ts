@@ -3,8 +3,8 @@
  *
  * Fyers data/quotes returns last price + OHLC + volume for NSE:SYM-EQ symbols.
  * Needs a daily access_token (admin logs in via /sup-min/fyers-token) AND the
- * app must have the Data API permission. Skips gracefully when either is
- * missing, so the existing Yahoo/Kite pipeline keeps serving prices.
+ * app must have the Data API permission. Fails LOUD (job recorded as failed)
+ * when either is missing during market hours; Yahoo keeps serving prices meanwhile.
  *
  * Writes into bhavcopy_daily with source "fyers" for today's date.
  * Schedule: every 5 min, 9:10 AM – 3:40 PM IST, Mon–Fri.
@@ -14,7 +14,7 @@ import { prisma } from "@/lib/db";
 import type { IngestionResult } from "../runIngestion";
 import { getFyersToken, fetchFyersQuotes, FYERS_APP_ID } from "@/lib/fyers";
 
-function isMarketHours(): boolean {
+export function isMarketHours(): boolean {
   const ist = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
   const day = ist.getDay();
   if (day === 0 || day === 6) return false;
@@ -24,10 +24,10 @@ function isMarketHours(): boolean {
 
 export async function ingestFyersLivePrices(): Promise<IngestionResult> {
   if (!isMarketHours()) return { rowsIn: 0, notes: "Outside market hours — skipped." };
-  if (!FYERS_APP_ID) return { rowsIn: 0, notes: "FYERS_APP_ID not configured." };
+  if (!FYERS_APP_ID) throw new Error("FYERS_APP_ID not configured.");
 
   const token = await getFyersToken();
-  if (!token) return { rowsIn: 0, notes: "No Fyers token. Add via /sup-min/fyers-token." };
+  if (!token) throw new Error("No fresh Fyers token today. Log in via /sup-min/fyers-token.");
 
   const companies = await prisma.company.findMany({
     where: { active: true, nseSymbol: { not: null } },
@@ -48,7 +48,7 @@ export async function ingestFyersLivePrices(): Promise<IngestionResult> {
 
   const quotes = await fetchFyersQuotes(token, symbols);
   if (quotes.size === 0) {
-    return { rowsIn: 0, notes: "Fyers returned 0 quotes — token expired or app lacks Data API permission." };
+    throw new Error("Fyers returned 0 quotes — token expired or app lacks Data API permission.");
   }
 
   const today = new Date();
