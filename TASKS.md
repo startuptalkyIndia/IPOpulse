@@ -101,4 +101,5 @@
 - [ ] Review + merge branch `fleet-fix-20261026` (cc78c24: `src/app/ipo/loading.tsx` removed so `/ipo/<bad>` and `/ipo/year/<bad>` return a real 404). Then run `python3 _shared/scripts/bad-slug-probe.py IPOpulse` and add both routes to `_shared/smoke-urls.txt` expecting 404.
 - [ ] Add the four `SEED_*_PASSWORD` variables to the server `.env` before anyone runs the seed by hand (the entrypoint does not seed).
 - [ ] `scripts/seed-ipos.ts` uses `deleteMany` on `ipoAnchor`/`ipoSubscription`: keep manual-only, never at boot.
+- [ ] Monthly housekeeping card for this product: `_shared/HOUSEKEEPING.md` Appendix F (10 checks); run it in the week before the last Saturday of each month and write one COMMS entry 'Monthly check YYYY-MM'.
 
