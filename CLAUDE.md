@@ -51,7 +51,7 @@ Mark completed tasks. Note what you built. Log any new issues found.
 - **End every session** with the status table (Task | Status | Notes) in COMMS.md and in the final message.
 - **Security:** auth check on every `/api` route, rate-limit auth endpoints, Zod on user input, no hardcoded secrets, `/sup-min` guarded in middleware.
 - **Database:** additive changes only, back up first, soft delete (`deletedAt`), never reset prod.
-- **Next build, ideas, competitors:** the top of `TASKS.md` **To Do** is what to build next; future ideas and product research live under `## Ideas & research` in `TASKS.md` (link long research files from there). When the founder sends a competitor site or link: read it fully, log it in `_shared/COMPETITOR_LINKS.md`, list their features there (what they have / what we lack / what to build first), and build only on a "go".
+- **Next build, ideas, competitors:** the top of `TASKS.md` **To Do** is what to build next; future ideas and product research live under `## Ideas & research` in `TASKS.md` (link long research files from there). When the founder sends a competitor site or link: study it END TO END (UI, UX, onboarding and process, pricing, marketing and positioning, growth loops and hacks, SEO and content, public data, integrations, support), log it in `_shared/COMPETITOR_LINKS.md` and your COMMS, make the gap table (they have / we lack / best version for us), put the best items at the top of TASKS.md and BUILD them to the normal flow (spec, different reviewer, tests); deploy only on a named go. Never copy their text, images, brand or claims. Full rule: `_shared/LEARNINGS.md` (settled doubts).
 
 ## Staying In Sync — Full 12-Point Checklist
 1. Code: local changes committed and pushed to GitHub main
