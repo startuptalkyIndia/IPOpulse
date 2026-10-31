@@ -1,3 +1,11 @@
+## 2026-10-26 IST — Soft 404 fix: removed `src/app/ipo/loading.tsx` (NOT deployed)
+
+**What:** a made-up address under the /ipo/ and /ipo/year/ routes answered HTTP 200 (a `loading.tsx` above a page that calls `notFound()` starts streaming first, so the status is already 200: same cause as StartupMonk 2026-10-24, 17 files removed). Removed the file so `notFound()` returns a real 404.
+**Why:** Google and browsers see a real page for any address (found by `_shared/scripts/bad-slug-probe.py`).
+**Done-when:** `curl -o /dev/null -w '%{http_code}'` on the bad address returns 404 after deploy; the list page still renders.
+**Out of scope:** adding a skeleton back with `<Suspense>` inside the page (only if the page awaits data before rendering it).
+**Verify:** `python3 _shared/scripts/bad-slug-probe.py IPOpulse`; add the route to `_shared/smoke-urls.txt` with expected 404.
+
 ## 2026-10-25 IST - security update: Next 16.4.3 and zod 4.6.7 (built, not deployed)
 
 **Spec:** what: `next` to ^16.4.3 (critical advisory in 16.0.0 to 16.4.0), `zod` to ^4.6.7 (high), plus the in-range transitive patches and the overrides listed in the commit; made with `_shared/scripts/sec-update.sh`. why: GitHub Security scan and `npm audit --omit=dev` failing. done-when: no high or critical in the production audit, node-floor check clean for the Dockerfile's Node, tsc 0, tests pass, build ok. out-of-scope: Prisma major upgrades and any source change. verify after deploy: container Created, `next` 16.4.3 in the container, health route 200, home and one data page 200, /sup-min gates, logs clean for 5 minutes. Review: different agent before any deploy; deploy only on a named founder go.
