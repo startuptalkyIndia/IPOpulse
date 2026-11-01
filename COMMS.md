@@ -1,3 +1,8 @@
+## 2026-11-01 IST - delete-safety: seed-ipos no longer deletes anchor, subscription or GMP rows (branch delete-safety-20261101, NOT deployed)
+
+**Spec:** what = scripts/seed-ipos.ts adds anchors (key ipo + investor), subscription rows (key ipo + capturedAt) and GMP rows (key ipo + date) only when missing, via src/lib/seed-sync.ts; why = hard-delete audit 2026-11-01 (the live nse-ipo-subscription cron, the GMP tracker and the admin GMP page write the same tables); done-when = a re-seed deletes and overwrites nothing; out-of-scope = the Ipo upsert (still overwrites seed-owned IPO fields, as before), no schema change; verify = tests/unit/seed-sync.spec.ts (2, a fake whose deleteMany throws), tsc, build.
+**Deploy notes:** none needed: it is a manual script (`npm run db:seed-ipos`), not in the image's start path. Never run against live without a dump.
+
 ## 2026-10-26 IST — Soft 404 fix: removed `src/app/ipo/loading.tsx` (NOT deployed)
 
 **What:** a made-up address under the /ipo/ and /ipo/year/ routes answered HTTP 200 (a `loading.tsx` above a page that calls `notFound()` starts streaming first, so the status is already 200: same cause as StartupMonk 2026-10-24, 17 files removed). Removed the file so `notFound()` returns a real 404.

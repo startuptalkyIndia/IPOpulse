@@ -3,6 +3,7 @@
  * Production data will come from BSE scraper + manual admin entry.
  */
 import { PrismaClient } from "@prisma/client";
+import { seedAnchors, seedSubscriptions, seedGmp } from "../src/lib/seed-sync";
 
 const prisma = new PrismaClient();
 
@@ -264,58 +265,10 @@ async function main() {
       create: data,
     });
 
-    // Anchors
-    if (anchors && anchors.length) {
-      await prisma.ipoAnchor.deleteMany({ where: { ipoId: record.id } });
-      for (const a of anchors) {
-        await prisma.ipoAnchor.create({
-          data: {
-            ipoId: record.id,
-            investorName: a.name,
-            allocation: BigInt(a.allocation),
-            pricePerShare: a.price,
-            value: a.value,
-          },
-        });
-      }
-    }
-
-    // Subscription — computed off openDate
-    if (subscription && subscription.length && openDate) {
-      await prisma.ipoSubscription.deleteMany({ where: { ipoId: record.id } });
-      for (const s of subscription) {
-        const captured = new Date(openDate.getTime() + s.offsetDays * 86400000);
-        captured.setHours(17, 30, 0, 0); // 5:30 PM IST
-        await prisma.ipoSubscription.create({
-          data: {
-            ipoId: record.id,
-            capturedAt: captured,
-            retailX: s.retail,
-            hniX: s.hni,
-            qibX: s.qib,
-            totalX: s.total,
-          },
-        });
-      }
-    }
-
-    // GMP — offsets from openDate
-    if (gmp && gmp.length && openDate) {
-      await prisma.ipoGmp.deleteMany({ where: { ipoId: record.id } });
-      for (const g of gmp) {
-        const d = new Date(openDate.getTime() + g.offsetDays * 86400000);
-        d.setHours(0, 0, 0, 0);
-        await prisma.ipoGmp.create({
-          data: {
-            ipoId: record.id,
-            date: d,
-            gmp: g.gmp,
-            source: g.source,
-            enteredBy: "seed",
-          },
-        });
-      }
-    }
+    // Anchors / subscription / GMP: create-if-missing only. Never delete: the live cron and the admin GMP page also write these tables.
+    if (anchors && anchors.length) await seedAnchors(prisma, record.id, anchors);
+    if (subscription && subscription.length && openDate) await seedSubscriptions(prisma, record.id, openDate, subscription);
+    if (gmp && gmp.length && openDate) await seedGmp(prisma, record.id, openDate, gmp);
 
     // Listing actuals
     if (listing) {
