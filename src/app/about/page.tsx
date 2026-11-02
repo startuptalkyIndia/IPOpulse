@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About IPOpulse",
+  title: { absolute: "About IPOpulse" },
   description: "IPOpulse is India's structured IPO, stock & market data hub — built for retail investors who want facts, not noise.",
 };
 

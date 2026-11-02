@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Finance & IPO News India — Markets, FII, Deals, Policy | IPOpulse",
+  title: { absolute: "Finance & IPO News India — Markets, FII, Deals, Policy | IPOpulse" },
   description:
     "Latest Indian stock market news — IPO news, FII/DII flows, bulk deals, SEBI/RBI policy, quarterly results. Aggregated from top financial media. Updated every 15 minutes.",
   alternates: { canonical: "/news" },

@@ -6,7 +6,7 @@ import { ArrowLeft, Award, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "IPO Merchant Banker Leaderboard 2024-2026 — Top BRLMs by Listing Performance | IPOpulse",
+  title: { absolute: "IPO Merchant Banker Leaderboard 2024-2026 — Top BRLMs by Listing Performance | IPOpulse" },
   description: "Ranking of Indian IPO merchant bankers (BRLMs) — Kotak Mahindra Capital, ICICI Securities, JM Financial, Axis Capital, Goldman Sachs and more — by number of IPOs handled and average listing day performance.",
   alternates: { canonical: "/ipo/merchant-bankers" },
 };

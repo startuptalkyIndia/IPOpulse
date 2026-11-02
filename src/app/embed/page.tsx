@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Code, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Embed IPOpulse on your blog or website — free GMP widget",
+  title: { absolute: "Embed IPOpulse on your blog or website — free GMP widget" },
   description:
     "Embed live IPO GMP, subscription status, and allotment data on your blog or website. One iframe tag, free, no API key needed.",
   alternates: { canonical: "/embed" },

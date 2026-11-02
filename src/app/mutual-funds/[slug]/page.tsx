@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const fund = await prisma.mutualFund.findUnique({ where: { slug } });
   if (!fund) return { title: "Fund not found" };
   return {
-    title: `${fund.schemeName} — NAV, Returns & Details | IPOpulse`,
+    title: { absolute: `${fund.schemeName} — NAV, Returns & Details | IPOpulse` },
     description: `${fund.schemeName} by ${fund.amc ?? ""} — latest NAV ₹${Number(fund.nav).toFixed(2)}, category ${fund.category ?? "—"}. Daily NAV from AMFI.`,
     alternates: { canonical: `/mutual-funds/${slug}` },
   };

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Info, AlertCircle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Rights Issue and Bonus Share 2026 — Upcoming Rights Issues India | NSE BSE | IPOpulse",
+  title: { absolute: "Rights Issue and Bonus Share 2026 — Upcoming Rights Issues India | NSE BSE | IPOpulse" },
   description:
     "Track all upcoming and recent rights issues and bonus share announcements from NSE and BSE listed companies in 2025-2026. Record dates, ratios, issue prices.",
   alternates: { canonical: "/corporate-actions/rights-bonus" },

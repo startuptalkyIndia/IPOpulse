@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — IPOpulse",
+  title: { absolute: "Terms of Service — IPOpulse" },
   description: "Terms governing use of IPOpulse.",
 };
 

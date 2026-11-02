@@ -84,8 +84,8 @@ describe("AMC page canonical and order", () => {
   });
   it("title and description say the page for page > 1, plain for page 1, no robots field", () => {
     const m2 = amcMetadata("ICICI", "icici", 2);
-    expect(m2.title).toContain("page 2"); expect(m2.description).toContain("page 2");
-    expect(amcMetadata("ICICI", "icici", 1).title).toBe("ICICI — All Mutual Fund Schemes & NAV | IPOpulse");
+    expect((m2.title as { absolute: string }).absolute).toContain("page 2"); expect(m2.description).toContain("page 2");
+    expect(amcMetadata("ICICI", "icici", 1).title).toEqual({ absolute: "ICICI — All Mutual Fund Schemes & NAV | IPOpulse" });
     expect("robots" in m2).toBe(false);
   });
   it("fund order ends with a unique key", () => {

@@ -4,7 +4,7 @@ import { Check, Lock, Bell, Download, Filter, Star } from "lucide-react";
 import { WhatsAppBanner } from "@/components/WhatsAppBanner";
 
 export const metadata: Metadata = {
-  title: "Pricing — IPOpulse",
+  title: { absolute: "Pricing — IPOpulse" },
   description:
     "Free access to all IPO data. Upgrade to Premium for GMP alerts, Excel exports, advanced filters, and more.",
 };

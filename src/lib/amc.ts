@@ -47,7 +47,7 @@ export function amcCanonical(slug: string, page: number): string {
 export function amcMetadata(amc: string, slug: string, page: number) {
   const suffix = page > 1 ? ` - page ${page}` : "";
   return {
-    title: `${amc} — All Mutual Fund Schemes & NAV${suffix} | IPOpulse`,
+    title: { absolute: `${amc} — All Mutual Fund Schemes & NAV${suffix} | IPOpulse` },
     description: `Every mutual fund scheme by ${amc} with latest daily NAV from AMFI${suffix}. Browse equity, debt, hybrid and other categories.`,
     alternates: { canonical: amcCanonical(slug, page) },
   };

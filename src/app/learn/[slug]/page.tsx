@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = getArticle(slug);
   if (!article) return {};
   return {
-    title: `${article.title} — IPOpulse Learn`,
+    title: { absolute: `${article.title} — IPOpulse Learn` },
     description: article.description,
     alternates: { canonical: `/learn/${article.slug}` },
     openGraph: {

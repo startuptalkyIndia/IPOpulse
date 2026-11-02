@@ -8,7 +8,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Sparkline } from "@/components/Sparkline";
 
 export const metadata: Metadata = {
-  title: "Compare Stocks India — HDFC Bank vs ICICI Bank, TCS vs Infosys | IPOpulse",
+  title: { absolute: "Compare Stocks India — HDFC Bank vs ICICI Bank, TCS vs Infosys | IPOpulse" },
   description:
     "Side-by-side stock comparison tool. Compare P/E, P/B, ROE, Debt/Equity, EPS, Market Cap, 52W high/low for any two NSE/BSE listed companies.",
   alternates: { canonical: "/compare/stocks" },

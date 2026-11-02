@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy — IPOpulse",
+  title: { absolute: "Refund & Cancellation Policy — IPOpulse" },
   description: "Refund and cancellation terms for paid IPOpulse subscriptions.",
   alternates: { canonical: "/refund" },
 };

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — IPOpulse",
+  title: { absolute: "Privacy Policy — IPOpulse" },
   description: "How IPOpulse collects, uses, and protects your data.",
 };
 
