@@ -18,6 +18,18 @@ const open = new Date("2026-03-10T00:00:00Z");
 const subs = [{ offsetDays: 0, retail: 1, hni: 2, qib: 3, total: 4 }, { offsetDays: 1, retail: 5, hni: 6, qib: 7, total: 8 }];
 
 describe("seed-ipos is create-if-missing", () => {
+  it("the subscription key is the same instant (12:00 UTC = 5:30 PM IST) in any timezone, so a re-run from another timezone adds nothing", async () => {
+    const prev = process.env.TZ;
+    try {
+      const { t, db } = fakeDb();
+      for (const tz of ["Asia/Kolkata", "America/Los_Angeles", "Pacific/Auckland", "UTC"]) {
+        process.env.TZ = tz;
+        await seedSubscriptions(db, 7, open, subs);
+      }
+      expect(t.ipoSubscription.length).toBe(2);
+      expect(t.ipoSubscription.map((r) => (r.capturedAt as Date).toISOString())).toEqual(["2026-03-10T12:00:00.000Z", "2026-03-11T12:00:00.000Z"]);
+    } finally { if (prev === undefined) delete process.env.TZ; else process.env.TZ = prev; }
+  });
   it("a re-seed keeps live-captured subscription rows and adds only the seeded ones that are missing", async () => {
     const { t, db } = fakeDb();
     t.ipoSubscription.push({ ipoId: 7, capturedAt: new Date("2026-03-12T10:00:00Z"), totalX: 99 }); // written by the nse-ipo-subscription cron

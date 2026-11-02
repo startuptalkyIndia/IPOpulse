@@ -33,7 +33,9 @@ export async function seedSubscriptions(db: SeedDb, ipoId: number, openDate: Dat
   let added = 0;
   for (const s of subs) {
     const capturedAt = new Date(openDate.getTime() + s.offsetDays * 86400000);
-    capturedAt.setHours(17, 30, 0, 0); // 5:30 PM IST
+    // 5:30 PM IST = 12:00 UTC, built from UTC fields only so the natural key (ipo + this instant) is the same on any machine's timezone;
+    // there is no DB unique index on it, so a local-time key would add a duplicate row per timezone offset on a re-run.
+    capturedAt.setUTCHours(12, 0, 0, 0);
     if (await db.ipoSubscription.findFirst({ where: { ipoId, capturedAt } })) continue;
     await db.ipoSubscription.create({ data: { ipoId, capturedAt, retailX: s.retail, hniX: s.hni, qibX: s.qib, totalX: s.total } });
     added++;
