@@ -6,6 +6,7 @@ import { Filter, X, Sliders, Download, Bookmark, Star } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import type { ScreenerCompany, CustomFilter, SortKey, SavedScreen } from "./_parts/types";
 import { filterAndSort } from "./_parts/filtering";
+import { exportCsv } from "./_parts/csv";
 import {
   MCAP_BANDS,
   TYPE_OPTIONS,
@@ -117,46 +118,6 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
   // down to, say, 350 mid-caps expects the export to have all 350, not just the
   // first 200 shown on screen.
   const filtered = useMemo(() => filteredAll.slice(0, 200), [filteredAll]);
-
-  const CSV_COLUMNS: Array<{ label: string; get: (c: ScreenerCompany) => string | number }> = [
-    { label: "Company", get: (c) => c.name },
-    { label: "Symbol", get: (c) => c.symbol ?? "" },
-    { label: "Quality Grade", get: (c) => c.qualityGrade ?? "" },
-    { label: "Quality Score", get: (c) => c.qualityOverall ?? "" },
-    { label: "Sector", get: (c) => c.sector ?? "" },
-    { label: "Market Cap (Cr)", get: (c) => c.marketCapCr ?? "" },
-    { label: "LTP", get: (c) => c.ltp ?? "" },
-    { label: "1D %", get: (c) => c.chg1d ?? "" },
-    { label: "52W Low", get: (c) => c.low52w ?? "" },
-    { label: "52W High", get: (c) => c.high52w ?? "" },
-    { label: "P/E", get: (c) => c.peRatio ?? "" },
-    { label: "P/B", get: (c) => c.pbRatio ?? "" },
-    { label: "ROE %", get: (c) => c.roePercent ?? "" },
-    { label: "Debt/Equity", get: (c) => c.debtToEquity ?? "" },
-    { label: "Dividend Yield %", get: (c) => c.dividendYield ?? "" },
-    { label: "EPS", get: (c) => c.eps ?? "" },
-    { label: "Volume", get: (c) => c.volume ?? "" },
-  ];
-
-  function csvEscape(v: string | number): string {
-    const s = String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  }
-
-  function exportCsv() {
-    const header = CSV_COLUMNS.map((c) => c.label).join(",");
-    const rows = filteredAll.map((c) => CSV_COLUMNS.map((col) => csvEscape(col.get(c))).join(","));
-    const csv = [header, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ipopulse-screener-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
 
   function reset() {
     setSearch("");
@@ -440,7 +401,7 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <button
-            onClick={exportCsv}
+            onClick={() => exportCsv(filteredAll)}
             disabled={filteredAll.length === 0}
             className="text-xs font-medium text-gray-600 hover:text-indigo-700 inline-flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
             title={`Export all ${filteredAll.length} matching rows as CSV`}
