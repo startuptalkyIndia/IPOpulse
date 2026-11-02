@@ -4,7 +4,7 @@ import { Coins, AlertTriangle, Building2, TrendingUp, Sparkles, Award, Scale, Cr
 import { bestStocksCategories } from "@/lib/best-stocks-categories";
 
 export const metadata: Metadata = {
-  title: "Best Stocks India 2026 — Curated Lists by Price, Market Cap, ROE | IPOpulse",
+  title: { absolute: "Best Stocks India 2026 — Curated Lists by Price, Market Cap, ROE | IPOpulse" },
   description:
     "Discover the best stocks in India 2026 — under ₹100, under ₹50, penny stocks, large cap, mid cap, small cap, high ROE, low P/E, blue chip. Curated lists from NSE/BSE bhavcopy.",
   alternates: { canonical: "/best-stocks" },

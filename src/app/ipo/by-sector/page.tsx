@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "IPO Performance by Sector India 2024-2026 — Which Sectors Deliver Best Listing Gains | IPOpulse",
+  title: { absolute: "IPO Performance by Sector India 2024-2026 — Which Sectors Deliver Best Listing Gains | IPOpulse" },
   description: "Sector-wise breakdown of Indian IPO listing performance — IT, Banking, Pharma, Consumer, Specialty Chemicals and more. Compare average listing gain, success rate, and total capital raised per sector.",
   alternates: { canonical: "/ipo/by-sector" },
 };

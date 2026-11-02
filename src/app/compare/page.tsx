@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Scale, CreditCard as CC, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Compare Brokers & Credit Cards — IPOpulse",
+  title: { absolute: "Compare Brokers & Credit Cards — IPOpulse" },
   description: "Side-by-side comparison of Indian stock brokers and credit cards. Features, fees, best-fit use cases.",
 };
 

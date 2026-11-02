@@ -4,7 +4,7 @@ import { Wallet, Home, Landmark, Briefcase, Car, ArrowRight, Shield, CreditCard,
 import { financeCategories, productsForCategory } from "@/lib/finance-products";
 
 export const metadata: Metadata = {
-  title: "Compare Loans, Savings Accounts & Insurance India | IPOpulse Finance",
+  title: { absolute: "Compare Loans, Savings Accounts & Insurance India | IPOpulse Finance" },
   description:
     "One place to compare every Indian financial product — personal loans, home loans, car loans, business loans, savings accounts, neobanks, credit cards, term insurance, health insurance.",
   alternates: { canonical: "/finance" },

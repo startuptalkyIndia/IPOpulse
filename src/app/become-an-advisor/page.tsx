@@ -5,7 +5,7 @@ import { Briefcase, TrendingUp, Wallet, Users, ArrowRight, Check } from "lucide-
 import { isFeatureEnabled } from "@/lib/feature-flags";
 
 export const metadata: Metadata = {
-  title: "Become an IPOpulse Advisor — earn ₹500-5,000 per referral",
+  title: { absolute: "Become an IPOpulse Advisor — earn ₹500-5,000 per referral" },
   description:
     "Earn affiliate commissions by referring users to IPOpulse-curated demat accounts, credit cards, loans, and insurance. Free to join, monthly UPI payouts.",
   alternates: { canonical: "/become-an-advisor" },

@@ -7,7 +7,7 @@ import {
 import { SITE_MAP } from "@/lib/site-map";
 
 export const metadata: Metadata = {
-  title: "Explore IPOpulse — All Tools, Data & Pages in One Place",
+  title: { absolute: "Explore IPOpulse — All Tools, Data & Pages in One Place" },
   description:
     "The complete index of everything on IPOpulse — IPO tracking, stock research, screener, market data, mutual funds, calculators, news and learning guides. Find any tool fast.",
   alternates: { canonical: "/explore" },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact IPOpulse",
+  title: { absolute: "Contact IPOpulse" },
   description: "Get in touch with IPOpulse — feedback, data corrections, partnerships.",
 };
 

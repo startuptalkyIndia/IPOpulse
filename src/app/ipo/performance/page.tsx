@@ -8,7 +8,7 @@ import { latestTradingDate, canonicalCloseMap, canonicalSeries, canonicalCloseOn
 import { Sparkline } from "@/components/Sparkline";
 
 export const metadata: Metadata = {
-  title: "IPO Performance Tracker — Listing gains + 1M/3M/6M/1Y returns 2024-2026 | IPOpulse",
+  title: { absolute: "IPO Performance Tracker — Listing gains + 1M/3M/6M/1Y returns 2024-2026 | IPOpulse" },
   description: "Every recently listed Indian IPO with its actual listing-day gain plus 1-month, 3-month, 6-month and 1-year post-listing returns. Filter by year. Best and worst IPO performers tracked daily from NSE bhavcopy.",
   alternates: { canonical: "/ipo/performance" },
 };

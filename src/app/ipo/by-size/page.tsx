@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "IPOs by Issue Size India — Mega, Large, Mid, Small IPOs 2024-2026 | IPOpulse",
+  title: { absolute: "IPOs by Issue Size India — Mega, Large, Mid, Small IPOs 2024-2026 | IPOpulse" },
   description: "Indian IPOs categorized by issue size — mega IPOs (>₹5,000 Cr), large (₹1,000-5,000 Cr), mid (₹200-1,000 Cr), small (<₹200 Cr). Compare listing gains across size buckets to identify the best risk-return profile.",
   alternates: { canonical: "/ipo/by-size" },
 };
