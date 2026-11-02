@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Filter, X, Sliders, Download, Bookmark, Star } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
 import type { ScreenerCompany, CustomFilter, SortKey, SavedScreen } from "./_parts/types";
 import { filterAndSort } from "./_parts/filtering";
 import { exportCsv } from "./_parts/csv";
@@ -11,14 +9,8 @@ import { ScreenerTable } from "./_parts/ScreenerTable";
 import { QuickScreens } from "./_parts/QuickScreens";
 import { FundamentalsPanel } from "./_parts/FundamentalsPanel";
 import { CustomFilterBuilder } from "./_parts/CustomFilterBuilder";
-import {
-  MCAP_BANDS,
-  TYPE_OPTIONS,
-  METRICS,
-  OPERATORS,
-  GRADE_BADGE_COLORS,
-  SAVED_SCREENS_KEY,
-} from "./_parts/constants";
+import { useSavedScreens } from "./_parts/useSavedScreens";
+import { MCAP_BANDS, TYPE_OPTIONS, METRICS } from "./_parts/constants";
 
 export type { ScreenerCompany };
 
@@ -58,44 +50,12 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     setCustomFilters((prev) => prev.filter((f) => f.id !== id));
   }
 
-  // Saved screens — per-browser convenience (localStorage), not account state:
-  // a filter combo someone wants to revisit, same idea as Screener.in's saved
-  // screens. Never blocks rendering if storage is unavailable (private window,
-  // blocked site data) — falls back to an empty list.
-  const [savedScreens, setSavedScreens] = useState<SavedScreen[]>([]);
-  const [screenName, setScreenName] = useState("");
-  const [showSaveInput, setShowSaveInput] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SAVED_SCREENS_KEY);
-      if (raw) setSavedScreens(JSON.parse(raw));
-    } catch {
-      // ignore — private window / blocked storage
-    }
-  }, []);
-
-  function persistSavedScreens(next: SavedScreen[]) {
-    setSavedScreens(next);
-    try {
-      localStorage.setItem(SAVED_SCREENS_KEY, JSON.stringify(next));
-    } catch {
-      // ignore — private window / blocked storage; the in-memory state above still updates
-    }
-  }
-
   function currentFilters(): SavedScreen["filters"] {
     return { search, sector, mcapBand, type, peMax, roeMin, debtMax, divMin, requireFundamentals, moatOnly, uptrendOnly, compounderOnly, sortBy, customFilters };
   }
 
-  function saveCurrentScreen() {
-    const name = screenName.trim();
-    if (!name) return;
-    const next = [...savedScreens.filter((s) => s.name !== name), { name, filters: currentFilters() }];
-    persistSavedScreens(next);
-    setScreenName("");
-    setShowSaveInput(false);
-  }
+  const { savedScreens, screenName, setScreenName, showSaveInput, setShowSaveInput, saveCurrentScreen, deleteScreen } =
+    useSavedScreens(currentFilters);
 
   function loadScreen(s: SavedScreen) {
     const f = s.filters;
@@ -107,10 +67,6 @@ export function ScreenerClient({ seed, sectors }: { seed: ScreenerCompany[]; sec
     setCustomFilters(f.customFilters ?? []); // ?? [] guards screens saved before this field existed
     setShowFundamentals(true);
     if ((f.customFilters ?? []).length > 0) setShowCustomFilters(true);
-  }
-
-  function deleteScreen(name: string) {
-    persistSavedScreens(savedScreens.filter((s) => s.name !== name));
   }
 
   const filteredAll = useMemo(() => {
