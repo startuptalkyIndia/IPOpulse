@@ -1,3 +1,10 @@
+## 2026-11-02 IST - delete-safety follow-up: seed subscription key is timezone-independent (branch delete-safety2-20261101, NOT deployed)
+
+**Spec:** what = `src/lib/seed-sync.ts` builds the subscription `capturedAt` key as 12:00 UTC (5:30 PM IST) from UTC fields instead of local `setHours(17,30)`, so a re-seed from a machine in another timezone finds the same row and adds no duplicate (the table has no unique index on it); why = review `_shared/docs/review-delete-safety-20261101.md` IPOpulse finding 1; done-when = four timezones in a row add exactly 2 rows; out-of-scope = the GMP date key (a unique index on ipo + date already stops duplicates), the Ipo upsert; verify = `tests/unit/seed-sync.spec.ts` (3), tsc, build. A seed run from an IST machine produced the same instant (17:30 IST = 12:00 UTC), so existing rows match; rows made on a non-IST machine would differ once.
+**Deploy notes:** none (manual script, not in the start path). Never run the seed on live without a dump.
+
+**Follow-up after review (same branch):** the 12:00 UTC key alone would add 8 duplicates on live (8 seed rows exist at 17:30 UTC, made by a UTC machine). `seedSubscriptions` now treats ANY row of the IPO on the same UTC day as already seeded (create-only, no delete or update); tests: an existing 17:30 UTC row on the same day adds nothing, a different day adds a row, another IPO is independent.
+
 ## 2026-11-01 IST - delete-safety: seed-ipos no longer deletes anchor, subscription or GMP rows (branch delete-safety-20261101, NOT deployed)
 
 **Spec:** what = scripts/seed-ipos.ts adds anchors (key ipo + investor), subscription rows (key ipo + capturedAt) and GMP rows (key ipo + date) only when missing, via src/lib/seed-sync.ts; why = hard-delete audit 2026-11-01 (the live nse-ipo-subscription cron, the GMP tracker and the admin GMP page write the same tables); done-when = a re-seed deletes and overwrites nothing; out-of-scope = the Ipo upsert (still overwrites seed-owned IPO fields, as before), no schema change; verify = tests/unit/seed-sync.spec.ts (2, a fake whose deleteMany throws), tsc, build.
