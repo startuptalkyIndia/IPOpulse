@@ -32,3 +32,30 @@ export function parsePage(v: string | string[] | undefined): number {
   const s = Array.isArray(v) ? v[0] : v;
   return Math.min(Math.max(parseInt(s ?? "", 10) || 1, 1), 1000);
 }
+
+/** Page number as the page body uses it: parsed safely, then limited to the last page. */
+export function resolvePage(raw: string | string[] | undefined, total: number) {
+  const totalPages = Math.max(1, Math.ceil(total / AMC_PAGE_SIZE));
+  return { totalPages, page: Math.min(parsePage(raw), totalPages) };
+}
+
+/** Page 1 keeps the plain URL; later pages canonical to themselves (never noindex). */
+export function amcCanonical(slug: string, page: number): string {
+  return page > 1 ? `/mutual-funds/amc/${slug}?page=${page}` : `/mutual-funds/amc/${slug}`;
+}
+
+export function amcMetadata(amc: string, slug: string, page: number) {
+  const suffix = page > 1 ? ` - page ${page}` : "";
+  return {
+    title: `${amc} — All Mutual Fund Schemes & NAV${suffix} | IPOpulse`,
+    description: `Every mutual fund scheme by ${amc} with latest daily NAV from AMFI${suffix}. Browse equity, debt, hybrid and other categories.`,
+    alternates: { canonical: amcCanonical(slug, page) },
+  };
+}
+
+/** Stable order: equal names never swap between pages. */
+export const AMC_FUND_ORDER = [
+  { category: "asc" as const },
+  { schemeName: "asc" as const },
+  { slug: "asc" as const },
+];

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildHistory, fetchIndexHistory, sparkCutoffDate, SPARK_POINTS } from "@/lib/index-history";
-import { createAmcResolver, amcSlug, parsePage } from "@/lib/amc";
+import { createAmcResolver, amcSlug, parsePage, resolvePage, amcCanonical, amcMetadata, AMC_FUND_ORDER } from "@/lib/amc";
 
 // The page's ORIGINAL maths, copied from the pre-change code, to prove identical output.
 function oldMaths(rows: { indexName: string; close: number }[]) {
@@ -64,5 +64,31 @@ describe("parsePage", () => {
   it("never NaN, clamps, first of repeated", () => {
     expect(parsePage("abc")).toBe(1); expect(parsePage(undefined)).toBe(1); expect(parsePage("-4")).toBe(1);
     expect(parsePage("99999999")).toBe(1000); expect(parsePage(["3", "9"])).toBe(3); expect(parsePage("2")).toBe(2);
+  });
+});
+
+describe("AMC page canonical and order", () => {
+  const total = 450; // 3 pages of 200
+  it("page 1 and bad values canonical to the plain URL; page N to itself", () => {
+    const c = (raw: string | undefined) => amcCanonical("icici", resolvePage(raw, total).page);
+    expect(c(undefined)).toBe("/mutual-funds/amc/icici");
+    expect(c("1")).toBe("/mutual-funds/amc/icici");
+    for (const bad of ["abc", "-1", "0", ""]) expect(c(bad)).toBe("/mutual-funds/amc/icici");
+    expect(c("2")).toBe("/mutual-funds/amc/icici?page=2");
+    expect(c("3")).toBe("/mutual-funds/amc/icici?page=3");
+  });
+  it("a page above the last canonicals to the last page; huge values too", () => {
+    expect(resolvePage("99999", total).page).toBe(3);
+    expect(amcCanonical("icici", resolvePage("99999", total).page)).toBe("/mutual-funds/amc/icici?page=3");
+    expect(resolvePage("5", 0)).toEqual({ totalPages: 1, page: 1 });
+  });
+  it("title and description say the page for page > 1, plain for page 1, no robots field", () => {
+    const m2 = amcMetadata("ICICI", "icici", 2);
+    expect(m2.title).toContain("page 2"); expect(m2.description).toContain("page 2");
+    expect(amcMetadata("ICICI", "icici", 1).title).toBe("ICICI — All Mutual Fund Schemes & NAV | IPOpulse");
+    expect("robots" in m2).toBe(false);
+  });
+  it("fund order ends with a unique key", () => {
+    expect(AMC_FUND_ORDER).toEqual([{ category: "asc" }, { schemeName: "asc" }, { slug: "asc" }]);
   });
 });

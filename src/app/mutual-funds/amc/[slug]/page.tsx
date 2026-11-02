@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Briefcase } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { createAmcResolver, parsePage, AMC_PAGE_SIZE } from "@/lib/amc";
+import { createAmcResolver, parsePage, resolvePage, amcMetadata, AMC_PAGE_SIZE, AMC_FUND_ORDER } from "@/lib/amc";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -22,15 +22,17 @@ const resolveAmcCached = createAmcResolver(async () => {
 });
 const resolveAmc = (slug: string) => resolveAmcCached(slug);
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const sp = await searchParams;
   const amc = await resolveAmc(slug);
   if (!amc) return { title: "AMC not found" };
-  return {
-    title: `${amc} — All Mutual Fund Schemes & NAV | IPOpulse`,
-    description: `Every mutual fund scheme by ${amc} with latest daily NAV from AMFI. Browse equity, debt, hybrid and other categories.`,
-    alternates: { canonical: `/mutual-funds/amc/${slug}` },
-  };
+  let page = 1;
+  if (parsePage(sp?.page) > 1) {
+    const total = await prisma.mutualFund.count({ where: { active: true, amc } });
+    page = resolvePage(sp?.page, total).page;
+  }
+  return amcMetadata(amc, slug, page);
 }
 
 export default async function AmcPage({ params, searchParams }: Props) {
@@ -40,13 +42,12 @@ export default async function AmcPage({ params, searchParams }: Props) {
   if (!amc) notFound();
 
   const where = { active: true, amc } as const;
-  const orderBy = [{ category: "asc" as const }, { schemeName: "asc" as const }];
+  const orderBy = AMC_FUND_ORDER;
   const [total, catGroups] = await Promise.all([
     prisma.mutualFund.count({ where }),
     prisma.mutualFund.groupBy({ by: ["category"], where }),
   ]);
-  const totalPages = Math.max(1, Math.ceil(total / AMC_PAGE_SIZE));
-  const page = Math.min(parsePage(sp?.page), totalPages);
+  const { totalPages, page } = resolvePage(sp?.page, total);
   const funds = await prisma.mutualFund.findMany({
     where,
     orderBy,
