@@ -5,45 +5,57 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Briefcase } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { createAmcResolver, parsePage, resolvePage, amcMetadata, AMC_PAGE_SIZE, AMC_FUND_ORDER } from "@/lib/amc";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }
 
-const amcSlug = (amc: string) => amc.toLowerCase().replace(/\s+/g, "-");
-
-// Find the AMC whose slugified name matches the URL slug.
-async function resolveAmc(slug: string): Promise<string | null> {
-  const amcs = await prisma.mutualFund.findMany({
+// Cached AMC list (one groupBy an hour), not a scan of every fund per view.
+const resolveAmcCached = createAmcResolver(async () => {
+  const groups = await prisma.mutualFund.groupBy({
+    by: ["amc"],
     where: { active: true, amc: { not: null } },
-    distinct: ["amc"],
-    select: { amc: true },
   });
-  const match = amcs.find((a) => a.amc && amcSlug(a.amc) === slug);
-  return match?.amc ?? null;
-}
+  return groups.map((g) => g.amc).filter((a): a is string => !!a);
+});
+const resolveAmc = (slug: string) => resolveAmcCached(slug);
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const sp = await searchParams;
   const amc = await resolveAmc(slug);
   if (!amc) return { title: "AMC not found" };
-  return {
-    title: `${amc} — All Mutual Fund Schemes & NAV | IPOpulse`,
-    description: `Every mutual fund scheme by ${amc} with latest daily NAV from AMFI. Browse equity, debt, hybrid and other categories.`,
-    alternates: { canonical: `/mutual-funds/amc/${slug}` },
-  };
+  let page = 1;
+  if (parsePage(sp?.page) > 1) {
+    const total = await prisma.mutualFund.count({ where: { active: true, amc } });
+    page = resolvePage(sp?.page, total).page;
+  }
+  return amcMetadata(amc, slug, page);
 }
 
-export default async function AmcPage({ params }: Props) {
+export default async function AmcPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const sp = await searchParams;
   const amc = await resolveAmc(slug);
   if (!amc) notFound();
 
+  const where = { active: true, amc } as const;
+  const orderBy = AMC_FUND_ORDER;
+  const [total, catGroups] = await Promise.all([
+    prisma.mutualFund.count({ where }),
+    prisma.mutualFund.groupBy({ by: ["category"], where }),
+  ]);
+  const { totalPages, page } = resolvePage(sp?.page, total);
   const funds = await prisma.mutualFund.findMany({
-    where: { active: true, amc },
-    orderBy: [{ category: "asc" }, { schemeName: "asc" }],
+    where,
+    orderBy,
+    skip: (page - 1) * AMC_PAGE_SIZE,
+    take: AMC_PAGE_SIZE,
     select: { slug: true, schemeName: true, category: true, nav: true, navAsOf: true },
   });
+  const categoryCount = new Set(catGroups.map((g) => g.category ?? "Other")).size;
 
   // Group by category
   const byCategory = new Map<string, typeof funds>();
@@ -54,7 +66,11 @@ export default async function AmcPage({ params }: Props) {
     byCategory.set(cat, arr);
   }
   const categories = Array.from(byCategory.entries()).sort((a, b) => b[1].length - a[1].length);
-  const latestNavDate = funds[0]?.navAsOf;
+  // Same as before: the NAV date of the first fund in the full ordering (page 1's first row).
+  const latestNavDate =
+    page === 1
+      ? funds[0]?.navAsOf
+      : (await prisma.mutualFund.findFirst({ where, orderBy, select: { navAsOf: true } }))?.navAsOf;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -70,7 +86,7 @@ export default async function AmcPage({ params }: Props) {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{amc}</h1>
             <p className="text-sm text-gray-600 mt-1">
-              {funds.length.toLocaleString("en-IN")} schemes across {categories.length} categories.
+              {total.toLocaleString("en-IN")} schemes across {categoryCount} categories.
               {latestNavDate && ` NAV as of ${new Date(latestNavDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}.`}
             </p>
           </div>
@@ -117,6 +133,18 @@ export default async function AmcPage({ params }: Props) {
           </div>
         </section>
       ))}
+
+      {totalPages > 1 && (
+        <nav className="flex items-center justify-between text-sm" aria-label="Pagination">
+          {page > 1 ? (
+            <Link href={`/mutual-funds/amc/${slug}?page=${page - 1}`} rel="prev" className="text-indigo-600 hover:text-indigo-800">&larr; Previous</Link>
+          ) : <span />}
+          <span className="text-gray-500">Page {page} of {totalPages}</span>
+          {page < totalPages ? (
+            <Link href={`/mutual-funds/amc/${slug}?page=${page + 1}`} rel="next" className="text-indigo-600 hover:text-indigo-800">Next &rarr;</Link>
+          ) : <span />}
+        </nav>
+      )}
 
       <p className="text-[11px] text-gray-400">
         NAVs sourced daily from AMFI&apos;s public NAVAll feed. For informational purposes only — not investment advice.

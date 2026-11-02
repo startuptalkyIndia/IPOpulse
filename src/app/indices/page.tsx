@@ -5,6 +5,7 @@ import Link from "next/link";
 import { TrendingUp, TrendingDown, Award, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Sparkline } from "@/components/Sparkline";
+import { fetchIndexHistory, buildHistory } from "@/lib/index-history";
 
 export const metadata: Metadata = {
   title: "Nifty Indices — live close, P/E, P/B, dividend yield for 100+ NSE indices",
@@ -38,26 +39,8 @@ export default async function IndicesPage() {
   });
 
   // ─── Fetch 30-day history for sparklines + 30D return ───────────────────
-  const sparkCutoff = new Date(latest.date);
-  sparkCutoff.setDate(sparkCutoff.getDate() - 35);
-  const histRows = await prisma.niftyIndex.findMany({
-    where: { date: { gte: sparkCutoff } },
-    orderBy: [{ indexName: "asc" }, { date: "asc" }],
-    select: { indexName: true, close: true },
-  });
-  const histMap = new Map<string, number[]>();
-  for (const r of histRows) {
-    const arr = histMap.get(r.indexName) ?? [];
-    arr.push(Number(r.close));
-    histMap.set(r.indexName, arr);
-  }
-  // Compute 30D return % per index
-  const ret30dMap = new Map<string, number>();
-  for (const [name, prices] of histMap.entries()) {
-    if (prices.length < 2) continue;
-    const ret = ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100;
-    ret30dMap.set(name, ret);
-  }
+  const histRows = await fetchIndexHistory(prisma, latest.date);
+  const { histMap, ret30dMap } = buildHistory(histRows);
 
   // ─── Top gainers / losers (today + 30D) ────────────────────────────────
   const sortedByToday = [...rows].filter(r => r.changePct != null).sort((a, b) => Number(b.changePct) - Number(a.changePct));
