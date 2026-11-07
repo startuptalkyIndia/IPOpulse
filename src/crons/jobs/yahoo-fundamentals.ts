@@ -40,10 +40,21 @@ function round2(v: number | undefined | null): number | null {
  * one absurd ratio from a tiny-equity company used to lose every other field).
  * 2026-11-06: TIPSFILMS.NS hit numeric(8,2) with an absurd ROE/debt-to-equity.
  */
-export function fitNumeric(v: number | null, precision: number, scale: number): number | null {
+export function fitNumeric(
+  v: number | null,
+  precision: number,
+  scale: number,
+  label?: string,
+): number | null {
   if (v == null || !isFinite(v)) return null;
+  // Round to the column scale first: Postgres rounds on write, so 9999.99996 in
+  // a (8,4) column becomes 10000.0000 and overflows even though it looked small.
+  const f = Math.pow(10, scale);
+  const rounded = Math.round(v * f) / f;
   const limit = Math.pow(10, precision - scale);
-  return Math.abs(v) < limit ? v : null;
+  if (Math.abs(rounded) < limit) return rounded;
+  if (label) console.warn(`[yahoo-fundamentals] ${label}: value out of range for numeric(${precision},${scale}), field skipped`);
+  return null;
 }
 
 /**
@@ -114,16 +125,16 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
 
       const data: Record<string, unknown> = { fundamentalsAt: new Date() };
       if (sharesOutstanding) data.sharesOutstanding = sharesOutstanding;
-      { const v = fitNumeric(marketCapCr, 20, 2); if (marketCapCr && v !== null) data.marketCap = v; }
-      if (sd.trailingPE != null) { const v = fitNumeric(round2(Number(sd.trailingPE)), 10, 2); if (v !== null) data.peRatio = v; }
-      if (ks.priceToBook != null) { const v = fitNumeric(round2(Number(ks.priceToBook)), 10, 2); if (v !== null) data.pbRatio = v; }
-      { const v = fitNumeric(roePercent, 8, 2); if (v !== null) data.roePercent = v; }
-      { const v = fitNumeric(dividendYield, 6, 2); if (v !== null) data.dividendYield = v; }
-      if (ks.trailingEps != null) { const v = fitNumeric(round2(Number(ks.trailingEps)), 12, 2); if (v !== null) data.eps = v; }
-      if (ks.bookValue != null) { const v = fitNumeric(round2(Number(ks.bookValue)), 12, 2); if (v !== null) data.bookValue = v; }
-      if (fd.debtToEquity != null) { const v = fitNumeric(round2(Number(fd.debtToEquity)), 8, 2); if (v !== null) data.debtToEquity = v; }
-      if (fd.operatingMargins != null) { const v = fitNumeric(Number(fd.operatingMargins), 8, 4); if (v !== null) data.operatingMargin = v; }
-      if (fd.profitMargins != null) { const v = fitNumeric(Number(fd.profitMargins), 8, 4); if (v !== null) data.netMargin = v; }
+      { const v = fitNumeric(marketCapCr, 20, 2, `${sym} marketCap`); if (marketCapCr && v !== null) data.marketCap = v; }
+      if (sd.trailingPE != null) { const v = fitNumeric(round2(Number(sd.trailingPE)), 10, 2, `${sym} peRatio`); if (v !== null) data.peRatio = v; }
+      if (ks.priceToBook != null) { const v = fitNumeric(round2(Number(ks.priceToBook)), 10, 2, `${sym} pbRatio`); if (v !== null) data.pbRatio = v; }
+      { const v = fitNumeric(roePercent, 8, 2, `${sym} roePercent`); if (v !== null) data.roePercent = v; }
+      { const v = fitNumeric(dividendYield, 6, 2, `${sym} dividendYield`); if (v !== null) data.dividendYield = v; }
+      if (ks.trailingEps != null) { const v = fitNumeric(round2(Number(ks.trailingEps)), 12, 2, `${sym} eps`); if (v !== null) data.eps = v; }
+      if (ks.bookValue != null) { const v = fitNumeric(round2(Number(ks.bookValue)), 12, 2, `${sym} bookValue`); if (v !== null) data.bookValue = v; }
+      if (fd.debtToEquity != null) { const v = fitNumeric(round2(Number(fd.debtToEquity)), 8, 2, `${sym} debtToEquity`); if (v !== null) data.debtToEquity = v; }
+      if (fd.operatingMargins != null) { const v = fitNumeric(Number(fd.operatingMargins), 8, 4, `${sym} operatingMargin`); if (v !== null) data.operatingMargin = v; }
+      if (fd.profitMargins != null) { const v = fitNumeric(Number(fd.profitMargins), 8, 4, `${sym} netMargin`); if (v !== null) data.netMargin = v; }
 
       await prisma.company.update({ where: { id: co.id }, data });
       rowsIn++;
