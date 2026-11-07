@@ -1,3 +1,7 @@
+## 2026-11-07 IST - fix: Yahoo fundamentals job no longer loses a whole row to one overflowing ratio (branch fix-errors-20261107, NOT deployed)
+
+**Spec:** what = `yahoo-fundamentals.ts` now fits each ratio to its column size (`fitNumeric`) and skips only the field that cannot fit; why = fleet digest "Error occurred during query execution" for IPOpulse was ONE hit (TIPSFILMS.NS, `prisma.company.update`, Postgres 22003 numeric field overflow, "precision 8, scale 2", i.e. roe_pct or debt_to_equity) from the 2026-11-06 night run; the job survived (updated=2359, 1 transient error) but that company lost all its fields; done-when = tsc 0, vitest 189/189 (3 new tests in `tests/unit/yahoo-fit-numeric.spec.ts`); out of scope = schema widening (would be a data-migration decision), deploy; not verified = which of the two columns overflowed (the log line was cut at 80 chars) and no live run.
+
 ## 2026-11-02 IST - refactor slot RC-22: ScreenerClient, calculators math and configs split (branch refactor-20261102, NOT merged, NOT deployed)
 
 **Spec**

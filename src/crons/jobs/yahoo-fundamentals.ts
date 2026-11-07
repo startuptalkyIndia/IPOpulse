@@ -35,6 +35,18 @@ function round2(v: number | undefined | null): number | null {
 }
 
 /**
+ * Fit a value to a Postgres numeric(precision, scale) column: returns null when
+ * it would overflow (a numeric-field-overflow rejects the WHOLE row update, so
+ * one absurd ratio from a tiny-equity company used to lose every other field).
+ * 2026-11-06: TIPSFILMS.NS hit numeric(8,2) with an absurd ROE/debt-to-equity.
+ */
+export function fitNumeric(v: number | null, precision: number, scale: number): number | null {
+  if (v == null || !isFinite(v)) return null;
+  const limit = Math.pow(10, precision - scale);
+  return Math.abs(v) < limit ? v : null;
+}
+
+/**
  * Does this error mean "Yahoo will never serve this symbol" rather than
  * "something went wrong just now"? Matched case-insensitively: Yahoo says
  * "Quote not found for symbol: X" — the old filter tested for "Not Found" and
@@ -102,16 +114,16 @@ export async function runYahooFundamentals(): Promise<IngestionResult> {
 
       const data: Record<string, unknown> = { fundamentalsAt: new Date() };
       if (sharesOutstanding) data.sharesOutstanding = sharesOutstanding;
-      if (marketCapCr) data.marketCap = marketCapCr;
-      if (sd.trailingPE != null) data.peRatio = round2(Number(sd.trailingPE));
-      if (ks.priceToBook != null) data.pbRatio = round2(Number(ks.priceToBook));
-      if (roePercent !== null) data.roePercent = roePercent;
-      if (dividendYield !== null) data.dividendYield = dividendYield;
-      if (ks.trailingEps != null) data.eps = round2(Number(ks.trailingEps));
-      if (ks.bookValue != null) data.bookValue = round2(Number(ks.bookValue));
-      if (fd.debtToEquity != null) data.debtToEquity = round2(Number(fd.debtToEquity));
-      if (fd.operatingMargins != null) data.operatingMargin = Number(fd.operatingMargins);
-      if (fd.profitMargins != null) data.netMargin = Number(fd.profitMargins);
+      { const v = fitNumeric(marketCapCr, 20, 2); if (marketCapCr && v !== null) data.marketCap = v; }
+      if (sd.trailingPE != null) { const v = fitNumeric(round2(Number(sd.trailingPE)), 10, 2); if (v !== null) data.peRatio = v; }
+      if (ks.priceToBook != null) { const v = fitNumeric(round2(Number(ks.priceToBook)), 10, 2); if (v !== null) data.pbRatio = v; }
+      { const v = fitNumeric(roePercent, 8, 2); if (v !== null) data.roePercent = v; }
+      { const v = fitNumeric(dividendYield, 6, 2); if (v !== null) data.dividendYield = v; }
+      if (ks.trailingEps != null) { const v = fitNumeric(round2(Number(ks.trailingEps)), 12, 2); if (v !== null) data.eps = v; }
+      if (ks.bookValue != null) { const v = fitNumeric(round2(Number(ks.bookValue)), 12, 2); if (v !== null) data.bookValue = v; }
+      if (fd.debtToEquity != null) { const v = fitNumeric(round2(Number(fd.debtToEquity)), 8, 2); if (v !== null) data.debtToEquity = v; }
+      if (fd.operatingMargins != null) { const v = fitNumeric(Number(fd.operatingMargins), 8, 4); if (v !== null) data.operatingMargin = v; }
+      if (fd.profitMargins != null) { const v = fitNumeric(Number(fd.profitMargins), 8, 4); if (v !== null) data.netMargin = v; }
 
       await prisma.company.update({ where: { id: co.id }, data });
       rowsIn++;
