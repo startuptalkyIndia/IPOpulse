@@ -1,0 +1,23 @@
+{
+    "status": 1,
+    "message": "IPO GMP Data Retrieved Successfully",
+    "result": [
+        {
+            "id": 1135,
+            "ipoName": "Antala Industries",
+            "ipo_slug": "antala-industries-ipo-details",
+            "ipoGmp": "\u20b90",
+            "trendIcon": "fa-arrow-right",
+            "trendColor": "#FFC107",
+            "priceBand": "\u20b962 - \u20b966",
+            "estListing": "\u20b9- (-%)",
+            "IPODate": "29 Oct - 05 Nov",
+            "Type": "BSE SME",
+            "Status": "Closed",
+            "LastUpdated": "09 Nov, 08:08"
+        }
+    ],
+    "jwtToken": null,
+    "totalCount": 0,
+    "id": 0
+}

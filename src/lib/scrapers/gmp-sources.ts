@@ -30,7 +30,13 @@ export interface GmpSource {
   /** Stored in ipo_gmp.source so a row's origin is always auditable. */
   name: string;
   url: string;
-  parse: (html: string) => GmpRow[];
+  /**
+   * Turn the response body into rows. Contract: return [] ONLY when the page /
+   * feed was recognised and genuinely lists no premiums (a quiet market); THROW
+   * when the structure is not what we expect (layout changed, not JSON, ...) so
+   * a broken scraper is never mistaken for an empty market.
+   */
+  parse: (body: string) => GmpRow[];
 }
 
 function stripTags(s: string): string {
@@ -126,6 +132,38 @@ export function parseIpoWatch(html: string): GmpRow[] {
 }
 
 /**
+ * ipowatch.in JSON feed (GET /api/ipo/GetIpoGMPHistory). The site moved to a
+ * client-rendered Next.js app on ~2026-11-06: the HTML now ships no table (just
+ * "Loading GMP data..."), so parseIpoWatch above reads nothing. The page itself
+ * fetches this feed, with the same columns the old table had:
+ *   ipoName | ipoGmp | priceBand | IPODate ("29 Oct - 05 Nov") | Type | Status
+ * It lists only IPOs that have a GMP tracked, so [] is a real (quiet) answer.
+ */
+export function parseIpoWatchApi(body: string): GmpRow[] {
+  const json = JSON.parse(body) as { status?: unknown; result?: unknown };
+  if (json?.status !== 1 || !Array.isArray(json.result)) {
+    throw new Error("ipowatch: unexpected API response shape");
+  }
+  const rows: GmpRow[] = [];
+  for (const r of json.result as Array<Record<string, unknown>>) {
+    const name = typeof r.ipoName === "string" ? r.ipoName.trim() : "";
+    const gmp = parseSignedNumber(String(r.ipoGmp ?? ""));
+    if (!name || gmp === null) continue;
+    const { open, close } = parseDateRange(String(r.IPODate ?? ""));
+    rows.push({
+      name,
+      gmp,
+      priceBand: String(r.priceBand ?? ""),
+      openDate: open,
+      closeDate: close,
+      boardType: String(r.Type ?? ""),
+      status: String(r.Status ?? ""),
+    });
+  }
+  return rows;
+}
+
+/**
  * ipoji.com layout:
  * IPO | Type | Price Band | GMP | GMP % | Indicative Listing | Open – Close | Status | Updated
  *
@@ -134,6 +172,10 @@ export function parseIpoWatch(html: string): GmpRow[] {
  * otherwise the name never matches an IPO in our DB.
  */
 export function parseIpoji(html: string): GmpRow[] {
+  // No table at all = the layout changed (or we got a block page). A table whose
+  // rows carry no premium is a different thing: ipoji shows exactly that when
+  // nothing has a GMP yet.
+  if (!/<table[\s>]/.test(html)) throw new Error("ipoji: GMP table not found (layout changed)");
   const rows: GmpRow[] = [];
   for (const cells of tableRows(html)) {
     if (cells.length < 8 || !cells[0] || /^IPO$/i.test(cells[0])) continue;
@@ -156,21 +198,26 @@ export function parseIpoji(html: string): GmpRow[] {
 }
 
 export const SOURCES: GmpSource[] = [
-  { name: "ipowatch", url: "https://ipowatch.in/ipo-grey-market-premium-latest-ipo-gmp/", parse: parseIpoWatch },
+  { name: "ipowatch", url: "https://ipowatch.in/api/ipo/GetIpoGMPHistory", parse: parseIpoWatchApi },
   { name: "ipoji", url: "https://ipoji.com/ipo-gmp", parse: parseIpoji },
 ];
 
 /**
  * Try each source in order; return the first that yields rows. A source that
- * 5xx's, times out, or parses to zero rows is treated the same way — broken —
- * and we move on. Only when all of them are broken does this throw.
+ * 5xx's, times out, or whose structure we no longer recognise is broken, and we
+ * move on. A source that loads and is recognised but lists no premiums is
+ * HEALTHY-EMPTY (a quiet market between IPOs): if no source has rows but at
+ * least one is healthy-empty, return zero rows instead of failing the job —
+ * otherwise every lull in the IPO calendar pages the heartbeat for nothing.
+ * Only when every source is broken does this throw.
  */
 export async function fetchGmpRows(): Promise<{ source: string; rows: GmpRow[] }> {
   const failures: string[] = [];
+  let healthyEmpty: string | null = null;
   for (const src of SOURCES) {
     try {
       const res = await fetch(src.url, {
-        headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+        headers: { "User-Agent": UA, Accept: "application/json,text/html,application/xhtml+xml" },
         redirect: "follow",
         signal: AbortSignal.timeout(30000),
       });
@@ -180,9 +227,7 @@ export async function fetchGmpRows(): Promise<{ source: string; rows: GmpRow[] }
       }
       const rows = src.parse(await res.text());
       if (rows.length === 0) {
-        // Page loaded but nothing parsed → layout probably changed. Record it
-        // rather than treating an empty scrape as a successful run.
-        failures.push(`${src.name}: parsed 0 rows (layout may have changed)`);
+        healthyEmpty ??= src.name;
         continue;
       }
       if (failures.length) {
@@ -192,6 +237,10 @@ export async function fetchGmpRows(): Promise<{ source: string; rows: GmpRow[] }
     } catch (err) {
       failures.push(`${src.name}: ${err instanceof Error ? err.message : String(err)}`);
     }
+  }
+  if (healthyEmpty) {
+    if (failures.length) console.warn(`[gmp-tracker] no GMPs listed (${healthyEmpty}); other sources broken — ${failures.join("; ")}`);
+    return { source: healthyEmpty, rows: [] };
   }
   throw new Error(`All ${SOURCES.length} GMP sources failed — ${failures.join("; ")}`);
 }
