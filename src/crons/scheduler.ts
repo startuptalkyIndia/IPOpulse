@@ -314,13 +314,16 @@ export function startScheduler() {
   }, { timezone: "Asia/Kolkata" });
 
   // Fyers live prices — every 5 min during market hours (Kite-backup broker source)
-  // Active only when a daily token is set via /sup-min/fyers-token + app has Data API perm.
-  cron.schedule("*/5 9-15 * * 1-5", async () => {
-    const result = await runIngestion("fyers_live", ingestFyersLivePrices);
-    if (result.rowsIn && result.rowsIn > 0) {
-      console.log(`[cron fyers_live] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
-    }
-  }, { timezone: "Asia/Kolkata" });
+  // OFF by default (founder 2026-11-10): needs a manual daily login, and with no token the
+  // job fails loud every run. Set FYERS_LIVE_ENABLED=true in .env to turn it back on.
+  if (process.env.FYERS_LIVE_ENABLED === "true") {
+    cron.schedule("*/5 9-15 * * 1-5", async () => {
+      const result = await runIngestion("fyers_live", ingestFyersLivePrices);
+      if (result.rowsIn && result.rowsIn > 0) {
+        console.log(`[cron fyers_live] ${result.ok ? "ok" : "failed"} updated=${result.rowsIn ?? 0}${result.error ? ` error=${result.error}` : ""}`);
+      }
+    }, { timezone: "Asia/Kolkata" });
+  }
 
   // Yahoo Finance v8 prices — every 15 min during market hours (free, 15-min delayed fallback)
   cron.schedule("*/15 9-15 * * 1-5", async () => {
@@ -330,7 +333,7 @@ export function startScheduler() {
     }
   }, { timezone: "Asia/Kolkata" });
 
-  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min), yahoo_prices(15min), nse_ipos(2h), nse_ipo_static_details(daily 3:30AM), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_corporate_actions(daily 4AM), nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
+  console.log("[scheduler] Registered: kite_live(5min), fyers_live(5min, only if FYERS_LIVE_ENABLED=true), yahoo_prices(15min), nse_ipos(2h), nse_ipo_static_details(daily 3:30AM), gmp_tracker(4h), nse_ipo_subscription(30min), nse_bhavcopy(2×daily+mktcap_recalc), bse_bhavcopy(6:30PM), yahoo_fundamentals(nightly 2AM), nse_company_master+nse_sector_map(Sun 4AM), screener_deep(Sun 5AM), nse_fii_dii, nse_indices(2×daily), nse_bulk_block, nse_corporate_actions(daily 4AM), nse_insider, amfi_navs, compute_signals(11:30PM), crawler_health(9:30AM), daily_market_summary, market_news_brief(3×daily), next_day_preview, bse_listing_sync, check_alerts(2h)");
 }
 
 export const availableJobs: Record<string, () => Promise<import("./runIngestion").IngestionResult>> = {
