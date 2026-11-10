@@ -41,6 +41,7 @@ import type { IngestionResult } from "../runIngestion";
 import { fetchNseArray } from "@/lib/nse-session";
 import { slugifyIpoName } from "@/lib/scrapers/bse-ipo";
 import { computeIpoStatus } from "@/lib/ipo";
+import { estimateListingDate, resolveListingDate } from "@/lib/ipo-listing-date";
 
 interface NseIssue {
   companyName: string;
@@ -171,6 +172,47 @@ async function ingestIssues(): Promise<{ rowsIn: number; note: string; typeCorre
 }
 
 /**
+ * Fill in missing listing dates for IPOs whose listing day has passed, so they
+ * can become "listed" (and get a listing row / GMP-accuracy entry downstream).
+ * Rule lives in lib/ipo-listing-date.ts. Runs BEFORE advanceStaleStatuses.
+ * Only touches IPOs with no listing date, never overwrites a recorded one.
+ */
+async function backfillListingDates(): Promise<{ changed: number; note: string }> {
+  const now = new Date();
+  const candidates = await prisma.ipo.findMany({
+    where: { listingDate: null, closeDate: { not: null }, status: { notIn: ["listed", "withdrawn", "upcoming", "live"] } },
+    select: { id: true, nseSymbol: true, closeDate: true },
+  });
+
+  let changed = 0;
+  for (const ipo of candidates) {
+    if (!ipo.closeDate) continue;
+    const base = estimateListingDate(ipo.closeDate);
+    // Wait a day past the T+3 base: an exchange holiday shifts real listings by a day,
+    // and we would rather be a day late than mark an IPO "listed" before it lists.
+    if (base.getTime() + 86400000 > now.getTime()) continue;
+
+    let tradingDays: Date[] = [];
+    if (ipo.nseSymbol) {
+      const company = await prisma.company.findUnique({ where: { nseSymbol: ipo.nseSymbol }, select: { id: true } });
+      if (company) {
+        const rows = await prisma.bhavcopyDaily.findMany({
+          where: { companyId: company.id, date: { gte: base, lte: new Date(base.getTime() + 3 * 86400000) } },
+          select: { date: true },
+          distinct: ["date"],
+        });
+        tradingDays = rows.map((r) => r.date);
+      }
+    }
+
+    const listingDate = resolveListingDate(ipo.closeDate, tradingDays);
+    await prisma.ipo.update({ where: { id: ipo.id }, data: { listingDate } });
+    changed++;
+  }
+  return { changed, note: `listing-dates: ${changed} filled` };
+}
+
+/**
  * Advance stale IPO statuses by date.
  * NSE's upcoming-issues feed only lists upcoming/active issues — once an IPO
  * closes it drops off the feed, so the scraper never moves its status past
@@ -213,6 +255,16 @@ export async function ingestNseIpos(): Promise<IngestionResult> {
   } catch (err) {
     rowsError++;
     notes.push(`issues: ${err instanceof Error ? err.message : "fetch error"}`);
+  }
+
+  // Fill missing listing dates first, so the status pass below can mark them listed.
+  try {
+    const ld = await backfillListingDates();
+    rowsIn += ld.changed;
+    notes.push(ld.note);
+  } catch (err) {
+    rowsError++;
+    notes.push(`listing-dates: ${err instanceof Error ? err.message : "error"}`);
   }
 
   // After ingesting the feed, fix any IPOs the feed no longer reports.
