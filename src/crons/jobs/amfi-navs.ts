@@ -20,10 +20,18 @@ export async function ingestAmfiNavs(): Promise<IngestionResult> {
 
   let rowsIn = 0;
   let rowsError = 0;
+  // AMFI lists new / closed / suspended schemes with a NAV of 0. Refusing to
+  // store those is correct, not an error, so they are counted separately and
+  // do not flip the run to "partial".
+  let zeroNav = 0;
 
   // Batch: do upserts in groups of 100
   for (const f of funds) {
-    if (!f.schemeCode || !f.schemeName || f.nav <= 0) {
+    if (f.schemeCode && f.schemeName && f.nav === 0) {
+      zeroNav++;
+      continue;
+    }
+    if (!f.schemeCode || !f.schemeName || f.nav < 0) {
       rowsError++;
       continue;
     }
@@ -59,5 +67,5 @@ export async function ingestAmfiNavs(): Promise<IngestionResult> {
     }
   }
 
-  return { rowsIn, rowsError, notes: `parsed ${funds.length}` };
+  return { rowsIn, rowsError, notes: `parsed ${funds.length}, ${zeroNav} skipped (zero NAV)` };
 }
