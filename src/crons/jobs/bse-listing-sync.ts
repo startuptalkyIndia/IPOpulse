@@ -24,7 +24,12 @@ export async function syncIpoListings(): Promise<IngestionResult> {
       status: "listed",
       listingDate: { lte: now },
       listing: null, // no IpoListing yet
+      // Only rows the loop below can actually act on. Without this, ineligible IPOs
+      // (no symbol / no price band) fill the window and starve eligible ones.
+      priceBandHigh: { not: null },
+      OR: [{ nseSymbol: { not: null } }, { bseCode: { not: null } }],
     },
+    orderBy: { listingDate: "desc" },
     select: {
       id: true,
       name: true,
@@ -39,7 +44,7 @@ export async function syncIpoListings(): Promise<IngestionResult> {
         select: { gmp: true, date: true },
       },
     },
-    take: 50, // process max 50 per run
+    take: 300, // cheap per-row work; wide window so unresolved rows (no company/bhavcopy yet) cannot starve the rest
   });
 
   let rowsIn = 0;
