@@ -98,7 +98,7 @@
 
 ### From the fleet scan and security wave, 2026-10-26 (written by the Manage-all-Tech session; owner session does these)
 > Report: `_shared/docs/fleet-checks-20261026.md`. Branches ship WITH the product's next deploy (founder 2026-10-26); each branch change still needs a different reviewer. HOW TO WORK THIS BLOCK and in what order: `_shared/docs/PRODUCT_SESSION_RUNBOOK.md`; deploy order and your queue position: `_shared/docs/deploy-queue-20261026.md`.
-- [ ] Review + merge branch `fleet-fix-20261026` (cc78c24: `src/app/ipo/loading.tsx` removed so `/ipo/<bad>` and `/ipo/year/<bad>` return a real 404). Then run `python3 _shared/scripts/bad-slug-probe.py IPOpulse` and add both routes to `_shared/smoke-urls.txt` expecting 404.
+- [x] (2026-11-11: branch already merged into main, loading.tsx gone; live probe /ipo/<bad> and /ipo/year/<bad> both return 404, /ipo 200. Still open: add both routes to `_shared/smoke-urls.txt` expecting 404 - a shared file, so the master session does it.) Review + merge branch `fleet-fix-20261026` (cc78c24: `src/app/ipo/loading.tsx` removed so `/ipo/<bad>` and `/ipo/year/<bad>` return a real 404). Then run `python3 _shared/scripts/bad-slug-probe.py IPOpulse` and add both routes to `_shared/smoke-urls.txt` expecting 404.
 - [ ] Add the four `SEED_*_PASSWORD` variables to the server `.env` before anyone runs the seed by hand (the entrypoint does not seed).
 - [ ] `scripts/seed-ipos.ts` uses `deleteMany` on `ipoAnchor`/`ipoSubscription`: keep manual-only, never at boot.
 - [ ] Monthly housekeeping card for this product: `_shared/HOUSEKEEPING.md` Appendix F (10 checks); run it in the week before the last Saturday of each month and write one COMMS entry 'Monthly check YYYY-MM'.
