@@ -1,6 +1,15 @@
 # Changelog — IPOpulse
 
-## 2026-10-03 (latest) · fix verified live: corporate-action price adjustment + screener custom filter builder (backfilled, docs backfilled)
+## 2026-11-12 (latest) · listing dates, GMP feed, listing sync, amfi label, "next expected IPO"
+
+- `321101d` IPO listing-date backfill (T+3 weekdays, corrected by bhavcopy): 157 closed IPOs became "listed"; `/ipo` Recently listed unfrozen. Verified live 2026-11-11.
+- `5982ebd` GMP tracker reads ipowatch's JSON feed (site went client-rendered); a quiet market (healthy-empty) no longer fails the job. Verified live: success runs from 2026-11-10 18:50 UTC.
+- `0c182fd` fyers_live cron off by default (`FYERS_LIVE_ENABLED=true` to enable); Fyers failures are loud, health check is honest.
+- `f869f08` `bse_listing_sync` only picks processable IPOs (price band + symbol), newest first, window 50 -> 300, so ineligible rows cannot starve eligible ones. Verified live: ipo_listings 62 -> 112.
+- `87e505d` `amfi_navs` counts zero-NAV schemes (241/day, AMFI lists them with NAV 0) as skipped, not errors, so the run shows success. Deployed 2026-11-11; first run on it 2026-11-12 17:30 UTC.
+- `/ipo`: "Next expected IPO" card under Upcoming when nothing is live or upcoming. Display-only (no DB writes), from ipowatch's feed, cached 1h, 2s timeout + 5 min backoff on failure, strict price-band parse, labelled unconfirmed. Independent review: SHIP WITH FIXES, all applied. NOT yet deployed.
+
+## 2026-10-03 · fix verified live: corporate-action price adjustment + screener custom filter builder (backfilled, docs backfilled)
 
 **Context:** the previous two entries below (`2091eb9` price-adjustment fix, `a77cbde` screener custom filter builder) were committed and pushed earlier but never got a CHANGELOG/COMMS entry or live verification — this session closed that gap.
 
