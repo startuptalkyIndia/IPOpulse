@@ -1,8 +1,9 @@
-// NOTE (audit MEDIUM M11): this is the SINGLE middleware reference. It is named
-// proxy.ts (not middleware.ts) on purpose — a root middleware.ts crashes the
-// Next 16 standalone build (see Dockerfile), so it is NOT auto-loaded. Real auth
-// is enforced by per-route server guards (auth() + role check). Kept here as the
-// one authoritative matcher spec; a divergent duplicate at repo root was deleted.
+// NOTE (audit IP-12): this is the SINGLE middleware reference. Next 16 loads
+// `proxy.ts` as the request middleware (live check 2026-11-12: /my/watchlist ->
+// 302 /signin, /sup-min/users -> 302 /sup-min). It is named proxy.ts (not
+// middleware.ts) because a root middleware.ts crashes the Next 16 standalone build
+// (see Dockerfile). Per-route server guards (auth() + role check) stay as the
+// second layer. A divergent duplicate at repo root was deleted.
 import { auth } from "@/lib/auth";
 
 export default auth((req) => {
