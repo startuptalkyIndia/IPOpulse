@@ -5,6 +5,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { IpoTable } from "@/components/ipo/IpoTable";
 import { IpoHubOnboarding } from "@/components/ipo/IpoHubOnboarding";
+import { NextExpectedIpo } from "@/components/ipo/NextExpectedIpo";
+import { fetchExpectedIpos } from "@/lib/expected-ipos";
 import { TrendingUp, Clock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -43,6 +45,12 @@ export default async function IpoHub() {
       take: 5,
     }),
   ]);
+
+  // Only worth a third-party call when the hub has nothing live or upcoming to show.
+  const expected =
+    live.length === 0 && upcoming.length === 0
+      ? await fetchExpectedIpos([...closed, ...recentlyListed].map((i) => i.name))
+      : [];
 
   const stats = [
     { label: "Open now", value: live.length, icon: TrendingUp, color: "text-green-600 bg-green-50" },
@@ -112,6 +120,11 @@ export default async function IpoHub() {
           </Link>
         </div>
         <IpoTable ipos={upcoming} emptyText="No upcoming IPOs in the pipeline." />
+        {expected.length > 0 && (
+          <div className="mt-3">
+            <NextExpectedIpo ipos={expected} />
+          </div>
+        )}
       </section>
 
       {/* Recently listed */}
