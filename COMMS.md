@@ -1,3 +1,25 @@
+## 2026-11-19 IST - Competitor study: myinvestmentideas.com (founder link). NOT built, NOT deployed.
+
+**Study depth (honest):** home page, `/mutual-fund-portfolio-analyser/`, `/best-mutual-funds-india/` (title only), one NCD article read in full, nav and link map. NOT reachable: `/sfb-fd-tracker/`, `/health-insurance-scanner/`, `/mutual-funds-rolling-returns/` and `/search/...` returned HTTP 403 (a hosting "No Index" error page, WPX.net) to my browser; I did not try to get around it. So pricing, signup, newsletter flow, ads/affiliate model and the FD and insurance tools are unseen.
+
+**What it is:** a WordPress (WPX-hosted) personal-finance publisher, "independent research since 2011". Not an IPO tracker: no IPO hub, no stock data, no screener. Nav: About, Disclaimer, Contact, Suggest a topic, three AI tools (MF Portfolio Analyser, Health Insurance Scanner, Life Insurance Scanner), live tables (Best Mutual Funds, rolling returns, SFB FD tracker). Home: "Trending this week" top-10 articles with star ratings and vote counts on every article and tool (e.g. 4.9 from 19), animated "SIP growth" demo, counters (years, articles, newsletter subscribers), search with suggested queries.
+
+**Their content pattern:** data-led listicle titles with a number and a range ("7 mutual funds gave 20% to 24% a year for 3 years while their category gave 12% to 15%"); "NAV as on <date>" and "Data as of <date>" stamps on every table; SEBI-style disclaimer under every table; issue-review articles for NCDs (issue-details table, series-by-series coupon/yield table, rating history over 3-5 years, objects of issue, financials, risks) published while the issue is open (Muthoot Mercantile NCD, 12-26 Nov 2026).
+
+| They have | We lack / have | Best version for us |
+|---|---|---|
+| Star-rating and vote count on every page and tool as trust + engagement signal | we have none | add "Was this useful?" thumbs on tools and IPO pages; show only real counts (never seed numbers) |
+| "Data as of <date>" stamp beside every table | partly (IPO pages); not uniform | one shared `AsOf` label on every data table, fed from the job's last successful run |
+| AI MF portfolio analyser (paste/upload holdings, health score, overlap, drift) | we have MF screener and AMC pages, no holdings analyser | big; needs founder scoping (AI cost rule B.20, privacy of holdings). Smaller first step: "paste an IPO allotment list / application list and see status + listing gain" using our own data |
+| Rolling-returns leaderboards (3Y/5Y, top 5 per category) from AMFI NAVs | we ingest AMFI NAVs daily (amfi_navs) but show no rolling returns | compute rolling 3Y/5Y from our own NAV history; table per category with as-of date; cheap because the data is already in our DB |
+| NCD issue-review pages with series yield tables and rating history | we have `/ncds` (client page) | check whether `/ncds` lists open issues with series/yield tables; if not, add a per-issue page from our own data; ratings history only from sources we can cite |
+| SFB FD tracker, insurance scanners | not our scope | skip (off-product) |
+| Newsletter counter and "Suggest a topic" form | newsletter exists; no topic-suggestion form | low-effort "Suggest a feature" link to our existing feedback widget |
+
+**Their weakness we can use:** no IPO, GMP, subscription, allotment or stock data at all; claims ("since 2011", counters) not verifiable; partly blocked/403 pages. We should not copy their text, images, brand or claims.
+
+**Put at top of TASKS.md (see below):** (1) rolling-returns tables from our own NAV data, (2) shared "Data as of" stamp, (3) real "Was this useful?" rating on tools. Each needs spec, a different reviewer, tests; deploy only on a named go.
+
 ## 2026-11-12 IST - DEPLOYED fb25467: "Next expected IPO" card on /ipo
 
 **Spec:** what = display-only card on `/ipo` shown only when nothing is live or upcoming (new `src/lib/expected-ipos.ts`, `src/components/ipo/NextExpectedIpo.tsx`, edit `src/app/ipo/page.tsx`); why = founder reported "no live ipo" on the hub, which was true (NSE returns `[]`), and Crystal Crop Protection (18-20 Nov) was known to the ipowatch feed only; done-when = card shows while no live/upcoming IPO, fails silent; out of scope = writing feed rows into our DB. Review: independent reviewer SHIP WITH FIXES, all fixes applied (2s timeout + 5-min backoff, strict price band, opens/opened wording, name cap, failure-path tests); 224 unit tests, tsc and eslint clean.
