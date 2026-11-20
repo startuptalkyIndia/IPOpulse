@@ -62,4 +62,15 @@ describe("admin ai-settings guard (live role re-check)", () => {
     mockFindUnique.mockResolvedValue(null);
     expect((await POST(post())).status).toBe(403);
   });
+
+  it("fails closed when the DB read throws: never 200 (GET and POST)", async () => {
+    mockAuth.mockResolvedValue(tokenAdmin);
+    mockFindUnique.mockRejectedValue(new Error("db down"));
+    for (const call of [() => GET(), () => POST(post())]) {
+      let status = 0;
+      try { status = (await call()).status; } catch { status = 500; } // an unhandled throw is a 500 from Next
+      expect(status).not.toBe(200);
+      expect([403, 500]).toContain(status);
+    }
+  });
 });

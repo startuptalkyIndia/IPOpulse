@@ -1,3 +1,8 @@
+## 2026-11-21 IST — test: AI-settings admin guard fails closed when the DB read throws (branch ai-api-first-traps-20261121, not deployed)
+
+**Spec:** what = one test in `tests/unit/admin-ai-settings-guard.spec.ts`: with a valid superadmin token and `adminUser.findUnique` rejecting, GET and POST never return 200 (403 or an unhandled throw = 500). why = review note: fail-closed was true by code only. done-when = test passes; it would fail if the guard swallowed the error and returned true. out-of-scope = code changes, other admin routes, deploy. verify = vitest, tsc, build.
+**Evidence:** guard spec now 6 tests. Numbers in the commit message.
+
 ## 2026-11-21 IST — security: AI-settings admin guard re-reads the live role; api_first timeout 60 s (branch ai-api-first-traps-20261121, not deployed)
 
 **Spec:** what = (a) `/api/admin/ai-settings` GET and POST now use `isLiveAdmin()` (new `src/lib/admin-live-guard.ts`), which checks the token role as a pre-filter and then re-reads the role from the live `admin_users` row by session id; (b) `API_FIRST_TIMEOUT_MS` 30 s to 60 s in `src/lib/claude-runner.ts` (same as api_key mode); (c) correction of the earlier COMMS entry. why = review note 2 (a demoted admin kept the route, which can now switch the product to a paid-key mode, until the JWT expired) and note 3 (a 30 s API timeout can bill and then fall to the CLI: duplicate work). done-when = a demoted admin holding a still-valid superadmin token gets 403, a removed admin gets 403, a live admin gets 200; tsc, full tests, `npm run build` pass. out-of-scope = other admin routes (same pattern, still JWT-only: see TASKS), deploy, default mode. verify = the three commands below.
