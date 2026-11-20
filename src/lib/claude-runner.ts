@@ -122,7 +122,7 @@ async function resolveApiFirstKey(): Promise<string | null> {
   return apiFallbackEnabled(process.env) ? (process.env.CLAUDE_FALLBACK_API_KEY || process.env.ANTHROPIC_API_KEY || null) : null;
 }
 
-const API_FIRST_TIMEOUT_MS = 30_000;
+const API_FIRST_TIMEOUT_MS = 60_000;
 
 /** api_first: API, then CLI. Model from CLAUDE_MODEL / ANTHROPIC_MODEL (never a literal id from the caller). */
 async function callApiFirst(opts: ClaudeCallOptions): Promise<string> {

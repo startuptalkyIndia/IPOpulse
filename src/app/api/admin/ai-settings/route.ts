@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { isLiveAdmin } from "@/lib/admin-live-guard";
 import {
   getAiProviderStatus,
   setAiProviderMode,
@@ -21,11 +21,8 @@ import { mapAnthropicApiError } from "@/lib/ai-errors";
  *         Never auto-populated from .env, never rendered back in the response.
  */
 
-async function adminGuard() {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  return role === "admin" || role === "superadmin";
-}
+// Re-reads the role from the live admin_users row (a demoted admin's old token is refused).
+const adminGuard = isLiveAdmin;
 
 export async function GET() {
   if (!(await adminGuard())) {
