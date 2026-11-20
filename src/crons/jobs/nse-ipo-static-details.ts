@@ -24,9 +24,12 @@
  * run to stay polite to NSE and bound wall-time; re-running works through
  * the backlog the same way the insider-trading/super-investor backfills do.
  * An IPO with genuinely no data on NSE (very old, or NSE's records don't
- * cover it) will keep coming up empty on every run — an accepted, low-cost
- * tradeoff for a ~100-row one-time backlog rather than adding a dedicated
- * "already tried" tracking table for it.
+ * cover it) keeps coming up empty on every run and is never marked as tried.
+ * That is NOT harmless: on 2026-11-19, ~36 such rows filled the whole 40-row
+ * batch every night, so fresh IPOs were never reached. The batch is therefore
+ * split: most slots go to the newest candidates (fresh IPOs first), the rest
+ * to a window that rotates daily through the older ones, so old fillable rows
+ * still get their turn without a "tried" column.
  */
 
 import { prisma } from "@/lib/db";
@@ -41,20 +44,30 @@ function sleep(ms: number) {
 }
 
 export async function ingestIpoStaticDetails(): Promise<IngestionResult> {
-  const candidates = await prisma.ipo.findMany({
-    where: { lotSize: null, nseSymbol: { not: null } },
-    select: { id: true, nseSymbol: true },
-    // Newest first. Oldest-first starved fresh IPOs: ~36 old rows that NSE has no
-    // issueInfo for came back empty every night and filled the whole batch, so the
-    // 3 IPOs open on 2026-11-19 (ids 9733-9758, behind 60 older candidates) never
-    // got a lot size or issue size. Fresh IPOs always have the highest ids.
-    orderBy: { id: "desc" },
-    take: MAX_PER_RUN,
-  });
+  const where = { lotSize: null, nseSymbol: { not: null } } as const;
+  const select = { id: true, nseSymbol: true } as const;
+  // Newest first: fresh IPOs always have the highest ids. 3/4 of the batch.
+  const newestSlots = Math.max(1, Math.ceil(MAX_PER_RUN * 0.75));
+  const rotatingSlots = Math.max(0, MAX_PER_RUN - newestSlots);
+  const newest = await prisma.ipo.findMany({ where, select, orderBy: { id: "desc" }, take: newestSlots });
+  let candidates = newest;
+  if (rotatingSlots > 0) {
+    const total = await prisma.ipo.count({ where });
+    const rest = total - newestSlots;
+    if (rest > 0) {
+      // Rotating window over the older candidates, advancing each day.
+      const dayNumber = Math.floor(Date.now() / 86_400_000);
+      const skip = newestSlots + ((dayNumber * rotatingSlots) % rest);
+      const older = await prisma.ipo.findMany({ where, select, orderBy: { id: "desc" }, skip, take: rotatingSlots });
+      const seen = new Set(newest.map((c) => c.id));
+      candidates = [...newest, ...older.filter((c) => !seen.has(c.id))];
+    }
+  }
 
   let rowsIn = 0;
   let errors = 0;
   let noData = 0;
+  let noLot = 0;
 
   for (const ipo of candidates) {
     if (!ipo.nseSymbol) continue;
@@ -78,16 +91,21 @@ export async function ingestIpoStaticDetails(): Promise<IngestionResult> {
           ...(parsed.leadManagers && { leadManagers: parsed.leadManagers }),
         },
       });
-      rowsIn++;
+      // Only a lot size takes a row out of the candidate pool. A row that got
+      // registrar/lead managers but no lot size used to count as "updated" every
+      // night forever (Ardee, Xtranet, Aastha, CSM on 2026-11-21).
+      if (parsed.lotSize != null) rowsIn++;
+      else noLot++;
       await sleep(300); // be polite to NSE
-    } catch {
+    } catch (e) {
       errors++;
+      console.warn(`[ipo_static_details] ${ipo.nseSymbol}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
   return {
     rowsIn,
     rowsError: errors,
-    notes: `${rowsIn} IPOs updated, ${noData} had no issueInfo on NSE, ${errors} errors (of ${candidates.length} candidates this run)`,
+    notes: `${rowsIn} IPOs got a lot size, ${noLot} had details but no lot size, ${noData} had no issueInfo on NSE, ${errors} errors (of ${candidates.length} candidates this run)`,
   };
 }
