@@ -44,7 +44,11 @@ export async function ingestIpoStaticDetails(): Promise<IngestionResult> {
   const candidates = await prisma.ipo.findMany({
     where: { lotSize: null, nseSymbol: { not: null } },
     select: { id: true, nseSymbol: true },
-    orderBy: { id: "asc" },
+    // Newest first. Oldest-first starved fresh IPOs: ~36 old rows that NSE has no
+    // issueInfo for came back empty every night and filled the whole batch, so the
+    // 3 IPOs open on 2026-11-19 (ids 9733-9758, behind 60 older candidates) never
+    // got a lot size or issue size. Fresh IPOs always have the highest ids.
+    orderBy: { id: "desc" },
     take: MAX_PER_RUN,
   });
 

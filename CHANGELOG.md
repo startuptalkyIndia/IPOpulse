@@ -1,6 +1,10 @@
 # Changelog — IPOpulse
 
-## 2026-11-12 (latest) · listing dates, GMP feed, listing sync, amfi label, "next expected IPO"
+## 2026-11-21 (latest) · lot size and issue size for fresh IPOs (NOT yet deployed)
+
+- `nse_ipo_static_details` now takes candidates newest first (was oldest first). Cause found in prod: 115 IPOs lacked a lot size (64 with an NSE symbol); the job takes 40 per night, the oldest 36 or so have no issueInfo on NSE and came back empty every night ("4 updated, 36 had no issueInfo" for 5 nights running), so the 3 IPOs open on 19 Nov (ids 9733 to 9758, behind 60 older candidates) never got a lot size or issue size and showed "-" on `/ipo`. Same starvation pattern as `bse_listing_sync` (f869f08). New `tests/unit/nse-ipo-static-details.spec.ts` (2 tests); full suite 240 pass, tsc and eslint clean. After deploy: next 22:00 UTC run should update the 3 open IPOs; check `lot_size` is set for Crystal Crop, Mahanadi, Watrana.
+
+## 2026-11-12 · listing dates, GMP feed, listing sync, amfi label, "next expected IPO"
 
 - `321101d` IPO listing-date backfill (T+3 weekdays, corrected by bhavcopy): 157 closed IPOs became "listed"; `/ipo` Recently listed unfrozen. Verified live 2026-11-11.
 - `5982ebd` GMP tracker reads ipowatch's JSON feed (site went client-rendered); a quiet market (healthy-empty) no longer fails the job. Verified live: success runs from 2026-11-10 18:50 UTC.
