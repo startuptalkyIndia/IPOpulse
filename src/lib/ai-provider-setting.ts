@@ -10,6 +10,12 @@
  *     /sup-min/ai-settings (never read from `.env`/ANTHROPIC_API_KEY). If no
  *     key is saved, AI features fail closed.
  *
+ *   "api_first" (added 2026-11-21, founder: API where possible, CLI as fallback) —
+ *     the Anthropic API answers first (key saved in /sup-min/ai-settings, else the
+ *     server .env CLAUDE_FALLBACK_API_KEY with CLAUDE_ALLOW_API_FALLBACK=1); if the API
+ *     fails, is capped or has no key, the CLI subscription answers (run without any key
+ *     variable in its environment). Never the default.
+ *
  * Storage: reuses the existing generic `settings` key-value table (same one
  * `kite_access_token` / `fyers_access_token` already use) — no new table,
  * no migration needed (DB_STANDARD: additive only, and this needs nothing
@@ -20,13 +26,13 @@
 import { prisma } from "@/lib/db";
 import { encryptApiKey, decryptMaybe } from "@/lib/encrypt";
 
-export type AiProviderMode = "subscription" | "api_key";
+export type AiProviderMode = "subscription" | "api_key" | "api_first";
 
 const MODE_KEY = "ai_provider_mode";
 const API_KEY_KEY = "ai_anthropic_api_key";
 
 function isValidMode(v: string | undefined | null): v is AiProviderMode {
-  return v === "subscription" || v === "api_key";
+  return v === "subscription" || v === "api_key" || v === "api_first";
 }
 
 /** Current provider mode. Defaults to "subscription" (the safe, cost-controlled default). */

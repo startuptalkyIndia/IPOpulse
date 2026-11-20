@@ -5,7 +5,7 @@ import { apiFetch, apiSend, errorMessage } from "@/lib/api-fetch";
 import { Cpu, CheckCircle2, AlertTriangle, Clock, KeyRound, Sparkles } from "lucide-react";
 
 interface StatusResponse {
-  mode: "subscription" | "api_key";
+  mode: "subscription" | "api_key" | "api_first";
   hasKey: boolean;
   maskedKey: string | null;
   keyUpdatedAt: string | null;
@@ -14,7 +14,7 @@ interface StatusResponse {
 
 export default function AiSettingsClient() {
   const [status, setStatus] = useState<StatusResponse | null>(null);
-  const [selectedMode, setSelectedMode] = useState<"subscription" | "api_key">("subscription");
+  const [selectedMode, setSelectedMode] = useState<"subscription" | "api_key" | "api_first">("subscription");
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -42,7 +42,7 @@ export default function AiSettingsClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode: selectedMode }),
       });
-      setMessage({ type: "success", text: `AI provider set to ${selectedMode === "subscription" ? "Subscription" : "API key"}.` });
+      setMessage({ type: "success", text: `AI provider set to ${modeLabel(selectedMode)}.` });
       loadStatus();
     } catch (e) {
       setMessage({ type: "error", text: errorMessage(e) || "Failed to update provider mode" });
@@ -89,6 +89,8 @@ export default function AiSettingsClient() {
     }
   }
 
+  const modeLabel = (m: "subscription" | "api_key" | "api_first") =>
+    m === "subscription" ? "Subscription" : m === "api_first" ? "API first, CLI fallback" : "API key";
   const modeChanged = status && selectedMode !== status.mode;
 
   return (
@@ -104,7 +106,7 @@ export default function AiSettingsClient() {
       </div>
 
       {/* Current status */}
-      <div className={`card ${status?.mode === "subscription" ? (status?.cliFound ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") : status?.hasKey ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
+      <div className={`card ${status?.mode === "subscription" ? (status?.cliFound ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") : status?.mode === "api_first" ? (status?.hasKey || status?.cliFound ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") : status?.hasKey ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50"}`}>
         {!status ? (
           <div className="text-sm text-gray-500">Loading current status…</div>
         ) : status.mode === "subscription" ? (
@@ -118,6 +120,17 @@ export default function AiSettingsClient() {
               {status.cliFound
                 ? "Mode: Subscription — Claude CLI found on this server. AI features active."
                 : "Mode: Subscription — Claude CLI NOT found on this server. AI features are unavailable (fails closed, never falls through to any API key)."}
+            </div>
+          </div>
+        ) : status.mode === "api_first" ? (
+          <div className="flex items-center gap-3">
+            {status.hasKey || status.cliFound ? (
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            )}
+            <div className={`text-sm font-semibold ${status.hasKey || status.cliFound ? "text-emerald-800" : "text-amber-800"}`}>
+              {`Mode: API first, CLI fallback — ${status.hasKey ? `saved key ${status.maskedKey}` : "no saved key (the server .env key is used if set)"}; Claude CLI ${status.cliFound ? "found" : "NOT found"}.`}
             </div>
           </div>
         ) : (
@@ -186,12 +199,31 @@ export default function AiSettingsClient() {
           </span>
         </label>
 
+        <label className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition ${selectedMode === "api_first" ? "border-indigo-300 bg-indigo-50" : "border-gray-200"}`}>
+          <input
+            type="radio"
+            name="ai-mode"
+            className="mt-0.5"
+            checked={selectedMode === "api_first"}
+            onChange={() => setSelectedMode("api_first")}
+          />
+          <span>
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+              <KeyRound className="w-3.5 h-3.5 text-indigo-600" /> API first, CLI fallback
+            </span>
+            <span className="block text-xs text-gray-500 mt-0.5">
+              Tries the Anthropic API first (the saved key below, else the server key if one is set). If the API fails,
+              hits its daily cap or has no key, the CLI subscription answers instead.
+            </span>
+          </span>
+        </label>
+
         <button
           onClick={handleSaveMode}
           disabled={saving || !modeChanged}
           className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? "Saving..." : modeChanged ? `Switch to ${selectedMode === "subscription" ? "Subscription" : "API key"}` : "No mode change"}
+          {saving ? "Saving..." : modeChanged ? `Switch to ${modeLabel(selectedMode)}` : "No mode change"}
         </button>
       </div>
 
@@ -199,7 +231,7 @@ export default function AiSettingsClient() {
       <div className="card">
         <h2 className="text-sm font-bold text-gray-900 mb-1">Anthropic API key</h2>
         <p className="text-xs text-gray-500 mb-3">
-          Only used when AI provider is set to "API key" above. Get one at{" "}
+          Used when AI provider is set to "API key" or "API first, CLI fallback" above. Get one at{" "}
           <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" className="text-indigo-600 hover:underline">
             console.anthropic.com/settings/keys
           </a>.

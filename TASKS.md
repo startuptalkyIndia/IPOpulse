@@ -36,6 +36,7 @@
 - [ ] **IP-19** [QW/-/S] Fix `TASKS.md`: remove the stale CLI-login item, add IP-01..IP-05. Add one test for `clientIp()`.
 
 ## 🔲 To Do  (priority order — top = next)
+- [ ] AI "api_first" admin mode built on branch `ai-api-first-20261121` (2026-11-21, not deployed): after deploy an admin picks it in /sup-min/ai-settings; needs a Next 16.4.6 bump before the server build (see COMMS).
 
 - [ ] **From competitor study myinvestmentideas.com (2026-11-19, see COMMS):** (1) rolling 3Y/5Y returns tables per MF category computed from our own `amfi_navs` history, each with a "Data as of" date; (2) one shared "Data as of <date>" label on every data table, fed from the job's last successful run; (3) a real "Was this useful?" rating on tools and IPO pages (show only real counts, never seeded). Bigger, needs founder scoping first: an MF portfolio analyser (AI cost rule B.20, holdings privacy). Also check whether `/ncds` shows open issues with series yield tables. Spec + different reviewer + tests; deploy only on a named go.
 

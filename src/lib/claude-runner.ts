@@ -12,6 +12,9 @@
  *     throws — it NEVER falls through to an API key, even if one happens to be saved.
  *   - mode "api_key": Anthropic SDK only, using the key saved via the admin UI
  *     (never `process.env.ANTHROPIC_API_KEY`). If no key is saved, this throws.
+ *   - mode "api_first" (2026-11-21): the API first (saved key, else server .env
+ *     CLAUDE_FALLBACK_API_KEY + CLAUDE_ALLOW_API_FALLBACK=1), then the CLI if the API fails,
+ *     is capped (CLAUDE_API_DAILY_CAP, CLAUDE_API_BUDGET_USD) or has no key.
  *
  * Usage:
  *   import { callClaude, claudeAvailable } from "@/lib/claude-runner";
@@ -23,6 +26,7 @@ import { spawn } from "node:child_process";
 import { which } from "./which-util";
 import { getAiProviderMode, getSavedAnthropicApiKey } from "./ai-provider-setting";
 import { AiError, mapAnthropicApiError } from "./ai-errors";
+import { callAnthropicApi, cliEnv, apiFallbackEnabled } from "./_shared/ai/claudeFallback";
 
 /** Fail-closed error: AI is not available under the CURRENT provider setting. */
 export class ClaudeUnavailableError extends AiError {
@@ -60,6 +64,11 @@ export async function claudeAvailable(): Promise<{ available: boolean; via: "cli
     const key = await getSavedAnthropicApiKey();
     return key ? { available: true, via: "api" } : { available: false, via: null };
   }
+  if (mode === "api_first") {
+    if (await resolveApiFirstKey()) return { available: true, via: "api" };
+    const b = await getClaudeBin();
+    return b ? { available: true, via: "cli" } : { available: false, via: null };
+  }
   const bin = await getClaudeBin();
   return bin ? { available: true, via: "cli" } : { available: false, via: null };
 }
@@ -72,6 +81,8 @@ export async function claudeAvailable(): Promise<{ available: boolean; via: "cli
  */
 export async function callClaude(opts: ClaudeCallOptions): Promise<string> {
   const mode = await getAiProviderMode();
+
+  if (mode === "api_first") return callApiFirst(opts);
 
   if (mode === "api_key") {
     const key = await getSavedAnthropicApiKey();
@@ -104,7 +115,58 @@ export async function callClaude(opts: ClaudeCallOptions): Promise<string> {
   }
 }
 
-function callViaCli(bin: string, opts: ClaudeCallOptions): Promise<string> {
+/** Key for api_first: the admin-saved key first, else the server .env key (only with CLAUDE_ALLOW_API_FALLBACK=1). */
+async function resolveApiFirstKey(): Promise<string | null> {
+  const saved = await getSavedAnthropicApiKey();
+  if (saved) return saved;
+  return apiFallbackEnabled(process.env) ? (process.env.CLAUDE_FALLBACK_API_KEY || process.env.ANTHROPIC_API_KEY || null) : null;
+}
+
+const API_FIRST_TIMEOUT_MS = 30_000;
+
+/** api_first: API, then CLI. Model from CLAUDE_MODEL / ANTHROPIC_MODEL (never a literal id from the caller). */
+async function callApiFirst(opts: ClaudeCallOptions): Promise<string> {
+  let apiErr: string | null = null;
+  const key = await resolveApiFirstKey();
+  if (key) {
+    // Hand the helper an env where this key is THE key (saved key wins over any .env one).
+    const apiEnv: NodeJS.ProcessEnv = { ...process.env, CLAUDE_FALLBACK_API_KEY: key, CLAUDE_ALLOW_API_FALLBACK: "1" };
+    delete apiEnv.ANTHROPIC_API_KEY;
+    try {
+      // The CLI ignores maxTokens, so a small caller limit would cut JSON short on the API: floor of 4096 (DIYPR 2026-10-25).
+      const r = await callAnthropicApi(opts.user, {
+        system: opts.system,
+        model: opts.model || process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || undefined,
+        maxTokens: Math.max(4096, opts.maxTokens ?? 0),
+        timeoutMs: API_FIRST_TIMEOUT_MS,
+        reason: "api_first",
+      }, { ...apiEnv, CLAUDE_API_PRODUCT: process.env.CLAUDE_API_PRODUCT || "ipopulse" });
+      return r.text;
+    } catch (e) {
+      apiErr = e instanceof Error ? e.message.split("\n")[0].slice(0, 160) : String(e);
+      console.warn("[claude-runner] api_first: API failed, using the CLI:", apiErr);
+    }
+  } else {
+    console.warn("[claude-runner] api_first selected but no API key (saved or CLAUDE_FALLBACK_API_KEY), using the CLI");
+  }
+  const bin = await getClaudeBin();
+  if (!bin) {
+    throw new ClaudeUnavailableError(
+      "AI features unavailable — the API " + (apiErr ? `failed (${apiErr})` : "has no key") + " and the Claude CLI was not found on the server.",
+    );
+  }
+  try {
+    // The CLI must never see an API key (it would bill the API instead of the subscription).
+    return await callViaCli(bin, opts, cliEnv(process.env));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new ClaudeUnavailableError(
+      `AI features unavailable — the API ${apiErr ? `failed (${apiErr})` : "has no key"} and the CLI failed (${msg.slice(0, 200)}).`,
+    );
+  }
+}
+
+function callViaCli(bin: string, opts: ClaudeCallOptions, baseEnv: NodeJS.ProcessEnv = process.env): Promise<string> {
   const combinedPrompt = `<system>\n${opts.system}\n</system>\n\n${opts.user}`;
   const args = ["-p", "--output-format", "text"];
   if (opts.model) args.push("--model", opts.model);
@@ -112,7 +174,7 @@ function callViaCli(bin: string, opts: ClaudeCallOptions): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const child = spawn(bin, args, {
       stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, HOME: process.env.HOME ?? "/root" },
+      env: { ...baseEnv, HOME: baseEnv.HOME ?? process.env.HOME ?? "/root" },
     });
 
     let stdout = "";

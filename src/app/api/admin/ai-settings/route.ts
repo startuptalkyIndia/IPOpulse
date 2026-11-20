@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
   const apiKey = typeof body.apiKey === "string" ? body.apiKey.trim() : undefined;
   const clearKey = body.clearKey === true;
 
-  if (mode !== undefined && mode !== "subscription" && mode !== "api_key") {
-    return NextResponse.json({ error: "mode must be 'subscription' or 'api_key'" }, { status: 400 });
+  if (mode !== undefined && mode !== "subscription" && mode !== "api_key" && mode !== "api_first") {
+    return NextResponse.json({ error: "mode must be 'subscription', 'api_key' or 'api_first'" }, { status: 400 });
   }
 
   if (clearKey) {
@@ -87,7 +87,7 @@ async function testAnthropicKey(apiKey: string): Promise<{ ok: true } | { ok: fa
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey, timeout: 15_000 });
     await client.messages.create({
-      model: process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest",
+      model: process.env.CLAUDE_MODEL || process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest",
       max_tokens: 1,
       messages: [{ role: "user", content: "ping" }],
     });
