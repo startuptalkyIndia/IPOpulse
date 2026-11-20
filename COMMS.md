@@ -1,3 +1,8 @@
+## 2026-11-21 IST — security: next 16.4.6 (build refused 16.4.3) (branch ai-api-first-20261121, not deployed)
+
+**Spec:** what = `npm install next@16.4.6` only (package.json, package-lock.json). why = `next build` on 16.4.3 stops with SecurityFatalError, so the server build and the pre-push build would fail. done-when = tsc 0 errors, full tests pass, real `npm run build` exits 0 with no flags. out-of-scope = any other dependency, code, deploy. verify = the three commands below.
+**Evidence:** `next` 16.4.6 installed; tsc 0 errors; tests pass (unchanged counts); `npm run build` exit 0.
+
 ## 2026-11-21 IST — AI provider mode "api_first" (API, then CLI) (branch ai-api-first-20261121, not deployed)
 
 **Spec:** what = a third admin mode `api_first` in `src/lib/claude-runner.ts` / `ai-provider-setting.ts` / `/sup-min/ai-settings` (radio + status line) / `api/admin/ai-settings` (accepts the value); vendored `src/lib/_shared/ai/claudeFallback.ts` (identical to `_shared/lib/ai`) does the API call with daily cap, budget, 401 pause, truncation check and one `[CLAUDE-API-FALLBACK]` log line. why = founder order 2026-11-21: API where possible, CLI as fallback (the audit found IPOpulse either-or). done-when = `subscription` (default) and `api_key` behave exactly as before; `api_first` tries the saved key (else server `CLAUDE_FALLBACK_API_KEY` with `CLAUDE_ALLOW_API_FALLBACK=1`), and on API failure, cap, budget or no key runs the CLI with `ANTHROPIC_API_KEY`, `CLAUDE_FALLBACK_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN` removed. out-of-scope = deploy, changing the default mode, Next bump, the old default model id in the api_key path. verify = vitest, tsc, `next build`.
